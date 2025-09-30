@@ -19,7 +19,7 @@
             @apply text-3xl md:text-4xl font-bold text-gray-100 mb-12 text-center;
         }
 
-        /* --- MODIFICATION START: Updated Nav Link Styles --- */
+        /* --- Nav Link Styles --- */
         .nav-link {
             @apply text-gray-300 hover:text-white transition-colors duration-300 px-3 py-2 rounded-md text-sm font-medium;
             position: relative; /* Required for the underline pseudo-element */
@@ -42,7 +42,6 @@
         .nav-link.active::after {
             transform: scaleX(1); /* Makes the underline visible */
         }
-        /* --- MODIFICATION END --- */
 
         .project-card {
             @apply bg-gray-800/50 backdrop-blur-sm rounded-xl overflow-hidden transition-all duration-500 ease-out;
@@ -68,12 +67,11 @@
             @apply bg-indigo-600 hover:bg-indigo-500 shadow-lg shadow-indigo-600/30 hover:shadow-indigo-500/40;
         }
 
-        /* --- MODIFICATION START: Updated Secondary Button Style --- */
+        /* --- Secondary Button Style --- */
         /* This creates an "outline" button for better visual distinction */
         .btn-secondary {
             @apply bg-transparent border-2 border-gray-600 text-gray-300 hover:bg-gray-600 hover:text-white;
         }
-        /* --- MODIFICATION END --- */
         
         #menu-button svg {
             width: 24px;
@@ -87,10 +85,10 @@
         <nav class="container mx-auto px-6 py-4 flex justify-between items-center">
             <a href="#" class="text-2xl font-bold text-white">Wilson Zambrano</a>
             <div class="hidden md:flex items-center space-x-1">
-                <a href="#home" class="nav-link">Home</a>
+                <a href="#home" class="nav-link active">Home</a>
                 <a href="#about" class="nav-link">About</a>
                 <a href="#projects" class="nav-link">Projects</a>
-                <a href="resume.pdf" target="_blank" class="nav-link">Resume</a>
+                <a href="#" target="_blank" class="nav-link">Resume</a>
                 <a href="#contact" class="nav-link">Contact</a>
             </div>
             <div class="md:hidden">
@@ -103,7 +101,7 @@
             <a href="#home" class="block nav-link text-center">Home</a>
             <a href="#about" class="block nav-link text-center">About</a>
             <a href="#projects" class="block nav-link text-center">Projects</a>
-            <a href="resume.pdf" target="_blank" class="block nav-link text-center">Resume</a>
+            <a href="#" target="_blank" class="block nav-link text-center">Resume</a>
             <a href="#contact" class="block nav-link text-center">Contact</a>
         </div>
     </header>
@@ -129,7 +127,7 @@
                     </div>
                 </div>
                 <div class="md:w-1/2 flex justify-center">
-                    <img src="AboutImg.jpeg" 
+                    <img src="https://placehold.co/400x400/1F2937/FFFFFF?text=WZ" 
                          alt="A professional headshot of Wilson Zambrano" 
                          class="rounded-full w-64 h-64 md:w-80 md:h-80 lg:w-96 lg:h-96 object-cover shadow-2xl shadow-indigo-500/20 border-8 border-gray-800/50">
                 </div>
@@ -141,7 +139,7 @@
                 <h2 class="section-title">About Me</h2>
                 <div class="flex flex-col md:flex-row items-center gap-12">
                     <div class="md:w-1/3">
-                        <img src="https://placehold.co/600x400/1F2937/FFFFFF?text=About+Me" 
+                        <img src="https://placehold.co/600x600/1F2937/FFFFFF?text=About+Me" 
                              alt="Wilson Adrian Zambrano working at a desk" 
                              class="rounded-xl shadow-lg w-full">
                     </div>
@@ -150,7 +148,7 @@
                             Hello, I’m Wilson Zambrano, a senior at Harvey Mudd College, studying to become an engineer. From a young age, I’ve always been fascinated by how things work and would spend hours pulling apart toys just to see what was inside. As I got older, I learned how to reassemble them and started working on more complex projects. I am excited to bring this passion for problem-solving to my studies at Harvey Mudd and am always looking for new challenges to undertake. I’m eager to connect with other professionals in the engineering industry, so feel free to reach out and connect with me!
                         </p>
                         <div class="mb-8">
-                             <a href="resume.pdf" target="_blank" class="btn btn-secondary">View My Resume</a>
+                             <a href="#" target="_blank" class="btn btn-secondary">View My Resume</a>
                         </div>
                         <h3 class="text-2xl font-bold text-gray-200 mb-4">My Skills</h3>
                         <div class="flex flex-wrap gap-3">
@@ -171,9 +169,11 @@
             <div class="container mx-auto px-6">
                 <h2 class="section-title">Projects & Experience</h2>
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
-                    
-                    <div class="project-card reveal">
-                        <img src="IndomoLogo.png" alt="Indomo Internship Project" class="w-full h-56 object-cover opacity-80 group-hover:opacity-100 transition-opacity">
+        
+                    <div class="project-card reveal group">
+                        <div class="h-56 bg-gray-900 flex items-center justify-center p-8 overflow-hidden">
+                            <img src="https://placehold.co/400x200/FFFFFF/1F2937?text=Indomo+Logo" alt="Indomo Logo" class="h-full w-full object-contain transition-transform duration-500 ease-out group-hover:scale-105">
+                        </div>
                         <div class="p-6">
                             <h3 class="text-xl font-bold mb-2 text-gray-100">Internship at Indomo</h3>
                             <p class="text-gray-400 mb-4">
@@ -184,9 +184,10 @@
                             </div>
                         </div>
                     </div>
-
-                    <div class="project-card reveal">
-                        <img src="BlueOriginLogo.jpg" alt="Blue Origin Internship Project" class="w-full h-56 object-cover opacity-80 group-hover:opacity-100 transition-opacity">
+                    <div class="project-card reveal group">
+                         <div class="h-56 bg-gray-900 flex items-center justify-center p-8 overflow-hidden">
+                            <img src="https://placehold.co/400x200/FFFFFF/1F2937?text=Blue+Origin+Logo" alt="Blue Origin Logo" class="h-full w-full object-contain transition-transform duration-500 ease-out group-hover:scale-105">
+                        </div>
                         <div class="p-6">
                             <h3 class="text-xl font-bold mb-2 text-gray-100">Internship at Blue Origin</h3>
                             <p class="text-gray-400 mb-4">
@@ -197,9 +198,10 @@
                             </div>
                         </div>
                     </div>
-
-                    <div class="project-card reveal">
-                        <img src="FILM Logo.png" alt="Flow Imaging Lab at Mudd (FILM) Logo" class="w-full h-56 object-contain p-4 bg-gray-900">
+                    <div class="project-card reveal group">
+                         <div class="h-56 bg-gray-900 flex items-center justify-center p-8 overflow-hidden">
+                            <img src="https://placehold.co/400x200/FFFFFF/1F2937?text=FILM+Logo" alt="Flow Imaging Lab at Mudd (FILM) Logo" class="h-full w-full object-contain transition-transform duration-500 ease-out group-hover:scale-105">
+                        </div>
                         <div class="p-6">
                             <h3 class="text-xl font-bold mb-2 text-gray-100">Flow Imaging Lab (FILM) Research</h3>
                             <p class="text-gray-400 mb-4">
@@ -211,60 +213,30 @@
                             </div>
                         </div>
                     </div>
-                    
                 </div>
             </div>
         </section>
 
-        <section id="projects" class="py-24 bg-gray-900">
+        <!-- Added Contact Section -->
+        <section id="contact" class="py-24 bg-gray-900">
             <div class="container mx-auto px-6">
-                <h2 class="section-title">Projects & Experience</h2>
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
-        
-                    <div class="project-card reveal group">
-                        <div class="h-56 bg-gray-900 flex items-center justify-center p-8 overflow-hidden">
-                            <img src="IndomoLogo.png" alt="Indomo Logo" class="h-full w-full object-contain transition-transform duration-500 ease-out group-hover:scale-105">
-                        </div>
-                        <div class="p-6">
-                            <h3 class="text-xl font-bold mb-2 text-gray-100">Internship at Indomo</h3>
-                            <p class="text-gray-400 mb-4">
-                                Describe your role, responsibilities, and key achievements during your internship at Indomo. Highlight the skills you applied.
-                            </p>
-                            <div class="flex gap-4">
-                                <a href="#" target="_blank" class="text-indigo-400 hover:underline font-semibold">Learn More</a>
-                            </div>
-                        </div>
+                <h2 class="section-title">Get In Touch</h2>
+                <div class="max-w-3xl mx-auto text-center">
+                    <p class="text-lg text-gray-300 mb-8">
+                        I'm always open to discussing new projects, creative ideas, or opportunities to be part of an ambitious vision. Feel free to reach out.
+                    </p>
+                    <a href="mailto:email@example.com" class="btn btn-primary text-lg">
+                        Say Hello
+                    </a>
+                    <div class="mt-12 flex justify-center gap-6">
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors">
+                            <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path fill-rule="evenodd" d="M12 2C6.477 2 2 6.477 2 12.013c0 4.418 2.865 8.167 6.839 9.49.5.092.682-.217.682-.482 0-.237-.009-.868-.014-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.031-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.378.203 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.338 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.001 10.001 0 0022 12.013C22 6.477 17.523 2 12 2z" clip-rule="evenodd" /></svg>
+                        </a>
+                         <a href="#" class="text-gray-400 hover:text-white transition-colors">
+                            <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10s10-4.48 10-10S17.52 2 12 2zm-1 15v-5h-2v5H7V9h2v2.5c.5-1 1.2-1.5 2-1.5c1.66 0 3 1.34 3 3v5h-2z"/></svg>
+                        </a>
                     </div>
-                    <div class="project-card reveal group">
-                         <div class="h-56 bg-gray-900 flex items-center justify-center p-8 overflow-hidden">
-                            <img src="BlueOriginLogo.jpg" alt="Blue Origin Logo" class="h-full w-full object-contain transition-transform duration-500 ease-out group-hover:scale-105">
-                        </div>
-                        <div class="p-6">
-                            <h3 class="text-xl font-bold mb-2 text-gray-100">Internship at Blue Origin</h3>
-                            <p class="text-gray-400 mb-4">
-                                Describe your role, responsibilities, and key achievements during your internship at Blue Origin. What were the challenges?
-                            </p>
-                            <div class="flex gap-4">
-                                <a href="#" target="_blank" class="text-indigo-400 hover:underline font-semibold">Learn More</a>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="project-card reveal group">
-                         <div class="h-56 bg-gray-900 flex items-center justify-center p-8 overflow-hidden">
-                            <img src="FILM Logo.png" alt="Flow Imaging Lab at Mudd (FILM) Logo" class="h-full w-full object-contain transition-transform duration-500 ease-out group-hover:scale-105">
-                        </div>
-                        <div class="p-6">
-                            <h3 class="text-xl font-bold mb-2 text-gray-100">Flow Imaging Lab (FILM) Research</h3>
-                            <p class="text-gray-400 mb-4">
-                                Investigated the biomechanics of Archer fish leaping locomotion. This research involved using high-speed cameras and Particle Image Velocimetry (PIV) analysis in MATLAB to study the fluid dynamics of the powerful water jets these fish produce.
-                            </p>
-                            <div class="flex gap-4">
-                                <a href="#" target="_blank" class="text-indigo-400 hover:underline font-semibold">View Paper</a>
-                                <a href="#" target="_blank" class="text-gray-400 hover:underline font-semibold">See Poster</a>
-                            </div>
-                        </div>
-                    </div>
-                    </div>
+                </div>
             </div>
         </section>
 
@@ -296,7 +268,7 @@
                 });
             });
 
-            // Scroll Animation for project cards
+            // Scroll Animation for reveal elements
             const revealObserver = new IntersectionObserver((entries) => {
                 entries.forEach(entry => {
                     if (entry.isIntersecting) {
@@ -312,17 +284,18 @@
                 revealObserver.observe(el);
             });
 
-            // --- MODIFICATION START: Active navigation link highlighting on scroll ---
+            // --- Active navigation link highlighting on scroll ---
             const sections = document.querySelectorAll('main section[id]');
             const allNavLinks = document.querySelectorAll('header a.nav-link');
 
             function changeNavOnScroll() {
                 let currentSectionId = '';
+                const scrollPosition = window.pageYOffset;
 
                 sections.forEach(section => {
                     const sectionTop = section.offsetTop;
                     // Check if the user has scrolled past the top of the section, with an offset
-                    if (window.pageYOffset >= sectionTop - 150) {
+                    if (scrollPosition >= sectionTop - 150) {
                         currentSectionId = section.getAttribute('id');
                     }
                 });
@@ -338,7 +311,8 @@
 
             // Listen for scroll events to trigger the function
             window.addEventListener('scroll', changeNavOnScroll);
-            // --- MODIFICATION END ---
+            // Run on load to set the initial active link
+            changeNavOnScroll();
         });
     </script>
 
