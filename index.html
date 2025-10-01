@@ -65,12 +65,24 @@
         }
         .btn-primary:hover {
             transform: translateY(-2px);
+            animation: glow 1.5s infinite alternate; /* Apply glow effect on hover */
         }
         .btn-secondary {
             @apply bg-transparent border-2 border-gray-600 text-gray-300 hover:bg-gray-700 hover:border-gray-500 hover:text-white;
         }
          .btn-secondary:hover {
             transform: translateY(-2px);
+            animation: glow 1.5s infinite alternate; /* Apply glow effect on hover */
+        }
+
+        /* Keyframes for the glowing effect */
+        @keyframes glow {
+            from {
+                box-shadow: 0 0 5px rgba(79, 70, 229, 0.4), 0 0 10px rgba(79, 70, 229, 0.2);
+            }
+            to {
+                box-shadow: 0 0 10px rgba(79, 70, 229, 0.6), 0 0 20px rgba(79, 70, 229, 0.4);
+            }
         }
         /* --- MODIFICATION END --- */
         
@@ -181,24 +193,22 @@
                                 Tasked to design an at-home autoinjector for acne treatment that iterated Indomo TX’s current design to optimize parameters related to the user experience. The injector must safely administer 0.1± 5% cubic centimeters of corticosteroid into a patient’s intradermal layer, 1.1 ± 0.3 mm beneath the skin’s surface, on their face, neck, or chest. 
                             </p>
                             <div class="flex gap-4">
-                                <a href="#" target="_blank" class="text-indigo-400 hover:underline font-semibold">Learn More</a>
-                            </div>
+                                </div>
                         </div>
                     </div>
                     <div class="project-card reveal group">
-                         <div class="h-56 bg-gray-900 flex items-center justify-center p-8 overflow-hidden">
-                            <img src="BlueOriginLogo.jpg" alt="Blue Origin Logo" class="h-full w-full object-contain transition-transform duration-500 ease-out group-hover:scale-105">
-                        </div>
-                        <div class="p-6">
-                            <h3 class="text-xl font-bold mb-2 text-gray-100">Mechanical Technical Lead at Blue Origin</h3>
-                            <p class="text-gray-400 mb-4">
-                                Devising a solution to autonomously mate 2 panels that house umbilical connections with precision. 
-                            </p>
-                            <div class="flex gap-4">
-                                <a href="#" target="_blank" class="text-indigo-400 hover:underline font-semibold">Learn More</a>
-                            </div>
-                        </div>
-                    </div>
+                        <div class="h-56 bg-gray-900 flex items-center justify-center p-8 overflow-hidden">
+                           <img src="BlueOriginLogo.jpg" alt="Blue Origin Logo" class="h-full w-full object-contain transition-transform duration-500 ease-out group-hover:scale-105">
+                       </div>
+                       <div class="p-6">
+                           <h3 class="text-xl font-bold mb-2 text-gray-100">Mechanical Technical Lead at Blue Origin</h3>
+                           <p class="text-gray-400 mb-4">
+                            As Mechanical Technical Lead, my team is addressing key challenges in the manual umbilical mating procedure for the New Glenn project, which faces concerns with alignment accuracy, speed, and efficiency. I am leading the design of an automated system, evaluating sensor options and developing a mechanical solution to autonomously attach umbilical panels with high precision. 
+                           </p>
+                           <div class="flex gap-4">
+                               </div>
+                       </div>
+                   </div>
                     <div class="project-card reveal group">
                          <div class="h-56 bg-gray-900 flex items-center justify-center p-8 overflow-hidden">
                             <img src="FILM Logo.png" alt="Flow Imaging Lab at Mudd (FILM) Logo" class="h-full w-full object-contain transition-transform duration-500 ease-out group-hover:scale-105">
