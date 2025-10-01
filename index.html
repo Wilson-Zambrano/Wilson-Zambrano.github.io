@@ -54,10 +54,11 @@
             transform: scale(1) translateY(0);
         }
         
-        /* --- MODIFICATION START: Enhanced Button Styles --- */
         .btn {
             @apply px-6 py-3 rounded-lg font-semibold text-white transition-all duration-300 ease-in-out inline-flex items-center justify-center gap-2;
             transform-style: preserve-3d;
+            /* Adds a subtle universal glow to make buttons pop from the background */
+            box-shadow: 0 0 20px rgba(167, 139, 250, 0.1);
         }
         .btn-primary {
             @apply bg-indigo-600 hover:bg-indigo-500 shadow-lg shadow-indigo-600/30 hover:shadow-indigo-500/40;
@@ -68,7 +69,8 @@
             animation: glow 1.5s infinite alternate; /* Apply glow effect on hover */
         }
         .btn-secondary {
-            @apply bg-transparent border-2 border-gray-600 text-gray-300 hover:bg-gray-700 hover:border-gray-500 hover:text-white;
+            /* Brighter border color for better default contrast */
+            @apply bg-transparent border-2 border-gray-500 text-gray-300 hover:bg-gray-700 hover:border-gray-500 hover:text-white;
         }
          .btn-secondary:hover {
             transform: translateY(-2px);
@@ -203,7 +205,7 @@
                        <div class="p-6">
                            <h3 class="text-xl font-bold mb-2 text-gray-100">Mechanical Technical Lead at Blue Origin</h3>
                            <p class="text-gray-400 mb-4">
-                            As Mechanical Technical Lead, my team is addressing key challenges in the manual umbilical mating procedure for the New Glenn project, which faces concerns with alignment accuracy, speed, and efficiency. I am leading the design of an automated system, evaluating sensor options and developing a mechanical solution to autonomously attach umbilical panels with high precision. 
+                            As Mechanical Technical Lead, my team is addressing key challenges in the manual umbilical mating procedure for the New Glenn project, which faces concerns with alignment accuracy, speed, and efficiency. We are devising a solution to autonomously mate 2 panels that house umbilical connections with precision. 
                            </p>
                            <div class="flex gap-4">
                                </div>
