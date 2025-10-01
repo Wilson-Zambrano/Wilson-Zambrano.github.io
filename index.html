@@ -19,29 +19,21 @@
             @apply text-3xl md:text-4xl font-bold text-gray-100 mb-12 text-center;
         }
 
-        /* --- Nav Link Styles --- */
+        /* --- MODIFICATION START: Updated Nav Link Styles --- */
         .nav-link {
-            @apply text-gray-300 hover:text-white transition-colors duration-300 px-3 py-2 rounded-md text-sm font-medium;
-            position: relative; /* Required for the underline pseudo-element */
+            @apply text-gray-300 hover:text-white transition-all duration-300 px-4 py-2 rounded-full text-sm font-medium;
         }
-        /* The animated underline effect */
-        .nav-link::after {
-            content: '';
-            position: absolute;
-            bottom: 4px;
-            left: 0;
-            width: 100%;
-            height: 2px;
-            background-color: #6366f1; /* Indigo color to match your theme */
-            transform-origin: left;
-            transform: scaleX(0); /* Hidden by default */
-            transition: transform 0.3s ease-out;
+        
+        .nav-link:hover {
+            background-color: rgba(79, 70, 229, 0.2); /* Subtle indigo background on hover */
         }
-        /* Show the underline on hover or when the link is 'active' */
-        .nav-link:hover::after,
-        .nav-link.active::after {
-            transform: scaleX(1); /* Makes the underline visible */
+
+        .nav-link.active {
+            background-color: #4f46e5; /* Solid indigo for active link */
+            color: #fff;
+            box-shadow: 0 4px 14px 0 rgba(79, 70, 229, 0.5);
         }
+        /* --- MODIFICATION END --- */
 
         .project-card {
             @apply bg-gray-800/50 backdrop-blur-sm rounded-xl overflow-hidden transition-all duration-500 ease-out;
@@ -49,7 +41,8 @@
         }
         .project-card:hover {
             border-color: rgba(99, 102, 241, 0.5); /* Indigo color on hover */
-            transform: translateY(-8px);
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.2), 0 10px 10px -5px rgba(0,0,0,0.1);
         }
         .reveal {
             opacity: 0;
@@ -60,18 +53,26 @@
             opacity: 1;
             transform: scale(1) translateY(0);
         }
+        
+        /* --- MODIFICATION START: Enhanced Button Styles --- */
         .btn {
-            @apply px-6 py-3 rounded-lg font-semibold text-white transition-all duration-300;
+            @apply px-6 py-3 rounded-lg font-semibold text-white transition-all duration-300 ease-in-out inline-flex items-center justify-center gap-2;
+            transform-style: preserve-3d;
         }
         .btn-primary {
             @apply bg-indigo-600 hover:bg-indigo-500 shadow-lg shadow-indigo-600/30 hover:shadow-indigo-500/40;
+            transform: translateZ(0); /* Prepare for 3D transform */
         }
-
-        /* --- Secondary Button Style --- */
-        /* This creates an "outline" button for better visual distinction */
+        .btn-primary:hover {
+            transform: translateY(-2px);
+        }
         .btn-secondary {
-            @apply bg-transparent border-2 border-gray-600 text-gray-300 hover:bg-gray-600 hover:text-white;
+            @apply bg-transparent border-2 border-gray-600 text-gray-300 hover:bg-gray-700 hover:border-gray-500 hover:text-white;
         }
+         .btn-secondary:hover {
+            transform: translateY(-2px);
+        }
+        /* --- MODIFICATION END --- */
         
         #menu-button svg {
             width: 24px;
@@ -85,10 +86,10 @@
         <nav class="container mx-auto px-6 py-4 flex justify-between items-center">
             <a href="#" class="text-2xl font-bold text-white">Wilson Zambrano</a>
             <div class="hidden md:flex items-center space-x-1">
-                <a href="#home" class="nav-link active">Home</a>
+                <a href="#home" class="nav-link">Home</a>
                 <a href="#about" class="nav-link">About</a>
                 <a href="#projects" class="nav-link">Projects</a>
-                <a href="#" target="_blank" class="nav-link">Resume</a>
+                <a href="resume.pdf" target="_blank" class="nav-link">Resume</a>
                 <a href="#contact" class="nav-link">Contact</a>
             </div>
             <div class="md:hidden">
@@ -101,7 +102,7 @@
             <a href="#home" class="block nav-link text-center">Home</a>
             <a href="#about" class="block nav-link text-center">About</a>
             <a href="#projects" class="block nav-link text-center">Projects</a>
-            <a href="#" target="_blank" class="block nav-link text-center">Resume</a>
+            <a href="resume.pdf" target="_blank" class="block nav-link text-center">Resume</a>
             <a href="#contact" class="block nav-link text-center">Contact</a>
         </div>
     </header>
@@ -148,7 +149,7 @@
                             Hello, I’m Wilson Zambrano, a senior at Harvey Mudd College, studying to become an engineer. From a young age, I’ve always been fascinated by how things work and would spend hours pulling apart toys just to see what was inside. As I got older, I learned how to reassemble them and started working on more complex projects. I am excited to bring this passion for problem-solving to my studies at Harvey Mudd and am always looking for new challenges to undertake. I’m eager to connect with other professionals in the engineering industry, so feel free to reach out and connect with me!
                         </p>
                         <div class="mb-8">
-                             <a href="#" target="_blank" class="btn btn-secondary">View My Resume</a>
+                             <a href="resume.pdf" target="_blank" class="btn btn-secondary">View My Resume</a>
                         </div>
                         <h3 class="text-2xl font-bold text-gray-200 mb-4">My Skills</h3>
                         <div class="flex flex-wrap gap-3">
@@ -213,32 +214,49 @@
                             </div>
                         </div>
                     </div>
-                </div>
+                    </div>
             </div>
         </section>
 
-        <!-- Added Contact Section -->
+        <!-- MODIFICATION START: Updated Contact Section with Email Form -->
         <section id="contact" class="py-24 bg-gray-900">
             <div class="container mx-auto px-6">
                 <h2 class="section-title">Get In Touch</h2>
-                <div class="max-w-3xl mx-auto text-center">
-                    <p class="text-lg text-gray-300 mb-8">
-                        I'm always open to discussing new projects, creative ideas, or opportunities to be part of an ambitious vision. Feel free to reach out.
+                <div class="max-w-3xl mx-auto">
+                    <p class="text-lg text-gray-300 mb-8 text-center">
+                        I'm always open to discussing new projects, creative ideas, or opportunities to be part of an ambitious vision. Fill out the form below to send me an email.
                     </p>
-                    <a href="mailto:email@example.com" class="btn btn-primary text-lg">
-                        Say Hello
-                    </a>
-                    <div class="mt-12 flex justify-center gap-6">
-                        <a href="#" class="text-gray-400 hover:text-white transition-colors">
-                            <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path fill-rule="evenodd" d="M12 2C6.477 2 2 6.477 2 12.013c0 4.418 2.865 8.167 6.839 9.49.5.092.682-.217.682-.482 0-.237-.009-.868-.014-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.031-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.378.203 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.338 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.001 10.001 0 0022 12.013C22 6.477 17.523 2 12 2z" clip-rule="evenodd" /></svg>
-                        </a>
-                         <a href="#" class="text-gray-400 hover:text-white transition-colors">
-                            <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10s10-4.48 10-10S17.52 2 12 2zm-1 15v-5h-2v5H7V9h2v2.5c.5-1 1.2-1.5 2-1.5c1.66 0 3 1.34 3 3v5h-2z"/></svg>
-                        </a>
-                    </div>
+                    <form id="contact-form" class="space-y-6 bg-gray-800/50 p-8 rounded-lg border border-gray-700/50">
+                        <div class="flex flex-col md:flex-row gap-6">
+                            <div class="flex-1">
+                                <label for="name" class="block mb-2 text-sm font-medium text-gray-300">Your Name</label>
+                                <input type="text" id="name" name="name" class="w-full bg-gray-900/50 border border-gray-600 text-white text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block p-3" placeholder="John Doe" required>
+                            </div>
+                            <div class="flex-1">
+                                <label for="email" class="block mb-2 text-sm font-medium text-gray-300">Your Email</label>
+                                <input type="email" id="email" name="email" class="w-full bg-gray-900/50 border border-gray-600 text-white text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block p-3" placeholder="name@company.com" required>
+                            </div>
+                        </div>
+                        <div>
+                            <label for="subject" class="block mb-2 text-sm font-medium text-gray-300">Subject</label>
+                            <input type="text" id="subject" name="subject" class="w-full bg-gray-900/50 border border-gray-600 text-white text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block p-3" placeholder="Let's talk about..." required>
+                        </div>
+                        <div>
+                            <label for="message" class="block mb-2 text-sm font-medium text-gray-300">Your Message</label>
+                            <textarea id="message" name="message" rows="6" class="w-full bg-gray-900/50 border border-gray-600 text-white text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block p-3" placeholder="Leave a comment..."></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-full md:w-auto">
+                            Send Message
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                              <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z" />
+                            </svg>
+                        </button>
+                    </form>
                 </div>
             </div>
         </section>
+        <!-- MODIFICATION END -->
+
 
     </main>
 
@@ -289,7 +307,7 @@
             const allNavLinks = document.querySelectorAll('header a.nav-link');
 
             function changeNavOnScroll() {
-                let currentSectionId = '';
+                let currentSectionId = 'home';
                 const scrollPosition = window.pageYOffset;
 
                 sections.forEach(section => {
@@ -313,8 +331,29 @@
             window.addEventListener('scroll', changeNavOnScroll);
             // Run on load to set the initial active link
             changeNavOnScroll();
+            
+            // --- MODIFICATION START: Contact Form Email Writer ---
+            const contactForm = document.getElementById('contact-form');
+            contactForm.addEventListener('submit', function(event) {
+                event.preventDefault();
+
+                const name = document.getElementById('name').value;
+                const email = document.getElementById('email').value;
+                const subject = document.getElementById('subject').value;
+                const message = document.getElementById('message').value;
+
+                // This is a placeholder for your email address
+                const yourEmail = 'wilson.zambrano@example.com';
+
+                const mailtoLink = `mailto:${yourEmail}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(`Name: ${name}\nEmail: ${email}\n\nMessage:\n${message}`)}`;
+
+                // Opens the user's default email client
+                window.location.href = mailtoLink;
+            });
+            // --- MODIFICATION END ---
         });
     </script>
 
 </body>
 </html>
+
