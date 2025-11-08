@@ -103,7 +103,7 @@
                 <a href="#home" class="nav-link">Home</a>
                 <a href="#about" class="nav-link">About</a>
                 <a href="#projects" class="nav-link">Projects</a>
-                <a href="resume.html" target="_blank" class="nav-link">Resume</a>
+                <a href="#resume" class="nav-link">Resume</a>
                 <a href="#contact" class="nav-link">Contact</a>
             </div>
             <div class="md:hidden">
@@ -116,7 +116,7 @@
             <a href="#home" class="block nav-link text-center">Home</a>
             <a href="#about" class="block nav-link text-center">About</a>
             <a href="#projects" class="block nav-link text-center">Projects</a>
-            <a href="resume.pdf" target="_blank" class="block nav-link text-center">Resume</a>
+            <a href="#resume" class="block nav-link text-center">Resume</a>
             <a href="#contact" class="block nav-link text-center">Contact</a>
         </div>
     </header>
@@ -163,7 +163,7 @@
                             Hello, I’m Wilson Zambrano, a senior at Harvey Mudd College, studying to become an engineer. From a young age, I’ve always been fascinated by how things work and would spend hours pulling apart toys just to see what was inside. As I got older, I learned how to reassemble them and started working on more complex projects. I am excited to bring this passion for problem-solving to my studies at Harvey Mudd and am always looking for new challenges to undertake. I’m eager to connect with other professionals in the engineering industry, so feel free to reach out and connect with me!
                         </p>
                         <div class="mb-8">
-                            <a href="resume.html" target="_blank" class="btn btn-secondary">View My Resume</a>
+                            <a href="#resume" class="btn btn-secondary">View My Resume</a>
                         </div>
                         <h3 class="text-2xl font-bold text-gray-200 mb-4">My Skills</h3>
                         <div class="flex flex-wrap gap-3">
@@ -251,7 +251,7 @@
                         <div class="p-6">
                             <h3 class="text-xl font-bold mb-2 text-gray-100">AC-DC Converter Design (E84)</h3>
                             <p class="text-gray-400 mb-4">
-                            Designed a circuit for AC-DC conversion that converts an AC sine wave into a rectangular wave[cite: 1, 7]. The system uses Pulse Width Modulation (PWM) [cite: 20], where the output's duty cycle depends on the input signal's amplitude[cite: 9]. This allows for controlling the power delivered to appliances like motors, LEDs, or heaters.
+                            Designed a circuit for AC-DC conversion that converts an AC sine wave into a rectangular wave. The system uses Pulse Width Modulation (PWM), where the output's duty cycle depends on the input signal's amplitude. This allows for controlling the power delivered to appliances like motors, LEDs, or heaters.
                             </p>
                             <div class="flex gap-4">
                                 <a href="E84 Final Presentation.pdf" target="_blank" class="text-gray-400 hover:underline font-semibold">View Presentation</a>
@@ -263,6 +263,29 @@
             </div>
         </section>
 
+        <section id="resume" class="py-24 bg-gray-900">
+            <div class="container mx-auto px-6">
+                <h2 class="section-title">My Resume</h2>
+                <div class="max-w-4xl mx-auto bg-gray-800/50 rounded-xl shadow-lg border border-gray-700/50 overflow-hidden">
+                    <iframe 
+                        src="resume.pdf" 
+                        title="Wilson Zambrano's Resume" 
+                        class="w-full h-[80vh]" 
+                        frameborder="0">
+                        Your browser does not support PDFs. <a href="resume.pdf">Download the PDF</a>.
+                    </iframe>
+                    
+                    <div class="p-6 bg-gray-800/80 text-center">
+                        <a href="resume.pdf" download class="btn btn-primary">
+                            Download Resume
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                              <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V3" />
+                            </svg>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
         <section id="contact" class="py-24 bg-gray-900">
             <div class="container mx-auto px-6">
                 <h2 class="section-title">Get In Touch</h2>
