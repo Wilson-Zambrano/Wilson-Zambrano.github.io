@@ -218,6 +218,10 @@ footer { position: relative; z-index: 1; border-top: 3px solid var(--ink); backg
         <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:inline;vertical-align:middle;margin-right:4px;"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
         Return to Portfolio
       </a>
+      <button id="top-logout-btn" onclick="doLogout()" class="btn btn-outline" style="display:none; margin-left: 8px; padding: 6px 12px; font-size: 0.5rem; border-color: var(--red); color: var(--red);">
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:inline;vertical-align:middle;margin-right:4px;"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        Logout
+      </button>
     </div>
     <div class="nav-doc-ref">
       <div class="nav-doc-cell">
@@ -439,9 +443,6 @@ footer { position: relative; z-index: 1; border-top: 3px solid var(--ink); backg
 <script>
 // ═══════════════════════════════════════════════
 //  CONFIG
-//  Set API_BASE to your Worker domain if drop.html
-//  is NOT served by the Worker itself (e.g. local dev).
-//  Leave empty when deployed under the same domain.
 // ═══════════════════════════════════════════════
 const API_BASE = 'https://ancient-credit-7433.wilsonzambrano.workers.dev';
 
@@ -520,6 +521,7 @@ function showLogin() {
   document.getElementById('status-dot').classList.add('offline');
   document.getElementById('status-text').innerHTML = 'System <strong>Locked</strong>';
   document.getElementById('logout-btn').style.display = 'none';
+  document.getElementById('top-logout-btn').style.display = 'none'; // Hides top button
   document.getElementById('login-username').focus();
 }
 
@@ -531,6 +533,7 @@ function showApp() {
   document.getElementById('status-dot').classList.remove('offline');
   document.getElementById('status-text').innerHTML = 'System <strong>Online</strong>';
   document.getElementById('logout-btn').style.display = 'block';
+  document.getElementById('top-logout-btn').style.display = 'inline-flex'; // Shows top button
 }
 
 // ═══════════════════════════════════════════════
