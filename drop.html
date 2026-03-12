@@ -324,20 +324,20 @@ footer { position: relative; z-index: 1; border-top: 3px solid var(--ink); backg
                 <line x1="12" y1="3" x2="12" y2="15"/>
               </svg>
             </div>
-            <p class="drop-label">Drag &amp; Drop File Here</p>
-            <p class="drop-sub">Or click to browse · Max 100 MB</p>
+            <p class="drop-label">Drag &amp; Drop Files Here</p>
+            <p class="drop-sub">Or click to browse · Max 100 MB per file</p>
             <div class="drop-formats">
               <span class="format-tag">PDF</span><span class="format-tag">PNG</span>
-              <span class="format-tag">JPG</span><span class="format-tag">ZIP</span>
+              <span class="format-tag">STEP</span><span class="format-tag">ZIP</span>
               <span class="format-tag">DOCX</span><span class="format-tag">Any</span>
             </div>
             <div id="file-selected-info" style="display:none;border:1px solid var(--green);padding:10px 16px;background:rgba(42,122,42,0.05);width:100%;">
-              <p style="font-size:0.55rem;text-transform:uppercase;letter-spacing:0.15em;color:var(--green);margin-bottom:3px;">File Selected</p>
+              <p style="font-size:0.55rem;text-transform:uppercase;letter-spacing:0.15em;color:var(--green);margin-bottom:3px;">Selection Active</p>
               <p id="file-name-display" style="font-size:0.65rem;color:var(--ink);font-weight:600;word-break:break-all;"></p>
               <p id="file-size-display" style="font-size:0.5rem;color:var(--ink-dim);margin-top:2px;"></p>
             </div>
           </div>
-          <input type="file" id="file-input" accept="*/*">
+          <input type="file" id="file-input" accept="*/*" multiple>
         </div>
 
         <div id="text-mode-panel" style="display:none;">
@@ -368,7 +368,7 @@ footer { position: relative; z-index: 1; border-top: 3px solid var(--ink); backg
           
           <label style="display: flex; align-items: center; gap: 8px; font-size: 0.55rem; text-transform: uppercase; letter-spacing: 0.15em; color: var(--ink); cursor: pointer; margin-bottom: 16px;" id="public-toggle-container">
             <input type="checkbox" id="is-public-toggle" style="accent-color: var(--red); width: 14px; height: 14px;">
-            Make file public (No login required to download)
+            Make files public (No login required to download)
           </label>
 
           <button class="btn btn-solid btn-full" id="submit-btn" onclick="handleSubmit()">
@@ -434,7 +434,7 @@ footer { position: relative; z-index: 1; border-top: 3px solid var(--ink); backg
     <div class="tb-cell"><span class="tb-key">Drawing No.</span><span class="tb-val">WZ-DROP-001-B</span></div>
     <div class="tb-cell"><span class="tb-key">Title</span><span class="tb-val">File Drop Intake</span></div>
     <div class="tb-cell"><span class="tb-key">Drawn By</span><span class="tb-val">Wilson A. Zambrano</span></div>
-    <div class="tb-cell"><span class="tb-key">Rev</span><span class="tb-val">B — API Integration</span></div>
+    <div class="tb-cell"><span class="tb-key">Rev</span><span class="tb-val">C — Multi-File & Public</span></div>
     <div class="tb-cell"><span class="tb-key">Year</span><span class="tb-val" id="footer-year"></span></div>
   </div>
 </footer>
@@ -472,7 +472,7 @@ const API_BASE = 'https://ancient-credit-7433.wilsonzambrano.workers.dev';
 // ═══════════════════════════════════════════════
 let jwt = null;
 let currentMode = 'file';
-let selectedFile = null;
+let selectedFiles = []; // Array to hold multiple files
 let drops = [];
 
 // ═══════════════════════════════════════════════
@@ -648,20 +648,40 @@ function setupDragDrop() {
   const zone = document.getElementById('drop-zone');
   ['dragenter','dragover'].forEach(e => zone.addEventListener(e, ev => { ev.preventDefault(); zone.classList.add('drag-over'); }));
   ['dragleave','dragend'].forEach(e => zone.addEventListener(e, () => zone.classList.remove('drag-over')));
-  zone.addEventListener('drop', e => { e.preventDefault(); zone.classList.remove('drag-over'); const f = e.dataTransfer.files[0]; if (f) setFile(f); });
+  zone.addEventListener('drop', e => { 
+    e.preventDefault(); 
+    zone.classList.remove('drag-over'); 
+    if (e.dataTransfer.files.length) setFiles(e.dataTransfer.files); 
+  });
   document.body.addEventListener('dragover', e => e.preventDefault());
-  document.body.addEventListener('drop', e => { e.preventDefault(); if (currentMode !== 'file') switchMode('file'); const f = e.dataTransfer.files[0]; if (f) setFile(f); });
+  document.body.addEventListener('drop', e => { 
+    e.preventDefault(); 
+    if (currentMode !== 'file') switchMode('file'); 
+    if (e.dataTransfer.files.length) setFiles(e.dataTransfer.files); 
+  });
 }
+
 function setupFileInput() {
-  document.getElementById('file-input').addEventListener('change', e => { if (e.target.files[0]) setFile(e.target.files[0]); });
+  document.getElementById('file-input').addEventListener('change', e => { 
+    if (e.target.files.length) setFiles(e.target.files); 
+  });
 }
-function setFile(f) {
-  selectedFile = f;
+
+function setFiles(files) {
+  selectedFiles = Array.from(files);
   document.getElementById('drop-zone').classList.add('has-file');
   document.getElementById('file-selected-info').style.display = 'block';
-  document.getElementById('file-name-display').textContent = f.name;
-  document.getElementById('file-size-display').textContent = formatBytes(f.size);
-  updateSpec({ type: 'file', name: f.name, size: formatBytes(f.size) });
+  
+  if (selectedFiles.length === 1) {
+    document.getElementById('file-name-display').textContent = selectedFiles[0].name;
+    document.getElementById('file-size-display').textContent = formatBytes(selectedFiles[0].size);
+    updateSpec({ type: 'file', name: selectedFiles[0].name, size: formatBytes(selectedFiles[0].size) });
+  } else {
+    const totalSize = selectedFiles.reduce((acc, file) => acc + file.size, 0);
+    document.getElementById('file-name-display').textContent = `${selectedFiles.length} files selected`;
+    document.getElementById('file-size-display').textContent = formatBytes(totalSize) + ' Total';
+    updateSpec({ type: 'file', name: `Batch: ${selectedFiles.length} files`, size: formatBytes(totalSize) });
+  }
 }
 
 // ═══════════════════════════════════════════════
@@ -672,12 +692,17 @@ async function handleSubmit() {
   const note = document.getElementById('drop-note').value.trim();
   btn.disabled = true;
   btn.innerHTML = '<span class="spinner"></span>&nbsp; Uploading...';
+  
   try {
-    let item;
+    let itemToSpec; // For sidebar display
+    let successMessage = '';
+
     if (currentMode === 'file') {
-      if (!selectedFile) throw new Error('No file selected');
+      if (!selectedFiles.length) throw new Error('No files selected');
       const fd = new FormData();
-      fd.append('file', selectedFile);
+      
+      // Append every file to the same 'file' key
+      selectedFiles.forEach(file => fd.append('file', file));
       if (note) fd.append('note', note);
       
       const isPublic = document.getElementById('is-public-toggle').checked;
@@ -686,37 +711,54 @@ async function handleSubmit() {
       const res = await apiFetch('/api/drop/file', { method: 'POST', body: fd });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Upload failed');
-      item = data.item;
+      
+      // Add all new items to the top of our log
+      drops = [...data.items, ...drops];
+      itemToSpec = data.items[0]; 
+      successMessage = selectedFiles.length > 1 ? `${selectedFiles.length} files received` : (data.items[0].name || '').substring(0, 32);
+
       resetFileZone();
       document.getElementById('is-public-toggle').checked = false;
+      
     } else if (currentMode === 'text') {
       const title   = document.getElementById('text-title').value.trim();
       const content = document.getElementById('text-content').value.trim();
       if (!content) throw new Error('No text entered');
+      
       const res = await apiFetch('/api/drop/text', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ title, content, note }) });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Upload failed');
-      item = data.item;
+      
+      drops.unshift(data.item);
+      itemToSpec = data.item;
+      successMessage = (data.item.name || '').substring(0, 32);
+      
       document.getElementById('text-title').value = '';
       document.getElementById('text-content').value = '';
+
     } else if (currentMode === 'url') {
       const label = document.getElementById('url-label').value.trim();
       const url   = document.getElementById('url-input').value.trim();
       if (!url) throw new Error('No URL entered');
+      
       const res = await apiFetch('/api/drop/url', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ url, label, note }) });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Upload failed');
-      item = data.item;
+      
+      drops.unshift(data.item);
+      itemToSpec = data.item;
+      successMessage = (data.item.name || '').substring(0, 32);
+      
       document.getElementById('url-label').value = '';
       document.getElementById('url-input').value = '';
     }
+
     document.getElementById('drop-note').value = '';
-    drops.unshift(item);
     renderLog();
     document.getElementById('status-count').textContent = drops.length;
-    updateSpec(item);
+    updateSpec(itemToSpec);
     calculateStorage();
-    showToast('Received — ' + (item.name || '').substring(0, 32));
+    showToast('Received — ' + successMessage);
   } catch (err) {
     showToast(err.message || 'Error', true);
   } finally {
@@ -873,7 +915,7 @@ async function calculateStorage() {
 //  UTILS
 // ═══════════════════════════════════════════════
 function resetFileZone() {
-  selectedFile = null;
+  selectedFiles = [];
   document.getElementById('drop-zone').classList.remove('has-file');
   document.getElementById('file-selected-info').style.display = 'none';
   document.getElementById('file-input').value = '';
