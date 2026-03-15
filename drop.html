@@ -20,6 +20,7 @@
 <style>
 /* ═══════════════════════════════════════════════════════
    BLUEPRINT DESIGN SYSTEM — FILE DROP  (WZ-DROP-001 Rev C)
+   Persistent cross-device storage via Cloudflare Worker
 ═══════════════════════════════════════════════════════ */
 :root {
   --paper: #dce8f0;
@@ -61,7 +62,7 @@ body::before {
   z-index: 0;
 }
 
-/* ── HEADER & MAIN (Preserved from original) ── */
+/* ── HEADER ── */
 #header { position: sticky; top: 0; z-index: 100; background: var(--paper-dark); border-bottom: 2px solid var(--ink); }
 .nav-inner { display: flex; justify-content: space-between; align-items: stretch; max-width: 1200px; margin: 0 auto; }
 .nav-brand { font-family: 'Bebas Neue', sans-serif; font-size: 1.4rem; letter-spacing: 0.12em; color: var(--ink); text-decoration: none; padding: 12px 24px; border-right: 1px solid var(--line-bold); display: flex; align-items: center; gap: 10px; }
@@ -71,6 +72,7 @@ body::before {
 .nav-doc-key { font-size: 0.45rem; text-transform: uppercase; letter-spacing: 0.2em; color: var(--ink-dim); }
 .nav-doc-val { font-size: 0.6rem; font-weight: 700; color: var(--ink); letter-spacing: 0.06em; }
 
+/* ── MAIN ── */
 main { flex: 1; position: relative; z-index: 1; max-width: 1200px; margin: 0 auto; padding: 60px 40px; width: 100%; }
 .reg-mark { position: fixed; width: 24px; height: 24px; z-index: 2; pointer-events: none; }
 .reg-mark.tl { top: 60px; left: 20px; border-top: 2px solid var(--ink-faint); border-left: 2px solid var(--ink-faint); }
@@ -237,6 +239,14 @@ footer { position: relative; z-index: 1; border-top: 3px solid var(--ink); backg
   <nav class="nav-inner">
     <div style="display: flex; align-items: center;">
       <a href="index.html" class="nav-brand">W<span>.</span>Zambrano</a>
+      <a href="index.html" class="btn btn-outline" style="margin-left: 16px; padding: 6px 12px; font-size: 0.5rem;">
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:inline;vertical-align:middle;margin-right:4px;"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+        Return to Portfolio
+      </a>
+      <button id="top-logout-btn" onclick="doLogout()" class="btn btn-outline" style="display:none; margin-left: 8px; padding: 6px 12px; font-size: 0.5rem; border-color: var(--red); color: var(--red);">
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:inline;vertical-align:middle;margin-right:4px;"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        Logout
+      </button>
     </div>
     <div class="nav-doc-ref">
       <div class="nav-doc-cell"><span class="nav-doc-key">Document</span><span class="nav-doc-val">WZ-DROP-001</span></div>
@@ -270,7 +280,28 @@ footer { position: relative; z-index: 1; border-top: 3px solid var(--ink); backg
             <label class="form-label">Password</label>
             <input type="password" id="login-password" class="form-input" placeholder="••••••••" autocomplete="current-password">
           </div>
-          <button class="btn btn-solid btn-full" id="login-btn" onclick="doLogin()">Authenticate</button>
+          <button class="btn btn-solid btn-full" id="login-btn" onclick="doLogin()">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+            Authenticate
+          </button>
+          <div style="margin-top:16px;border:1px solid var(--line);padding:10px 12px;background:rgba(10,22,40,0.03);">
+            <p style="font-size:0.5rem;text-transform:uppercase;letter-spacing:0.15em;color:var(--ink-dim);line-height:1.9;">
+              Session token valid for 7 days · Stored in sessionStorage<br>
+              Cross-device access via Cloudflare Workers + KV + R2
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="login-box" style="margin-top: 24px; border-color: var(--line-bold);">
+        <div class="login-header" style="background: var(--paper);">
+          <span class="login-header-title" style="color: var(--ink-dim);">Public Files</span>
+          <span class="login-doc-ref">No Auth Required</span>
+        </div>
+        <div class="login-body" style="padding: 0;">
+          <div id="public-log-list" class="log-list" style="border: none; max-height: 250px;">
+            <div class="log-empty">Loading public files...</div>
+          </div>
         </div>
       </div>
     </div>
@@ -283,9 +314,18 @@ footer { position: relative; z-index: 1; border-top: 3px solid var(--ink); backg
         <div>
           <p class="form-label" style="margin-bottom:8px;">Input Mode</p>
           <div class="input-mode-toggle">
-            <button class="mode-btn active" data-mode="file" onclick="switchMode('file')">File</button>
-            <button class="mode-btn" data-mode="text" onclick="switchMode('text')">Text / Code</button>
-            <button class="mode-btn" data-mode="url" onclick="switchMode('url')">URL</button>
+            <button class="mode-btn active" data-mode="file" onclick="switchMode('file')">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:inline;vertical-align:middle;margin-right:4px;"><path d="M13 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V9z"/><polyline points="13 2 13 9 20 9"/></svg>
+              File
+            </button>
+            <button class="mode-btn" data-mode="text" onclick="switchMode('text')">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:inline;vertical-align:middle;margin-right:4px;"><polyline points="4 7 4 4 20 4 20 7"/><line x1="9" y1="20" x2="15" y2="20"/><line x1="12" y1="4" x2="12" y2="20"/></svg>
+              Text / Code
+            </button>
+            <button class="mode-btn" data-mode="url" onclick="switchMode('url')">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:inline;vertical-align:middle;margin-right:4px;"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg>
+              URL
+            </button>
           </div>
         </div>
 
@@ -306,6 +346,7 @@ footer { position: relative; z-index: 1; border-top: 3px solid var(--ink); backg
             <div id="file-selected-info" style="display:none;border:1px solid var(--green);padding:10px 16px;background:rgba(42,122,42,0.05);width:100%;">
               <p style="font-size:0.55rem;text-transform:uppercase;letter-spacing:0.15em;color:var(--green);margin-bottom:3px;">Selection Active</p>
               <p id="file-name-display" style="font-size:0.65rem;color:var(--ink);font-weight:600;word-break:break-all;"></p>
+              <p id="file-size-display" style="font-size:0.5rem;color:var(--ink-dim);margin-top:2px;"></p>
             </div>
           </div>
           <input type="file" id="file-input" accept="*/*" multiple>
@@ -367,10 +408,13 @@ footer { position: relative; z-index: 1; border-top: 3px solid var(--ink); backg
           
           <label style="display: flex; align-items: center; gap: 8px; font-size: 0.55rem; text-transform: uppercase; letter-spacing: 0.15em; color: var(--ink); cursor: pointer; margin-bottom: 16px;" id="public-toggle-container">
             <input type="checkbox" id="is-public-toggle" style="accent-color: var(--red); width: 14px; height: 14px;">
-            Make files public
+            Make files public (No login required to download)
           </label>
 
-          <button class="btn btn-solid btn-full" id="submit-btn" onclick="handleSubmit()">Send to Clipboard</button>
+          <button class="btn btn-solid btn-full" id="submit-btn" onclick="handleSubmit()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2L11 13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+            Send to Clipboard
+          </button>
         </div>
       </div>
 
@@ -382,6 +426,34 @@ footer { position: relative; z-index: 1; border-top: 3px solid var(--ink); backg
           </div>
           <div class="log-list" id="log-list">
             <div class="log-loading" id="log-loading"><span class="spinner"></span>&nbsp; Loading...</div>
+          </div>
+        </div>
+
+        <div>
+          <p class="log-title" style="margin-bottom:10px;"><span class="log-title-left">Active Item Spec</span></p>
+          <div class="spec-block">
+            <div class="spec-block-header">Item Details</div>
+            <div class="spec-row"><span class="spec-key">Type</span><span class="spec-val" id="spec-type">—</span></div>
+            <div class="spec-row"><span class="spec-key">Name</span><span class="spec-val" id="spec-name">—</span></div>
+            <div class="spec-row"><span class="spec-key">Size</span><span class="spec-val" id="spec-size">—</span></div>
+            <div class="spec-row"><span class="spec-key">Timestamp</span><span class="spec-val" id="spec-time">—</span></div>
+            <div class="spec-row"><span class="spec-key">Storage</span><span class="spec-val green">CF KV + R2</span></div>
+          </div>
+        </div>
+
+        <div style="margin-top: 24px;">
+          <p class="log-title" style="margin-bottom:10px;"><span class="log-title-left">R2 Storage Status</span></p>
+          <div class="spec-block">
+            <div class="spec-block-header">Usage Limit: 10 GB</div>
+            <div style="padding: 12px 10px;">
+              <div style="display: flex; justify-content: space-between; font-size: 0.55rem; margin-bottom: 6px; color: var(--ink-dim); text-transform: uppercase; letter-spacing: 0.1em;">
+                <span id="storage-used-text">0 B Used</span>
+                <span>10 GB Max</span>
+              </div>
+              <div style="width: 100%; height: 6px; background: rgba(10,22,40,0.06); border: 1px solid var(--line-bold); overflow: hidden;">
+                <div id="storage-bar" style="height: 100%; width: 0%; background: var(--blue); transition: width 0.4s ease, background-color 0.4s ease;"></div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -401,8 +473,12 @@ footer { position: relative; z-index: 1; border-top: 3px solid var(--ink); backg
 </footer>
 
 <div id="status-bar">
-  <div class="status-cell"><span class="status-dot offline" id="status-dot"></span><span id="status-text">System <strong>Locked</strong></span></div>
+  <div class="status-cell">
+    <span class="status-dot offline" id="status-dot"></span>
+    <span id="status-text">System <strong>Locked</strong></span>
+  </div>
   <div class="status-cell">Mode: <strong id="status-mode">File</strong></div>
+  <div class="status-cell">Items: <strong id="status-count">—</strong></div>
   <button class="status-logout" id="logout-btn" onclick="doLogout()" style="display:none;">↩ Logout</button>
 </div>
 
@@ -420,108 +496,339 @@ footer { position: relative; z-index: 1; border-top: 3px solid var(--ink); backg
 
 <script>
 // ═══════════════════════════════════════════════
-//  CONFIG & STATE
+//  CONFIG
 // ═══════════════════════════════════════════════
 const API_BASE = 'https://ancient-credit-7433.wilsonzambrano.workers.dev';
+
+// ═══════════════════════════════════════════════
+//  STATE
+// ═══════════════════════════════════════════════
 let jwt = null;
 let currentMode = 'file';
-let selectedFiles = [];
+let selectedFiles = []; 
 let drops = [];
 
+// ═══════════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════════
 document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('footer-year').textContent = new Date().getFullYear();
   jwt = sessionStorage.getItem('wz_drop_jwt');
-  if (jwt) { showApp(); loadDrops(); } else { showLogin(); }
+  if (jwt) {
+    showApp();
+    loadDrops();
+  } else {
+    showLogin();
+    loadPublicDrops();
+  }
   setupDragDrop();
   setupFileInput();
+  document.getElementById('login-password').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+  document.getElementById('login-username').addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('login-password').focus(); });
 });
 
 // ═══════════════════════════════════════════════
-//  AUTH & UI (Simplified for space)
+//  AUTH
 // ═══════════════════════════════════════════════
 async function doLogin() {
-  const u = document.getElementById('login-username').value.trim();
-  const p = document.getElementById('login-password').value;
-  if (!u || !p) return;
-  // MOCK LOGIN FOR DEMO PURPOSES: Replace with your fetch to /api/auth/login
-  jwt = "mock-token-123"; 
-  sessionStorage.setItem('wz_drop_jwt', jwt);
-  showApp(); loadDrops();
+  const username = document.getElementById('login-username').value.trim();
+  const password = document.getElementById('login-password').value;
+  const btn = document.getElementById('login-btn');
+  const errEl = document.getElementById('login-error');
+  if (!username || !password) { errEl.textContent = 'Username and password required.'; errEl.style.display = 'block'; return; }
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>&nbsp;Authenticating...';
+  errEl.style.display = 'none';
+  try {
+    const res = await fetch(`${API_BASE}/api/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password }),
+    });
+    const data = await res.json();
+    if (!res.ok || !data.token) throw new Error(data.error || 'Login failed');
+    jwt = data.token;
+    sessionStorage.setItem('wz_drop_jwt', jwt);
+    showApp();
+    await loadDrops();
+  } catch (err) {
+    errEl.textContent = err.message || 'Authentication failed.';
+    errEl.style.display = 'block';
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg> Authenticate';
+  }
 }
-function doLogout() { jwt = null; sessionStorage.removeItem('wz_drop_jwt'); drops = []; showLogin(); }
-function showLogin() { document.getElementById('login-screen').style.display = 'flex'; document.getElementById('app-screen').style.display = 'none'; document.getElementById('status-dot').classList.add('offline'); document.getElementById('logout-btn').style.display = 'none'; }
-function showApp() { document.getElementById('login-screen').style.display = 'none'; document.getElementById('app-screen').style.display = 'block'; document.getElementById('status-dot').classList.remove('offline'); document.getElementById('logout-btn').style.display = 'block'; }
-function switchMode(mode) { currentMode = mode; document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active')); document.querySelector(`[data-mode="${mode}"]`).classList.add('active'); document.getElementById('file-mode-panel').style.display = mode === 'file' ? 'block' : 'none'; document.getElementById('text-mode-panel').style.display = mode === 'text' ? 'block' : 'none'; document.getElementById('url-mode-panel').style.display  = mode === 'url'  ? 'block' : 'none'; document.getElementById('public-toggle-container').style.display = mode === 'file' ? 'flex' : 'none'; }
-function setupDragDrop() { const z = document.getElementById('drop-zone'); ['dragenter','dragover'].forEach(e => z.addEventListener(e, ev => { ev.preventDefault(); z.classList.add('drag-over'); })); ['dragleave','dragend'].forEach(e => z.addEventListener(e, () => z.classList.remove('drag-over'))); z.addEventListener('drop', e => { e.preventDefault(); z.classList.remove('drag-over'); if (e.dataTransfer.files.length) setFiles(e.dataTransfer.files); }); }
-function setupFileInput() { document.getElementById('file-input').addEventListener('change', e => { if (e.target.files.length) setFiles(e.target.files); }); }
-function setFiles(files) { selectedFiles = Array.from(files); document.getElementById('drop-zone').classList.add('has-file'); document.getElementById('file-selected-info').style.display = 'block'; document.getElementById('file-name-display').textContent = selectedFiles.length === 1 ? selectedFiles[0].name : `${selectedFiles.length} files selected`; }
+
+function doLogout() {
+  jwt = null;
+  sessionStorage.removeItem('wz_drop_jwt');
+  drops = [];
+  showLogin();
+  loadPublicDrops();
+  showToast('Logged out');
+}
+
+function showLogin() {
+  document.getElementById('login-screen').style.display = 'flex';
+  document.getElementById('app-screen').style.display = 'none';
+  document.getElementById('nav-access-val').textContent = '● Locked';
+  document.getElementById('nav-access-val').style.color = 'var(--red)';
+  document.getElementById('status-dot').classList.add('offline');
+  document.getElementById('status-text').innerHTML = 'System <strong>Locked</strong>';
+  document.getElementById('logout-btn').style.display = 'none';
+  document.getElementById('top-logout-btn').style.display = 'none'; 
+  document.getElementById('login-username').focus();
+}
+
+function showApp() {
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('app-screen').style.display = 'block';
+  document.getElementById('nav-access-val').textContent = '● Authenticated';
+  document.getElementById('nav-access-val').style.color = 'var(--green)';
+  document.getElementById('status-dot').classList.remove('offline');
+  document.getElementById('status-text').innerHTML = 'System <strong>Online</strong>';
+  document.getElementById('logout-btn').style.display = 'block';
+  document.getElementById('top-logout-btn').style.display = 'inline-flex'; 
+}
 
 // ═══════════════════════════════════════════════
-//  SUBMIT (Updated with TTL and Language)
+//  API & DATA LOADING
+// ═══════════════════════════════════════════════
+async function apiFetch(path, options = {}) {
+  const res = await fetch(`${API_BASE}${path}`, {
+    ...options,
+    headers: { ...(options.headers || {}), 'Authorization': `Bearer ${jwt}` },
+  });
+  if (res.status === 401) { doLogout(); throw new Error('Session expired. Please log in again.'); }
+  return res;
+}
+
+async function loadDrops() {
+  const list = document.getElementById('log-list');
+  list.innerHTML = '<div class="log-loading"><span class="spinner"></span>&nbsp; Loading...</div>';
+  try {
+    const res = await apiFetch('/api/drop/list');
+    const data = await res.json();
+    drops = data.items || [];
+    renderLog();
+    document.getElementById('status-count').textContent = drops.length;
+    calculateStorage();
+  } catch (err) {
+    list.innerHTML = `<div class="log-loading" style="color:var(--red);">Error: ${escapeHTML(err.message)}</div>`;
+  }
+}
+
+async function loadPublicDrops() {
+  const list = document.getElementById('public-log-list');
+  list.innerHTML = '<div class="log-loading" style="padding: 20px;"><span class="spinner"></span>&nbsp; Loading...</div>';
+  try {
+    const res = await fetch(`${API_BASE}/api/drop/public/list`);
+    const data = await res.json();
+    const publicDrops = data.items || [];
+    
+    list.innerHTML = '';
+    if (!publicDrops.length) {
+      list.innerHTML = '<div class="log-empty">No public files available.</div>';
+      return;
+    }
+    
+    publicDrops.forEach(item => {
+      const div = document.createElement('div');
+      div.className = 'log-item';
+      const ts = item.timestamp ? item.timestamp.replace('T',' ').substring(0,16) : '—';
+      const nameEsc = escapeHTML(item.name || '');
+      div.innerHTML = `
+        <div class="log-item-header">
+          <span class="log-type-badge file-type">FILE</span>
+          <span class="log-name">${nameEsc}</span>
+        </div>
+        <div class="log-meta">
+          <span>${ts}</span>
+          <span>${item.size||'—'}</span>
+        </div>
+        <div class="log-actions">
+          <a href="${API_BASE}/api/drop/public/item/${item.id}" download="${nameEsc}" class="log-btn" style="text-decoration:none;display:inline-flex;align-items:center;gap:4px;">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Download
+          </a>
+        </div>`;
+      list.appendChild(div);
+    });
+  } catch (err) {
+    list.innerHTML = `<div class="log-empty" style="color:var(--red);">Failed to load public files.</div>`;
+  }
+}
+
+// ═══════════════════════════════════════════════
+//  MODE
+// ═══════════════════════════════════════════════
+function switchMode(mode) {
+  currentMode = mode;
+  document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+  document.querySelector(`[data-mode="${mode}"]`).classList.add('active');
+  document.getElementById('file-mode-panel').style.display = mode === 'file' ? 'block' : 'none';
+  document.getElementById('text-mode-panel').style.display = mode === 'text' ? 'block' : 'none';
+  document.getElementById('url-mode-panel').style.display  = mode === 'url'  ? 'block' : 'none';
+  document.getElementById('status-mode').textContent = mode === 'file' ? 'File' : mode === 'text' ? 'Text/Code' : 'URL';
+  document.getElementById('public-toggle-container').style.display = mode === 'file' ? 'flex' : 'none';
+}
+
+// ═══════════════════════════════════════════════
+//  DRAG & DROP
+// ═══════════════════════════════════════════════
+function setupDragDrop() {
+  const zone = document.getElementById('drop-zone');
+  ['dragenter','dragover'].forEach(e => zone.addEventListener(e, ev => { ev.preventDefault(); zone.classList.add('drag-over'); }));
+  ['dragleave','dragend'].forEach(e => zone.addEventListener(e, () => zone.classList.remove('drag-over')));
+  zone.addEventListener('drop', e => { 
+    e.preventDefault(); 
+    zone.classList.remove('drag-over'); 
+    if (e.dataTransfer.files.length) setFiles(e.dataTransfer.files); 
+  });
+  document.body.addEventListener('dragover', e => e.preventDefault());
+  document.body.addEventListener('drop', e => { 
+    e.preventDefault(); 
+    if (currentMode !== 'file') switchMode('file'); 
+    if (e.dataTransfer.files.length) setFiles(e.dataTransfer.files); 
+  });
+}
+
+function setupFileInput() {
+  document.getElementById('file-input').addEventListener('change', e => { 
+    if (e.target.files.length) setFiles(e.target.files); 
+  });
+}
+
+function setFiles(files) {
+  selectedFiles = Array.from(files);
+  document.getElementById('drop-zone').classList.add('has-file');
+  document.getElementById('file-selected-info').style.display = 'block';
+  
+  if (selectedFiles.length === 1) {
+    document.getElementById('file-name-display').textContent = selectedFiles[0].name;
+    document.getElementById('file-size-display').textContent = formatBytes(selectedFiles[0].size);
+    updateSpec({ type: 'file', name: selectedFiles[0].name, size: formatBytes(selectedFiles[0].size) });
+  } else {
+    const totalSize = selectedFiles.reduce((acc, file) => acc + file.size, 0);
+    document.getElementById('file-name-display').textContent = `${selectedFiles.length} files selected`;
+    document.getElementById('file-size-display').textContent = formatBytes(totalSize) + ' Total';
+    updateSpec({ type: 'file', name: `Batch: ${selectedFiles.length} files`, size: formatBytes(totalSize) });
+  }
+}
+
+// ═══════════════════════════════════════════════
+//  SUBMIT
 // ═══════════════════════════════════════════════
 async function handleSubmit() {
+  const btn = document.getElementById('submit-btn');
   const note = document.getElementById('drop-note').value.trim();
   const ttl = document.getElementById('drop-ttl').value;
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>&nbsp; Uploading...';
   
   try {
-    let mockResponseItem; // Replace with your actual Worker fetch
+    let itemToSpec; 
+    let successMessage = '';
 
     if (currentMode === 'file') {
       if (!selectedFiles.length) throw new Error('No files selected');
       const fd = new FormData();
       selectedFiles.forEach(file => fd.append('file', file));
-      fd.append('note', note);
-      fd.append('ttl', ttl); 
-      fd.append('isPublic', document.getElementById('is-public-toggle').checked);
+      if (note) fd.append('note', note);
       
-      // MOCK UPLOAD
-      mockResponseItem = { id: Date.now(), type: 'file', name: selectedFiles[0].name, size: formatBytes(selectedFiles[0].size), timestamp: new Date().toISOString(), ttl: ttl, isPublic: document.getElementById('is-public-toggle').checked, _mockFile: selectedFiles[0] };
-      resetFileZone();
+      const isPublic = document.getElementById('is-public-toggle').checked;
+      fd.append('isPublic', isPublic);
+      fd.append('ttl', ttl);
 
+      const res = await apiFetch('/api/drop/file', { method: 'POST', body: fd });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Upload failed');
+      
+      drops = [...data.items, ...drops];
+      itemToSpec = data.items[0]; 
+      successMessage = selectedFiles.length > 1 ? `${selectedFiles.length} files received` : (data.items[0].name || '').substring(0, 32);
+
+      resetFileZone();
+      document.getElementById('is-public-toggle').checked = false;
+      
     } else if (currentMode === 'text') {
-      const title = document.getElementById('text-title').value.trim();
+      const title   = document.getElementById('text-title').value.trim();
       const content = document.getElementById('text-content').value.trim();
-      const lang = document.getElementById('text-lang').value;
+      const lang    = document.getElementById('text-lang').value;
       if (!content) throw new Error('No text entered');
       
-      // MOCK UPLOAD
-      mockResponseItem = { id: Date.now(), type: 'text', name: title || 'Code Snippet', value: content, lang: lang, timestamp: new Date().toISOString(), ttl: ttl };
+      const res = await apiFetch('/api/drop/text', { 
+        method: 'POST', 
+        headers: { 'Content-Type': 'application/json' }, 
+        body: JSON.stringify({ title, content, note, lang, ttl }) 
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Upload failed');
+      
+      drops.unshift(data.item);
+      itemToSpec = data.item;
+      successMessage = (data.item.name || '').substring(0, 32);
+      
+      document.getElementById('text-title').value = '';
       document.getElementById('text-content').value = '';
 
     } else if (currentMode === 'url') {
       const label = document.getElementById('url-label').value.trim();
-      const url = document.getElementById('url-input').value.trim();
+      const url   = document.getElementById('url-input').value.trim();
       if (!url) throw new Error('No URL entered');
       
-      mockResponseItem = { id: Date.now(), type: 'url', name: label || url, value: url, timestamp: new Date().toISOString(), ttl: ttl };
+      const res = await apiFetch('/api/drop/url', { 
+        method: 'POST', 
+        headers: { 'Content-Type': 'application/json' }, 
+        body: JSON.stringify({ url, label, note, ttl }) 
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Upload failed');
+      
+      drops.unshift(data.item);
+      itemToSpec = data.item;
+      successMessage = (data.item.name || '').substring(0, 32);
+      
+      document.getElementById('url-label').value = '';
       document.getElementById('url-input').value = '';
     }
 
-    drops.unshift(mockResponseItem);
+    document.getElementById('drop-note').value = '';
     renderLog();
-    showToast('Sent to clipboard');
-  } catch (err) { showToast(err.message || 'Error', true); }
+    document.getElementById('status-count').textContent = drops.length;
+    updateSpec(itemToSpec);
+    calculateStorage();
+    showToast('Received — ' + successMessage);
+  } catch (err) {
+    showToast(err.message || 'Error', true);
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2L11 13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg> Send to Clipboard';
+  }
 }
 
 // ═══════════════════════════════════════════════
-//  LOG & BADGES
+//  LOG
 // ═══════════════════════════════════════════════
 function renderLog() {
   const list = document.getElementById('log-list');
   list.innerHTML = '';
-  if (!drops.length) { list.innerHTML = '<div class="log-empty">NO ENTRIES</div>'; return; }
-  
+  if (!drops.length) {
+    list.innerHTML = '<div class="log-empty">NO ENTRIES<br><span style="font-size:0.45rem;margin-top:4px;display:block;">Awaiting first drop</span></div>';
+    return;
+  }
   drops.forEach(item => {
     const div = document.createElement('div');
     div.className = 'log-item';
     const badge = item.type === 'file' ? 'file-type' : item.type === 'url' ? 'url-type' : '';
+    const ts = item.timestamp ? item.timestamp.replace('T',' ').substring(0,16) : '—';
     const nameEsc = escapeHTML(item.name || '');
     
-    // Retention & Public Badges
+    // Badges
     let ttlBadge = '';
     if (item.ttl === 'burn') ttlBadge = '<span style="font-size:0.45rem; background:var(--red); color:var(--paper); padding:1px 4px; border-radius:2px; margin-left:6px;">🔥 BURN</span>';
     else if (item.ttl && item.ttl !== '2592000') ttlBadge = '<span style="font-size:0.45rem; border:1px solid var(--gold); color:var(--gold); padding:1px 4px; border-radius:2px; margin-left:6px;">⏱ TEMP</span>';
-    
     const publicBadge = item.isPublic ? '<span style="font-size:0.45rem; background:var(--blue); color:var(--paper); padding:1px 4px; border-radius:2px; margin-left:6px;">PUBLIC</span>' : '';
 
     div.innerHTML = `
@@ -529,41 +836,64 @@ function renderLog() {
         <span class="log-type-badge ${badge}">${(item.type||'').toUpperCase()}</span>
         <span class="log-name">${nameEsc}${publicBadge}${ttlBadge}</span>
       </div>
+      <div class="log-meta">
+        <span>${ts}</span>
+        <span>${item.size||'—'}</span>
+        ${item.note ? `<span>· ${escapeHTML(item.note)}</span>` : ''}
+      </div>
       <div class="log-actions">
         <button class="log-btn" onclick="previewItem('${item.id}','${item.type}','${nameEsc.replace(/'/g,"\\'")}')">Preview</button>
-        <button class="log-btn danger" onclick="deleteItem('${item.id}')">Del</button>
+        <button class="log-btn" onclick="copyItem('${item.id}','${item.type}')">Copy</button>
+        ${item.type === 'file' ? `<button class="log-btn" onclick="downloadItem('${item.id}','${nameEsc.replace(/'/g,"\\'")}')">Download</button>` : ''}
+        <button class="log-btn danger" onclick="deleteItem('${item.id}')">Delete</button>
       </div>`;
+    div.addEventListener('mouseenter', () => updateSpec(item));
     list.appendChild(div);
   });
 }
 
 // ═══════════════════════════════════════════════
-//  3D VIEWER & SYNTAX HIGHLIGHTING PREVIEW
+//  ITEM ACTIONS
 // ═══════════════════════════════════════════════
 async function previewItem(id, type, name) {
   const item = drops.find(d => d.id == id);
   if (!item) return;
+
   document.getElementById('preview-title').textContent = name;
   const content = document.getElementById('preview-content');
+  content.innerHTML = '<div class="preview-center"><span class="spinner"></span>&nbsp; Loading...</div>';
   document.getElementById('preview-overlay').classList.add('open');
-
-  if (type === 'file') {
-    const blob = item._mockFile; // Replace with actual fetch blob
-    const url = URL.createObjectURL(blob);
+  
+  try {
+    const res = await apiFetch(`/api/drop/item/${id}`);
     
-    if (name.toLowerCase().endsWith('.stl')) {
-      renderSTLViewer(url, name, content);
-    } else if (blob.type.startsWith('image/')) {
-      content.innerHTML = `<img src="${url}" class="preview-img">`;
+    if (type === 'file') {
+      const blob = await res.blob();
+      const url  = URL.createObjectURL(blob);
+      
+      if (name.toLowerCase().endsWith('.stl')) {
+        renderSTLViewer(url, name, content);
+      } else if (blob.type.startsWith('image/')) {
+        const img = document.createElement('img');
+        img.src = url; img.className = 'preview-img';
+        content.innerHTML = ''; content.appendChild(img);
+      } else {
+        content.innerHTML = `<div class="preview-center">${blob.type === 'application/pdf' ? 'PDF' : 'File'}: <strong>${escapeHTML(name)}</strong><br><br><a href="${url}" download="${escapeHTML(name)}" class="btn btn-outline" style="display:inline-flex;margin-top:8px;">Download →</a></div>`;
+      }
     } else {
-      content.innerHTML = `<div class="preview-center">File Format Not Previewable<br><br><a href="${url}" download="${escapeHTML(name)}" class="btn btn-outline">Download →</a></div>`;
+      const data = await res.json();
+      const val = data.value || '';
+      
+      if (type === 'url') {
+        content.innerHTML = `<p class="preview-url">${escapeHTML(val)}</p><a href="${escapeHTML(val)}" target="_blank" rel="noopener" class="btn btn-outline" style="display:inline-flex;margin-top:12px;">Open URL →</a>`;
+      } else {
+        const lang = item.lang || 'plaintext';
+        content.innerHTML = `<pre class="language-${lang}"><code class="language-${lang}">${escapeHTML(val)}</code></pre>`;
+        Prism.highlightAllUnder(content); 
+      }
     }
-  } else if (type === 'text') {
-    const lang = item.lang || 'plaintext';
-    content.innerHTML = `<pre class="language-${lang}"><code class="language-${lang}">${escapeHTML(item.value)}</code></pre>`;
-    Prism.highlightAllUnder(content); // Trigger Syntax Highlighting
-  } else if (type === 'url') {
-    content.innerHTML = `<p class="preview-url">${escapeHTML(item.value)}</p><a href="${escapeHTML(item.value)}" target="_blank" class="btn btn-outline" style="margin-top:12px;">Open Link →</a>`;
+  } catch (err) {
+    content.innerHTML = `<div class="preview-center" style="color:var(--red);">Error: ${escapeHTML(err.message)}</div>`;
   }
 }
 
@@ -594,7 +924,6 @@ function renderSTLViewer(url, name, container) {
 
   const loader = new THREE.STLLoader();
   loader.load(url, function (geometry) {
-    // Blueprint Wireframe Aesthetic
     const material = new THREE.MeshStandardMaterial({
       color: 0xdce8f0,
       emissive: 0x1a3a5c,
@@ -626,17 +955,95 @@ function renderSTLViewer(url, name, container) {
   });
 }
 
+async function copyItem(id, type) {
+  if (type === 'file') { showToast('Cannot copy binary file', true); return; }
+  try {
+    const res  = await apiFetch(`/api/drop/item/${id}`);
+    const data = await res.json();
+    await navigator.clipboard.writeText(data.value || '');
+    showToast('Copied to clipboard');
+  } catch { showToast('Copy failed', true); }
+}
+
+async function downloadItem(id, name) {
+  try {
+    const res  = await apiFetch(`/api/drop/item/${id}`);
+    const blob = await res.blob();
+    const url  = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = name; a.click();
+    URL.revokeObjectURL(url);
+  } catch { showToast('Download failed', true); }
+}
+
+async function deleteItem(id) {
+  try {
+    const res = await apiFetch(`/api/drop/item/${id}`, { method: 'DELETE' });
+    if (!res.ok) throw new Error();
+    drops = drops.filter(i => i.id !== id);
+    renderLog();
+    document.getElementById('status-count').textContent = drops.length;
+    calculateStorage();
+    showToast('Item deleted');
+  } catch { showToast('Delete failed', true); }
+}
+
+function closePreview() { document.getElementById('preview-overlay').classList.remove('open'); }
+document.getElementById('preview-overlay').addEventListener('click', function(e) { if (e.target === this) closePreview(); });
+
+// ═══════════════════════════════════════════════
+//  SPEC
+// ═══════════════════════════════════════════════
+function updateSpec(item) {
+  if (!item) { ['spec-type','spec-name','spec-size','spec-time'].forEach(id => document.getElementById(id).textContent = '—'); return; }
+  document.getElementById('spec-type').textContent = (item.type||'—').toUpperCase();
+  document.getElementById('spec-name').textContent = (item.name||'—').substring(0,28);
+  document.getElementById('spec-size').textContent = item.size||'—';
+  document.getElementById('spec-time').textContent = item.timestamp ? item.timestamp.replace('T',' ').substring(0,19) : '—';
+}
+
+// ═══════════════════════════════════════════════
+//  STORAGE CALCULATOR
+// ═══════════════════════════════════════════════
+async function calculateStorage() {
+  try {
+    const res = await apiFetch('/api/storage/usage');
+    const data = await res.json();
+    if (!res.ok) throw new Error();
+    
+    const totalBytes = data.totalBytes || 0;
+    const MAX_BYTES = 10737418240; // 10 GB
+    let percent = (totalBytes / MAX_BYTES) * 100;
+    if (percent > 100) percent = 100;
+
+    document.getElementById('storage-used-text').textContent = formatBytes(totalBytes) + ' Used';
+    const bar = document.getElementById('storage-bar');
+    bar.style.width = percent + '%';
+    bar.style.background = percent > 90 ? 'var(--red)' : (percent > 75 ? 'var(--gold)' : 'var(--blue)');
+  } catch (err) {
+    console.error("Storage calc failed", err);
+  }
+}
+
 // ═══════════════════════════════════════════════
 //  UTILS
 // ═══════════════════════════════════════════════
-function closePreview() { document.getElementById('preview-overlay').classList.remove('open'); }
-document.getElementById('preview-overlay').addEventListener('click', function(e) { if (e.target === this) closePreview(); });
-function deleteItem(id) { drops = drops.filter(i => i.id != id); renderLog(); }
-function resetFileZone() { selectedFiles = []; document.getElementById('drop-zone').classList.remove('has-file'); document.getElementById('file-selected-info').style.display = 'none'; document.getElementById('file-input').value = ''; }
+function resetFileZone() {
+  selectedFiles = [];
+  document.getElementById('drop-zone').classList.remove('has-file');
+  document.getElementById('file-selected-info').style.display = 'none';
+  document.getElementById('file-input').value = '';
+}
 function formatBytes(b) { if (b<1024) return b+' B'; if (b<1048576) return (b/1024).toFixed(1)+' KB'; return (b/1048576).toFixed(1)+' MB'; }
 function escapeHTML(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 let toastTimer;
-function showToast(msg, isError=false) { const t = document.getElementById('toast'); t.textContent = msg; t.className = 'show' + (isError ? ' error' : ''); clearTimeout(toastTimer); toastTimer = setTimeout(() => { t.className = ''; }, 2600); }
+function showToast(msg, isError=false) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'show' + (isError ? ' error' : '');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { t.className = ''; }, 2600);
+}
 </script>
 </body>
 </html>
