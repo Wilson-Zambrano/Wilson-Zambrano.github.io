@@ -16,6 +16,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/STLLoader.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/dxf-parser@1.1.2/dist/dxf-parser.js"></script>
 
 <style>
 /* ═══════════════════════════════════════════════════════
@@ -341,7 +342,7 @@ footer { position: relative; z-index: 1; border-top: 3px solid var(--ink); backg
             <p class="drop-label">Drag &amp; Drop Files Here</p>
             <p class="drop-sub">Or click to browse · Max 100 MB per file</p>
             <div class="drop-formats">
-              <span class="format-tag">STL / STEP</span><span class="format-tag">PDF</span><span class="format-tag">PNG</span><span class="format-tag">ZIP</span>
+              <span class="format-tag">STL / STEP</span><span class="format-tag">DXF</span><span class="format-tag">SLDPRT</span><span class="format-tag">PDF</span><span class="format-tag">PNG</span><span class="format-tag">ZIP</span>
             </div>
             <div id="file-selected-info" style="display:none;border:1px solid var(--green);padding:10px 16px;background:rgba(42,122,42,0.05);width:100%;">
               <p style="font-size:0.55rem;text-transform:uppercase;letter-spacing:0.15em;color:var(--green);margin-bottom:3px;">Selection Active</p>
@@ -870,9 +871,25 @@ async function previewItem(id, type, name) {
     if (type === 'file') {
       const blob = await res.blob();
       const url  = URL.createObjectURL(blob);
+      const lowerName = name.toLowerCase();
       
-      if (name.toLowerCase().endsWith('.stl')) {
+      if (lowerName.endsWith('.stl')) {
         renderSTLViewer(url, name, content);
+      } else if (lowerName.endsWith('.dxf')) {
+        renderDXFViewer(url, name, content);
+      } else if (lowerName.endsWith('.sldprt') || lowerName.endsWith('.slprt')) {
+        // Fallback for proprietary CAD formats
+        content.innerHTML = `
+          <div class="preview-center">
+            <span class="log-type-badge file-type" style="font-size: 1rem; padding: 4px 12px; margin-bottom: 12px; display: inline-block;">PROPRIETARY CAD DATA</span><br><br>
+            <strong style="font-size: 1.2rem; color: var(--ink);">${escapeHTML(name)}</strong><br><br>
+            <span style="color:var(--red);">Client-side web preview is unavailable for native SolidWorks part files.</span><br>
+            <span style="color:var(--ink-dim);">Please download the file to view it in SolidWorks, eDrawings, or export as .STL / .STEP prior to upload.</span><br><br>
+            <a href="${url}" download="${escapeHTML(name)}" class="btn btn-solid" style="display:inline-flex;margin-top:16px;">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:8px;"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              Download Part File
+            </a>
+          </div>`;
       } else if (blob.type.startsWith('image/')) {
         const img = document.createElement('img');
         img.src = url; img.className = 'preview-img';
@@ -952,6 +969,91 @@ function renderSTLViewer(url, name, container) {
       renderer.render(scene, camera);
     }
     animate();
+  });
+}
+
+// Three.js DXF Renderer (2D Vector)
+function renderDXFViewer(url, name, container) {
+  container.innerHTML = `
+    <div id="stl-viewer-container" style="background-color: var(--paper);">
+      <div class="viewer-overlay">DWG REF: ${escapeHTML(name)}<br>RENDER: 2D DXF Vector Data</div>
+    </div>
+    <a href="${url}" download="${escapeHTML(name)}" class="btn btn-outline" style="display:inline-flex;margin-top:12px;">Download DXF →</a>
+  `;
+  const target = document.getElementById('stl-viewer-container');
+
+  // Fetch the raw text of the DXF file
+  fetch(url).then(res => res.text()).then(text => {
+    let dxf = null;
+    try {
+      const parser = new DxfParser();
+      dxf = parser.parseSync(text);
+    } catch(err) {
+      target.innerHTML = `<div class="preview-center" style="color:var(--red);">Error parsing DXF geometry.<br>Ensure the file is an ASCII DXF (not binary).</div>`;
+      return;
+    }
+
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(75, target.clientWidth / target.clientHeight, 0.1, 10000);
+    const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+    renderer.setSize(target.clientWidth, target.clientHeight);
+    target.appendChild(renderer.domElement);
+
+    const controls = new THREE.OrbitControls(camera, renderer.domElement);
+    controls.enableRotate = false; // Restrict to 2D pan/zoom
+    controls.enableDamping = true;
+
+    // Blueprint line styling
+    const material = new THREE.LineBasicMaterial({ color: 0x1a3a5c, linewidth: 1 });
+
+    // Map DXF entities to Three.js Lines
+    if (dxf.entities) {
+      dxf.entities.forEach(ent => {
+        if (ent.type === 'LINE') {
+          const points = [
+            new THREE.Vector3(ent.vertices[0].x, ent.vertices[0].y, 0),
+            new THREE.Vector3(ent.vertices[1].x, ent.vertices[1].y, 0)
+          ];
+          const geometry = new THREE.BufferGeometry().setFromPoints(points);
+          scene.add(new THREE.Line(geometry, material));
+        } 
+        else if (ent.type === 'LWPOLYLINE' || ent.type === 'POLYLINE') {
+          const points = ent.vertices.map(v => new THREE.Vector3(v.x, v.y, 0));
+          if (ent.shape) points.push(points[0]); // Close shape if needed
+          const geometry = new THREE.BufferGeometry().setFromPoints(points);
+          scene.add(new THREE.Line(geometry, material));
+        } 
+        else if (ent.type === 'CIRCLE' || ent.type === 'ARC') {
+          const curve = new THREE.EllipseCurve(
+            ent.center.x, ent.center.y,
+            ent.radius, ent.radius,
+            ent.startAngle || 0, ent.endAngle || (2 * Math.PI),
+            false, 0
+          );
+          const points = curve.getPoints(50).map(p => new THREE.Vector3(p.x, p.y, 0));
+          const geometry = new THREE.BufferGeometry().setFromPoints(points);
+          scene.add(new THREE.Line(geometry, material));
+        }
+      });
+    }
+
+    // Auto-center and scale the camera to fit the 2D drawing
+    const box = new THREE.Box3().setFromObject(scene);
+    const center = box.getCenter(new THREE.Vector3());
+    const size = box.getSize(new THREE.Vector3());
+    scene.position.sub(center); 
+    
+    const maxDim = Math.max(size.x, size.y);
+    camera.position.z = maxDim === 0 ? 100 : maxDim * 1.2;
+
+    function animate() {
+      requestAnimationFrame(animate);
+      controls.update();
+      renderer.render(scene, camera);
+    }
+    animate();
+  }).catch(err => {
+    target.innerHTML = `<div class="preview-center" style="color:var(--red);">Failed to read DXF file data.</div>`;
   });
 }
 
