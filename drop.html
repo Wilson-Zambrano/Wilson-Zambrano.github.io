@@ -13,11 +13,6 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-json.min.js"></script>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/STLLoader.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/dxf-parser@1.1.2/dist/dxf-parser.js"></script>
-
 <style>
 /* ═══════════════════════════════════════════════════════
    BLUEPRINT DESIGN SYSTEM — FILE DROP  (WZ-DROP-001 Rev C)
@@ -342,7 +337,7 @@ footer { position: relative; z-index: 1; border-top: 3px solid var(--ink); backg
             <p class="drop-label">Drag &amp; Drop Files Here</p>
             <p class="drop-sub">Or click to browse · Max 100 MB per file</p>
             <div class="drop-formats">
-              <span class="format-tag">STL / STEP</span><span class="format-tag">DXF</span><span class="format-tag">SLDPRT</span><span class="format-tag">PDF</span><span class="format-tag">PNG</span><span class="format-tag">ZIP</span>
+              <span class="format-tag">STL / STEP</span><span class="format-tag">DXF</span><span class="format-tag">SLDPRT</span><span class="format-tag">PDF</span><span class="format-tag">DOCX</span><span class="format-tag">PNG</span><span class="format-tag">ZIP</span>
             </div>
             <div id="file-selected-info" style="display:none;border:1px solid var(--green);padding:10px 16px;background:rgba(42,122,42,0.05);width:100%;">
               <p style="font-size:0.55rem;text-transform:uppercase;letter-spacing:0.15em;color:var(--green);margin-bottom:3px;">Selection Active</p>
@@ -496,6 +491,21 @@ footer { position: relative; z-index: 1; border-top: 3px solid var(--ink); backg
 <div id="toast"></div>
 
 <script>
+// ═══════════════════════════════════════════════
+//  DYNAMIC ASSET LOADER (PERFORMANCE OPTIMIZATION)
+// ═══════════════════════════════════════════════
+const loadedScripts = {};
+function loadScript(url) {
+  return new Promise((resolve, reject) => {
+    if (loadedScripts[url]) return resolve();
+    const script = document.createElement('script');
+    script.src = url;
+    script.onload = () => { loadedScripts[url] = true; resolve(); };
+    script.onerror = () => reject(new Error(`Failed to load ${url}`));
+    document.head.appendChild(script);
+  });
+}
+
 // ═══════════════════════════════════════════════
 //  CONFIG
 // ═══════════════════════════════════════════════
@@ -874,9 +884,27 @@ async function previewItem(id, type, name) {
       const lowerName = name.toLowerCase();
       
       if (lowerName.endsWith('.stl')) {
+        // Lazy load 3D libraries only when an STL is clicked
+        content.innerHTML = '<div class="preview-center"><span class="spinner"></span>&nbsp; Fetching 3D Engine...</div>';
+        await loadScript('https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js');
+        await loadScript('https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/STLLoader.js');
+        await loadScript('https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js');
         renderSTLViewer(url, name, content);
+
       } else if (lowerName.endsWith('.dxf')) {
+        // Lazy load 2D libraries only when a DXF is clicked
+        content.innerHTML = '<div class="preview-center"><span class="spinner"></span>&nbsp; Fetching Vector Engine...</div>';
+        await loadScript('https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js');
+        await loadScript('https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js');
+        await loadScript('https://cdn.jsdelivr.net/npm/dxf-parser@1.1.2/dist/dxf-parser.js');
         renderDXFViewer(url, name, content);
+
+      } else if (lowerName.endsWith('.pdf')) {
+        renderPDFViewer(url, name, content);
+
+      } else if (lowerName.endsWith('.docx')) {
+        renderDOCXViewer(blob, name, content);
+
       } else if (lowerName.endsWith('.sldprt') || lowerName.endsWith('.slprt')) {
         // Fallback for proprietary CAD formats
         content.innerHTML = `
@@ -1055,6 +1083,40 @@ function renderDXFViewer(url, name, container) {
   }).catch(err => {
     target.innerHTML = `<div class="preview-center" style="color:var(--red);">Failed to read DXF file data.</div>`;
   });
+}
+
+// Native Browser PDF Renderer
+function renderPDFViewer(url, name, container) {
+  // Using an iframe taps directly into Chrome/Safari/Firefox native PDF engines
+  container.innerHTML = `
+    <div style="width: 100%; height: 60vh; border: 1px solid var(--line-bold); background: #333;">
+      <iframe src="${url}" width="100%" height="100%" style="border: none;"></iframe>
+    </div>
+    <a href="${url}" download="${escapeHTML(name)}" class="btn btn-outline" style="display:inline-flex;margin-top:12px;">Download Original PDF →</a>
+  `;
+}
+
+// Mammoth.js DOCX to HTML Renderer
+async function renderDOCXViewer(blob, name, container) {
+  container.innerHTML = '<div class="preview-center"><span class="spinner"></span>&nbsp; Parsing Word Document...</div>';
+  try {
+    // Lazy load the parser
+    await loadScript('https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js');
+    
+    const arrayBuffer = await blob.arrayBuffer();
+    const result = await mammoth.convertToHtml({ arrayBuffer: arrayBuffer });
+    const url = URL.createObjectURL(blob);
+    
+    // We render the HTML onto a white background to simulate a sheet of paper, overriding your dark mode for readability
+    container.innerHTML = `
+      <div style="background: var(--white); padding: 40px; color: #000; border: 1px solid var(--line-bold); overflow-y: auto; max-height: 60vh; font-family: 'Times New Roman', serif; line-height: 1.6;">
+        ${result.value || '<p style="color:red;">Document is empty or cannot be parsed.</p>'}
+      </div>
+      <a href="${url}" download="${escapeHTML(name)}" class="btn btn-outline" style="display:inline-flex;margin-top:12px;">Download Original DOCX →</a>
+    `;
+  } catch (err) {
+    container.innerHTML = `<div class="preview-center" style="color:var(--red);">Failed to render DOCX. The file may be corrupted or password protected.</div>`;
+  }
 }
 
 async function copyItem(id, type) {
