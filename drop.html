@@ -304,159 +304,201 @@ footer { position: relative; z-index: 1; border-top: 3px solid var(--ink); backg
   </div>
 
   <div id="app-screen">
-    <div class="drop-layout">
+    
+    <div style="margin-bottom: 24px; display: flex; gap: 12px; border-bottom: 2px solid var(--ink); padding-bottom: 16px;">
+      <button class="btn btn-solid" id="tab-drop" onclick="switchTab('drop')" style="font-size: 0.65rem;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:6px;"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        Drop Zone
+      </button>
+      <button class="btn btn-outline" id="tab-finance" onclick="switchTab('finance')" style="font-size: 0.65rem;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:6px;"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        Portfolio Terminal
+      </button>
+    </div>
 
-      <div class="drop-panel">
-        <div>
-          <p class="form-label" style="margin-bottom:8px;">Input Mode</p>
-          <div class="input-mode-toggle">
-            <button class="mode-btn active" data-mode="file" onclick="switchMode('file')">
-              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:inline;vertical-align:middle;margin-right:4px;"><path d="M13 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V9z"/><polyline points="13 2 13 9 20 9"/></svg>
-              File
-            </button>
-            <button class="mode-btn" data-mode="text" onclick="switchMode('text')">
-              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:inline;vertical-align:middle;margin-right:4px;"><polyline points="4 7 4 4 20 4 20 7"/><line x1="9" y1="20" x2="15" y2="20"/><line x1="12" y1="4" x2="12" y2="20"/></svg>
-              Text / Code
-            </button>
-            <button class="mode-btn" data-mode="url" onclick="switchMode('url')">
-              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:inline;vertical-align:middle;margin-right:4px;"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg>
-              URL
-            </button>
-          </div>
-        </div>
+    <div id="view-drop">
+      <div class="drop-layout">
 
-        <div id="file-mode-panel">
-          <div id="drop-zone" onclick="document.getElementById('file-input').click()">
-            <div class="drop-callout">Drop Target — DWG REF A</div>
-            <div class="drop-icon">
-              <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5">
-                <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
-                <polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
-              </svg>
-            </div>
-            <p class="drop-label">Drag &amp; Drop Files Here</p>
-            <p class="drop-sub">Or click to browse · Max 100 MB per file</p>
-            <div class="drop-formats">
-              <span class="format-tag">STL / STEP</span><span class="format-tag">DXF</span><span class="format-tag">SLDPRT</span><span class="format-tag">PDF</span><span class="format-tag">DOCX</span><span class="format-tag">PNG</span><span class="format-tag">ZIP</span>
-            </div>
-            <div id="file-selected-info" style="display:none;border:1px solid var(--green);padding:10px 16px;background:rgba(42,122,42,0.05);width:100%;">
-              <p style="font-size:0.55rem;text-transform:uppercase;letter-spacing:0.15em;color:var(--green);margin-bottom:3px;">Selection Active</p>
-              <p id="file-name-display" style="font-size:0.65rem;color:var(--ink);font-weight:600;word-break:break-all;"></p>
-              <p id="file-size-display" style="font-size:0.5rem;color:var(--ink-dim);margin-top:2px;"></p>
+        <div class="drop-panel">
+          <div>
+            <p class="form-label" style="margin-bottom:8px;">Input Mode</p>
+            <div class="input-mode-toggle">
+              <button class="mode-btn active" data-mode="file" onclick="switchMode('file')">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:inline;vertical-align:middle;margin-right:4px;"><path d="M13 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V9z"/><polyline points="13 2 13 9 20 9"/></svg>
+                File
+              </button>
+              <button class="mode-btn" data-mode="text" onclick="switchMode('text')">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:inline;vertical-align:middle;margin-right:4px;"><polyline points="4 7 4 4 20 4 20 7"/><line x1="9" y1="20" x2="15" y2="20"/><line x1="12" y1="4" x2="12" y2="20"/></svg>
+                Text / Code
+              </button>
+              <button class="mode-btn" data-mode="url" onclick="switchMode('url')">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:inline;vertical-align:middle;margin-right:4px;"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg>
+                URL
+              </button>
             </div>
           </div>
-          <input type="file" id="file-input" accept="*/*" multiple>
-        </div>
 
-        <div id="text-mode-panel" style="display:none;">
-          <div class="form-group" style="margin-bottom:12px;">
-            <div style="display: flex; gap: 12px;">
+          <div id="file-mode-panel">
+            <div id="drop-zone" onclick="document.getElementById('file-input').click()">
+              <div class="drop-callout">Drop Target — DWG REF A</div>
+              <div class="drop-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5">
+                  <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+                  <polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
+                </svg>
+              </div>
+              <p class="drop-label">Drag &amp; Drop Files Here</p>
+              <p class="drop-sub">Or click to browse · Max 100 MB per file</p>
+              <div class="drop-formats">
+                <span class="format-tag">STL / STEP</span><span class="format-tag">DXF</span><span class="format-tag">SLDPRT</span><span class="format-tag">PDF</span><span class="format-tag">DOCX</span><span class="format-tag">PNG</span><span class="format-tag">ZIP</span>
+              </div>
+              <div id="file-selected-info" style="display:none;border:1px solid var(--green);padding:10px 16px;background:rgba(42,122,42,0.05);width:100%;">
+                <p style="font-size:0.55rem;text-transform:uppercase;letter-spacing:0.15em;color:var(--green);margin-bottom:3px;">Selection Active</p>
+                <p id="file-name-display" style="font-size:0.65rem;color:var(--ink);font-weight:600;word-break:break-all;"></p>
+                <p id="file-size-display" style="font-size:0.5rem;color:var(--ink-dim);margin-top:2px;"></p>
+              </div>
+            </div>
+            <input type="file" id="file-input" accept="*/*" multiple>
+          </div>
+
+          <div id="text-mode-panel" style="display:none;">
+            <div class="form-group" style="margin-bottom:12px;">
+              <div style="display: flex; gap: 12px;">
+                <div style="flex: 2;">
+                  <label class="form-label">Title / Label</label>
+                  <input type="text" id="text-title" class="form-input" placeholder="e.g. Microcontroller init sequence">
+                </div>
+                <div style="flex: 1;">
+                  <label class="form-label">Syntax</label>
+                  <select id="text-lang" class="form-input" style="cursor:pointer; padding: 8px 12px;">
+                    <option value="plaintext">Plain Text</option>
+                    <option value="cpp">C / C++</option>
+                    <option value="python">Python</option>
+                    <option value="javascript">JavaScript</option>
+                    <option value="json">JSON</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Content</label>
+              <textarea id="text-content" class="form-textarea" rows="10" placeholder="Paste text, code snippet, notes..."></textarea>
+            </div>
+          </div>
+
+          <div id="url-mode-panel" style="display:none;">
+            <div class="form-group" style="margin-bottom:12px;">
+              <label class="form-label">Label</label>
+              <input type="text" id="url-label" class="form-input" placeholder="e.g. CFD reference paper">
+            </div>
+            <div class="form-group">
+              <label class="form-label">URL</label>
+              <input type="url" id="url-input" class="form-input" placeholder="https://...">
+            </div>
+          </div>
+
+          <div>
+            <div style="display: flex; gap: 12px; margin-bottom: 12px;">
               <div style="flex: 2;">
-                <label class="form-label">Title / Label</label>
-                <input type="text" id="text-title" class="form-input" placeholder="e.g. Microcontroller init sequence">
+                <p class="form-label" style="margin-bottom:8px;">Note (optional)</p>
+                <input type="text" id="drop-note" class="form-input" placeholder="Add a note...">
               </div>
               <div style="flex: 1;">
-                <label class="form-label">Syntax</label>
-                <select id="text-lang" class="form-input" style="cursor:pointer; padding: 8px 12px;">
-                  <option value="plaintext">Plain Text</option>
-                  <option value="cpp">C / C++</option>
-                  <option value="python">Python</option>
-                  <option value="javascript">JavaScript</option>
-                  <option value="json">JSON</option>
+                <p class="form-label" style="margin-bottom:8px;">Retention</p>
+                <select id="drop-ttl" class="form-input" style="cursor:pointer; padding: 8px 12px;">
+                  <option value="2592000">30 Days</option>
+                  <option value="604800">7 Days</option>
+                  <option value="86400">24 Hours</option>
+                  <option value="3600">1 Hour</option>
+                  <option value="burn">Burn on Read</option>
                 </select>
               </div>
             </div>
-          </div>
-          <div class="form-group">
-            <label class="form-label">Content</label>
-            <textarea id="text-content" class="form-textarea" rows="10" placeholder="Paste text, code snippet, notes..."></textarea>
+            
+            <label style="display: flex; align-items: center; gap: 8px; font-size: 0.55rem; text-transform: uppercase; letter-spacing: 0.15em; color: var(--ink); cursor: pointer; margin-bottom: 16px;" id="public-toggle-container">
+              <input type="checkbox" id="is-public-toggle" style="accent-color: var(--red); width: 14px; height: 14px;">
+              Make files public (No login required to download)
+            </label>
+
+            <button class="btn btn-solid btn-full" id="submit-btn" onclick="handleSubmit()">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2L11 13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+              Send to Clipboard
+            </button>
           </div>
         </div>
 
-        <div id="url-mode-panel" style="display:none;">
-          <div class="form-group" style="margin-bottom:12px;">
-            <label class="form-label">Label</label>
-            <input type="text" id="url-label" class="form-input" placeholder="e.g. CFD reference paper">
+        <div class="sidebar">
+          <div>
+            <div class="log-title">
+              <span class="log-title-left">Clipboard Log</span>
+              <button onclick="loadDrops()" style="font-family:'IBM Plex Mono',monospace;font-size:0.45rem;text-transform:uppercase;letter-spacing:0.1em;padding:2px 7px;cursor:pointer;background:transparent;border:1px solid var(--line-bold);color:var(--ink-dim);">↺ Refresh</button>
+            </div>
+            <div class="log-list" id="log-list">
+              <div class="log-loading" id="log-loading"><span class="spinner"></span>&nbsp; Loading...</div>
+            </div>
           </div>
-          <div class="form-group">
-            <label class="form-label">URL</label>
-            <input type="url" id="url-input" class="form-input" placeholder="https://...">
+
+          <div>
+            <p class="log-title" style="margin-bottom:10px;"><span class="log-title-left">Active Item Spec</span></p>
+            <div class="spec-block">
+              <div class="spec-block-header">Item Details</div>
+              <div class="spec-row"><span class="spec-key">Type</span><span class="spec-val" id="spec-type">—</span></div>
+              <div class="spec-row"><span class="spec-key">Name</span><span class="spec-val" id="spec-name">—</span></div>
+              <div class="spec-row"><span class="spec-key">Size</span><span class="spec-val" id="spec-size">—</span></div>
+              <div class="spec-row"><span class="spec-key">Timestamp</span><span class="spec-val" id="spec-time">—</span></div>
+              <div class="spec-row"><span class="spec-key">Storage</span><span class="spec-val green">CF KV + R2</span></div>
+            </div>
+          </div>
+
+          <div style="margin-top: 24px;">
+            <p class="log-title" style="margin-bottom:10px;"><span class="log-title-left">R2 Storage Status</span></p>
+            <div class="spec-block">
+              <div class="spec-block-header">Usage Limit: 10 GB</div>
+              <div style="padding: 12px 10px;">
+                <div style="display: flex; justify-content: space-between; font-size: 0.55rem; margin-bottom: 6px; color: var(--ink-dim); text-transform: uppercase; letter-spacing: 0.1em;">
+                  <span id="storage-used-text">0 B Used</span>
+                  <span>10 GB Max</span>
+                </div>
+                <div style="width: 100%; height: 6px; background: rgba(10,22,40,0.06); border: 1px solid var(--line-bold); overflow: hidden;">
+                  <div id="storage-bar" style="height: 100%; width: 0%; background: var(--blue); transition: width 0.4s ease, background-color 0.4s ease;"></div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
-        <div>
-          <div style="display: flex; gap: 12px; margin-bottom: 12px;">
-            <div style="flex: 2;">
-              <p class="form-label" style="margin-bottom:8px;">Note (optional)</p>
-              <input type="text" id="drop-note" class="form-input" placeholder="Add a note...">
-            </div>
-            <div style="flex: 1;">
-              <p class="form-label" style="margin-bottom:8px;">Retention</p>
-              <select id="drop-ttl" class="form-input" style="cursor:pointer; padding: 8px 12px;">
-                <option value="2592000">30 Days</option>
-                <option value="604800">7 Days</option>
-                <option value="86400">24 Hours</option>
-                <option value="3600">1 Hour</option>
-                <option value="burn">Burn on Read</option>
-              </select>
-            </div>
-          </div>
+      </div>
+    </div> <div id="view-finance" style="display:none;">
+      <div style="border: 2px solid var(--ink); padding: 32px; background: rgba(10,22,40,0.02);">
+        <p class="dwg-section-label">Module 02 — Financial Telemetry</p>
+        <h2 style="font-family: 'Bebas Neue', sans-serif; font-size: 2rem; color: var(--ink); margin-bottom: 24px;">Margin & Portfolio Status</h2>
+        
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
           
-          <label style="display: flex; align-items: center; gap: 8px; font-size: 0.55rem; text-transform: uppercase; letter-spacing: 0.15em; color: var(--ink); cursor: pointer; margin-bottom: 16px;" id="public-toggle-container">
-            <input type="checkbox" id="is-public-toggle" style="accent-color: var(--red); width: 14px; height: 14px;">
-            Make files public (No login required to download)
-          </label>
+          <div style="border: 1px solid var(--line-bold); padding: 16px; background: var(--paper);">
+            <p style="font-size: 0.55rem; text-transform: uppercase; letter-spacing: 0.15em; color: var(--ink-dim);">Available Margin</p>
+            <p style="font-size: 1.4rem; font-weight: 700; color: var(--ink); margin-top: 8px;" id="dash-margin-avail">Loading...</p>
+          </div>
 
-          <button class="btn btn-solid btn-full" id="submit-btn" onclick="handleSubmit()">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2L11 13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
-            Send to Clipboard
-          </button>
+          <div style="border: 1px solid var(--line-bold); padding: 16px; background: var(--paper);">
+            <p style="font-size: 0.55rem; text-transform: uppercase; letter-spacing: 0.15em; color: var(--ink-dim);">Safety Level</p>
+            <p style="font-size: 1.4rem; font-weight: 700; color: var(--green); margin-top: 8px;" id="dash-margin-safe">Loading...</p>
+          </div>
+
+          <div style="border: 1px solid var(--line-bold); padding: 16px; background: var(--paper);">
+            <p style="font-size: 0.55rem; text-transform: uppercase; letter-spacing: 0.15em; color: var(--ink-dim);">Total Interest</p>
+            <p style="font-size: 1.4rem; font-weight: 700; color: var(--red); margin-top: 8px;" id="dash-interest">Loading...</p>
+          </div>
+
+        </div>
+
+        <div style="margin-top: 24px; padding: 24px; border: 1px dashed var(--line-bold); text-align: center;">
+          <p style="font-size: 0.6rem; color: var(--ink-dim); text-transform: uppercase; letter-spacing: 0.1em;">
+            Secure Google Sheets Bridge disconnected.<br>Awaiting API integration.
+          </p>
         </div>
       </div>
-
-      <div class="sidebar">
-        <div>
-          <div class="log-title">
-            <span class="log-title-left">Clipboard Log</span>
-            <button onclick="loadDrops()" style="font-family:'IBM Plex Mono',monospace;font-size:0.45rem;text-transform:uppercase;letter-spacing:0.1em;padding:2px 7px;cursor:pointer;background:transparent;border:1px solid var(--line-bold);color:var(--ink-dim);">↺ Refresh</button>
-          </div>
-          <div class="log-list" id="log-list">
-            <div class="log-loading" id="log-loading"><span class="spinner"></span>&nbsp; Loading...</div>
-          </div>
-        </div>
-
-        <div>
-          <p class="log-title" style="margin-bottom:10px;"><span class="log-title-left">Active Item Spec</span></p>
-          <div class="spec-block">
-            <div class="spec-block-header">Item Details</div>
-            <div class="spec-row"><span class="spec-key">Type</span><span class="spec-val" id="spec-type">—</span></div>
-            <div class="spec-row"><span class="spec-key">Name</span><span class="spec-val" id="spec-name">—</span></div>
-            <div class="spec-row"><span class="spec-key">Size</span><span class="spec-val" id="spec-size">—</span></div>
-            <div class="spec-row"><span class="spec-key">Timestamp</span><span class="spec-val" id="spec-time">—</span></div>
-            <div class="spec-row"><span class="spec-key">Storage</span><span class="spec-val green">CF KV + R2</span></div>
-          </div>
-        </div>
-
-        <div style="margin-top: 24px;">
-          <p class="log-title" style="margin-bottom:10px;"><span class="log-title-left">R2 Storage Status</span></p>
-          <div class="spec-block">
-            <div class="spec-block-header">Usage Limit: 10 GB</div>
-            <div style="padding: 12px 10px;">
-              <div style="display: flex; justify-content: space-between; font-size: 0.55rem; margin-bottom: 6px; color: var(--ink-dim); text-transform: uppercase; letter-spacing: 0.1em;">
-                <span id="storage-used-text">0 B Used</span>
-                <span>10 GB Max</span>
-              </div>
-              <div style="width: 100%; height: 6px; background: rgba(10,22,40,0.06); border: 1px solid var(--line-bold); overflow: hidden;">
-                <div id="storage-bar" style="height: 100%; width: 0%; background: var(--blue); transition: width 0.4s ease, background-color 0.4s ease;"></div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-    </div>
-  </div>
-</main>
+    </div> </div> </main>
 
 <footer>
   <div class="title-block">
@@ -683,6 +725,32 @@ function switchMode(mode) {
   document.getElementById('url-mode-panel').style.display  = mode === 'url'  ? 'block' : 'none';
   document.getElementById('status-mode').textContent = mode === 'file' ? 'File' : mode === 'text' ? 'Text/Code' : 'URL';
   document.getElementById('public-toggle-container').style.display = mode === 'file' ? 'flex' : 'none';
+}
+
+// ═══════════════════════════════════════════════
+//  APP TAB ROUTING
+// ═══════════════════════════════════════════════
+function switchTab(tab) {
+  // Toggle UI Views
+  document.getElementById('view-drop').style.display = tab === 'drop' ? 'block' : 'none';
+  document.getElementById('view-finance').style.display = tab === 'finance' ? 'block' : 'none';
+  
+  // Toggle Button Styles
+  const dropBtn = document.getElementById('tab-drop');
+  const finBtn = document.getElementById('tab-finance');
+  
+  if (tab === 'drop') {
+    dropBtn.className = 'btn btn-solid';
+    finBtn.className = 'btn btn-outline';
+    document.getElementById('nav-access-val').textContent = '● Drop Zone';
+  } else {
+    dropBtn.className = 'btn btn-outline';
+    finBtn.className = 'btn btn-solid';
+    document.getElementById('nav-access-val').textContent = '● Terminal';
+    
+    // Trigger Google Sheets fetch here in the future
+    // fetchFinanceData(); 
+  }
 }
 
 // ═══════════════════════════════════════════════
