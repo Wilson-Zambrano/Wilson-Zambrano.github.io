@@ -412,7 +412,214 @@
   /* ══════════════════════════════════════════════════
      RESPONSIVE
   ══════════════════════════════════════════════════ */
-  /* Sync button */
+  /* ══════════════════════════════════════════════════
+     CHART ACCORDION
+  ══════════════════════════════════════════════════ */
+  .chart-accordion {
+    border: 1px solid var(--line-bold);
+    margin-bottom: 28px;
+    background: var(--paper);
+  }
+  .chart-drop { border-bottom: 1px solid var(--line-bold); }
+  .chart-drop:last-child { border-bottom: none; }
+  .chart-drop-btn {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 11px 14px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    font-family: 'IBM Plex Mono', monospace;
+    color: var(--ink);
+    transition: background 0.12s;
+    gap: 12px;
+  }
+  .chart-drop-btn:hover { background: rgba(10,22,40,0.04); }
+  .chart-drop.open .chart-drop-btn { background: rgba(10,22,40,0.05); border-bottom: 1px solid var(--line-bold); }
+  .chart-drop-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.58rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+  }
+  .chart-drop-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+  }
+  .chart-drop-sub {
+    font-size: 0.44rem;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--ink-dim);
+  }
+  .chart-drop-arrow {
+    transition: transform 0.22s ease;
+    flex-shrink: 0;
+    color: var(--ink-dim);
+  }
+  .chart-drop.open .chart-drop-arrow { transform: rotate(180deg); }
+  .chart-drop-badge {
+    display: inline-block;
+    font-size: 0.44rem;
+    font-weight: 700;
+    padding: 2px 7px;
+    border: 1px solid var(--line-bold);
+    background: var(--paper);
+    color: var(--ink-dim);
+    letter-spacing: 0.1em;
+    transition: color 0.3s, border-color 0.3s;
+  }
+  .chart-drop-body {
+    overflow: hidden;
+    padding: 0;
+  }
+  .chart-drop-body .chart-viewport { border: none; border-top: none; }
+
+  /* ══════════════════════════════════════════════════
+     INFO BUTTON + MODAL
+  ══════════════════════════════════════════════════ */
+  .info-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    border: 1px solid var(--line-bold);
+    background: var(--paper);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.5rem;
+    font-weight: 700;
+    color: var(--ink-dim);
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: background 0.12s, color 0.12s;
+    line-height: 1;
+  }
+  .info-btn:hover { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+  .info-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 9000;
+    background: rgba(10,22,40,0.55);
+    align-items: center;
+    justify-content: center;
+  }
+  .info-overlay.open { display: flex; }
+  .info-modal {
+    background: var(--paper);
+    border: 2px solid var(--ink);
+    max-width: 520px;
+    width: 92%;
+    max-height: 82vh;
+    overflow-y: auto;
+    position: relative;
+  }
+  .info-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--line-bold);
+    background: rgba(10,22,40,0.05);
+  }
+  .info-modal-title {
+    font-size: 0.6rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    color: var(--ink);
+  }
+  .info-modal-close {
+    background: none; border: 1px solid var(--line-bold); cursor: pointer;
+    font-family: 'IBM Plex Mono', monospace; font-size: 0.48rem;
+    color: var(--ink-dim); padding: 3px 8px;
+  }
+  .info-modal-close:hover { background: var(--ink); color: var(--paper); }
+  .info-modal-body { padding: 18px 20px; }
+  .info-section { margin-bottom: 16px; }
+  .info-section:last-child { margin-bottom: 0; }
+  .info-section-title {
+    font-size: 0.5rem;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    color: var(--red);
+    margin-bottom: 8px;
+    padding-bottom: 5px;
+    border-bottom: 1px solid var(--line);
+    display: flex; align-items: center; gap: 6px;
+  }
+  .info-section-title::before { content:''; display:inline-block; width:8px; height:1px; background:var(--red); }
+  .info-row {
+    display: flex;
+    gap: 10px;
+    padding: 6px 0;
+    border-bottom: 1px solid var(--line);
+    font-size: 0.52rem;
+  }
+  .info-row:last-child { border-bottom: none; }
+  .info-row-label { flex: 0 0 120px; color: var(--ink-dim); text-transform: uppercase; letter-spacing: 0.1em; font-size: 0.46rem; }
+  .info-row-val { flex: 1; color: var(--ink); line-height: 1.6; }
+  .tag-good { display:inline-block; padding:1px 6px; background:rgba(42,122,42,0.12); border:1px solid var(--green); color:var(--green); font-size:0.44rem; text-transform:uppercase; letter-spacing:0.1em; }
+  .tag-bad  { display:inline-block; padding:1px 6px; background:rgba(176,16,32,0.10); border:1px solid var(--red); color:var(--red); font-size:0.44rem; text-transform:uppercase; letter-spacing:0.1em; }
+  .tag-warn { display:inline-block; padding:1px 6px; background:rgba(138,106,0,0.10); border:1px solid var(--gold); color:var(--gold); font-size:0.44rem; text-transform:uppercase; letter-spacing:0.1em; }
+
+  /* ══════════════════════════════════════════════════
+     STOCK SCREENER
+  ══════════════════════════════════════════════════ */
+  .screener-panel {
+    border: 1px solid var(--line-bold);
+    background: var(--paper);
+    padding: 22px;
+    margin-bottom: 28px;
+  }
+  .screener-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 14px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--line-bold);
+  }
+  .screener-title {
+    font-size: 0.75rem;
+    font-family: 'Bebas Neue', sans-serif;
+    letter-spacing: 0.1em;
+    color: var(--ink);
+  }
+  .screener-inputs {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    align-items: flex-end;
+  }
+  .signal-buy  { color: var(--green); font-weight: 700; }
+  .signal-sell { color: var(--red);   font-weight: 700; }
+  .signal-hold { color: var(--gold);  font-weight: 700; }
+  .conviction-bar {
+    display: inline-block;
+    height: 6px;
+    background: var(--ink);
+    vertical-align: middle;
+    margin-right: 4px;
+    transition: width 0.4s;
+  }
+
+  /* ══════════════════════════════════════════════════
+     RESPONSIVE ADDITIONS
+  ══════════════════════════════════════════════════ */
+  @media (max-width: 768px) {
+    .screener-inputs { flex-direction: column; align-items: stretch; }
+    .chart-drop-sub { display: none; }
+  }
   #sync-btn:hover { background: var(--ink); color: var(--paper); border-color: var(--ink); }
   #sync-btn:hover svg { stroke: var(--paper); }
   #sync-btn:disabled { opacity: 0.5; cursor: not-allowed; }
@@ -744,50 +951,154 @@
           </div>
         </div>
 
-        <!-- ── Chart 01 — VIX ── -->
-        <div class="chart-section">
-          <div class="chart-section-header">
-            <p class="dwg-section-label" style="margin-bottom:0;">Telemetry 01 — VIX Volatility (30D SMA Overlay)</p>
-            <span style="font-size:0.44rem; text-transform:uppercase; letter-spacing:0.15em; color:var(--ink-dim);">Drag to scroll · Latest at right</span>
-          </div>
-          <div class="chart-viewport" id="scroll-vix">
-            <div class="chart-canvas-wrapper"><canvas id="chartVix"></canvas></div>
-          </div>
-        </div>
+        <!-- ── Collapsible Charts ── -->
+        <div class="chart-accordion" id="chart-accordion">
 
-        <!-- ── Chart 02 — SPY Bollinger ── -->
-        <div class="chart-section">
-          <div class="chart-section-header">
-            <p class="dwg-section-label" style="margin-bottom:0;">Telemetry 02 — Market Proxy (Bollinger Band Analysis)</p>
+          <!-- Chart 01 — VIX -->
+          <div class="chart-drop" id="drop-vix">
+            <button class="chart-drop-btn" onclick="toggleChart('drop-vix')" aria-expanded="false">
+              <span class="chart-drop-left">
+                <svg class="chart-drop-arrow" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+                VIX Volatility
+                <span class="chart-drop-badge" id="badge-vix">—</span>
+              </span>
+              <span class="chart-drop-right">
+                <span class="chart-drop-sub">30D SMA Overlay · Drag to scroll</span>
+                <button class="info-btn" onclick="event.stopPropagation(); showInfo('vix')" aria-label="How to read this chart">?</button>
+              </span>
+            </button>
+            <div class="chart-drop-body" style="display:none;">
+              <div class="chart-viewport" id="scroll-vix">
+                <div class="chart-canvas-wrapper"><canvas id="chartVix"></canvas></div>
+              </div>
+            </div>
           </div>
-          <div class="chart-viewport" id="scroll-spy">
-            <div class="chart-canvas-wrapper"><canvas id="chartS5FI"></canvas></div>
-          </div>
-        </div>
 
-        <!-- ── Chart 03 — RSI ── -->
-        <div class="chart-section">
-          <div class="chart-section-header">
-            <p class="dwg-section-label" style="margin-bottom:0;">Telemetry 03 — Market Proxy Momentum (14-Day RSI)</p>
+          <!-- Chart 02 — Bollinger -->
+          <div class="chart-drop" id="drop-spy">
+            <button class="chart-drop-btn" onclick="toggleChart('drop-spy')" aria-expanded="false">
+              <span class="chart-drop-left">
+                <svg class="chart-drop-arrow" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+                Bollinger Band Analysis
+                <span class="chart-drop-badge" id="badge-spy">—</span>
+              </span>
+              <span class="chart-drop-right">
+                <span class="chart-drop-sub">Market Proxy · 20D ±2σ</span>
+                <button class="info-btn" onclick="event.stopPropagation(); showInfo('bb')" aria-label="How to read this chart">?</button>
+              </span>
+            </button>
+            <div class="chart-drop-body" style="display:none;">
+              <div class="chart-viewport" id="scroll-spy">
+                <div class="chart-canvas-wrapper"><canvas id="chartS5FI"></canvas></div>
+              </div>
+            </div>
           </div>
-          <div class="chart-viewport small-chart" id="scroll-rsi">
-            <div class="chart-canvas-wrapper" style="height: 170px;"><canvas id="chartRSI"></canvas></div>
-          </div>
-        </div>
 
-        <!-- ── Chart 04 — SPY/VIX Divergence ── -->
-        <div class="chart-section">
-          <div class="chart-section-header">
-            <p class="dwg-section-label" style="margin-bottom:0;">Telemetry 04 — SPY / VIX Divergence (Dual-Axis)</p>
-            <span style="font-size:0.44rem; text-transform:uppercase; letter-spacing:0.15em; color:var(--ink-dim);">Inverse correlation breakdown = regime shift signal</span>
+          <!-- Chart 03 — RSI -->
+          <div class="chart-drop" id="drop-rsi">
+            <button class="chart-drop-btn" onclick="toggleChart('drop-rsi')" aria-expanded="false">
+              <span class="chart-drop-left">
+                <svg class="chart-drop-arrow" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+                Momentum Oscillator
+                <span class="chart-drop-badge" id="badge-rsi">—</span>
+              </span>
+              <span class="chart-drop-right">
+                <span class="chart-drop-sub">14-Day RSI</span>
+                <button class="info-btn" onclick="event.stopPropagation(); showInfo('rsi')" aria-label="How to read this chart">?</button>
+              </span>
+            </button>
+            <div class="chart-drop-body" style="display:none;">
+              <div class="chart-viewport small-chart" id="scroll-rsi">
+                <div class="chart-canvas-wrapper" style="height:170px;"><canvas id="chartRSI"></canvas></div>
+              </div>
+            </div>
           </div>
-          <div class="chart-viewport small-chart" id="scroll-div">
-            <div class="chart-canvas-wrapper" style="height: 190px;"><canvas id="chartDivergence"></canvas></div>
+
+          <!-- Chart 04 — Divergence -->
+          <div class="chart-drop" id="drop-div">
+            <button class="chart-drop-btn" onclick="toggleChart('drop-div')" aria-expanded="false">
+              <span class="chart-drop-left">
+                <svg class="chart-drop-arrow" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+                SPY / VIX Divergence
+                <span class="chart-drop-badge" id="badge-div">—</span>
+              </span>
+              <span class="chart-drop-right">
+                <span class="chart-drop-sub">Dual-Axis · Regime Shift Signal</span>
+                <button class="info-btn" onclick="event.stopPropagation(); showInfo('div')" aria-label="How to read this chart">?</button>
+              </span>
+            </button>
+            <div class="chart-drop-body" style="display:none;">
+              <div class="chart-viewport small-chart" id="scroll-div">
+                <div class="chart-canvas-wrapper" style="height:190px;"><canvas id="chartDivergence"></canvas></div>
+              </div>
+              <div style="display:flex; gap:16px; padding:8px 10px; border:1px solid var(--line-bold); border-top:none; background:rgba(10,22,40,0.02);">
+                <div style="font-size:0.48rem; text-transform:uppercase; letter-spacing:0.12em; color:var(--ink-dim);">Index: <strong id="div-score" style="color:var(--ink);">—</strong></div>
+                <div style="font-size:0.48rem; text-transform:uppercase; letter-spacing:0.12em; color:var(--ink-dim);">Signal: <strong id="div-signal" style="color:var(--ink);">—</strong></div>
+                <div style="font-size:0.48rem; text-transform:uppercase; letter-spacing:0.12em; color:var(--ink-dim);">30D Corr: <strong id="div-corr" style="color:var(--ink);">—</strong></div>
+              </div>
+            </div>
           </div>
-          <div style="display:flex; gap:16px; margin-top:8px; padding:8px 10px; border:1px solid var(--line-bold); border-top:none; background:rgba(10,22,40,0.02);">
-            <div style="font-size:0.48rem; text-transform:uppercase; letter-spacing:0.12em; color:var(--ink-dim);">Divergence Index: <strong id="div-score" style="color:var(--ink);">—</strong></div>
-            <div style="font-size:0.48rem; text-transform:uppercase; letter-spacing:0.12em; color:var(--ink-dim);">Signal: <strong id="div-signal" style="color:var(--ink);">—</strong></div>
-            <div style="font-size:0.48rem; text-transform:uppercase; letter-spacing:0.12em; color:var(--ink-dim);">30D Corr: <strong id="div-corr" style="color:var(--ink);">—</strong></div>
+
+        </div><!-- /chart-accordion -->
+
+        <!-- ── Stock Screener ── -->
+        <div class="screener-panel" id="screener-panel">
+          <div class="screener-header">
+            <div>
+              <p class="dwg-section-label" style="margin-bottom:4px;">Module 03 — AI Screener</p>
+              <h3 class="screener-title">Stock Screener</h3>
+            </div>
+            <button class="info-btn" onclick="showInfo('screener')" aria-label="How the screener works" style="align-self:flex-start; margin-top:4px;">?</button>
+          </div>
+          <div class="screener-inputs">
+            <div style="flex:1.5; min-width:110px;">
+              <label class="form-label">Ticker(s)</label>
+              <input type="text" id="screener-tickers" class="form-input" placeholder="AAPL, MSFT, TSLA" style="text-transform:uppercase;">
+            </div>
+            <div style="flex:1; min-width:100px;">
+              <label class="form-label">Bias</label>
+              <select id="screener-bias" class="form-input" style="cursor:pointer; padding:8px 12px;">
+                <option value="any">Any</option>
+                <option value="buy">Buy Candidates</option>
+                <option value="sell">Sell Candidates</option>
+              </select>
+            </div>
+            <div style="flex:1; min-width:100px;">
+              <label class="form-label">Horizon</label>
+              <select id="screener-horizon" class="form-input" style="cursor:pointer; padding:8px 12px;">
+                <option value="short">Short-Term (1–4W)</option>
+                <option value="medium">Medium (1–3M)</option>
+                <option value="long">Long (3M+)</option>
+              </select>
+            </div>
+            <div style="flex:0;">
+              <label class="form-label">&nbsp;</label>
+              <button class="btn btn-solid" onclick="runScreener()" id="screener-run-btn" style="padding:10px 18px; white-space:nowrap;">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:4px;"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                Screen
+              </button>
+            </div>
+          </div>
+          <div id="screener-table-wrap" style="display:none; margin-top:16px; overflow-x:auto; border:1px solid var(--line-bold);">
+            <table class="ledger-table" id="screener-table">
+              <thead>
+                <tr>
+                  <th>Ticker</th>
+                  <th>Signal</th>
+                  <th>Upside / Downside</th>
+                  <th>RSI</th>
+                  <th>Band Pos.</th>
+                  <th>Vol Risk</th>
+                  <th>Conviction</th>
+                  <th>Notes</th>
+                </tr>
+              </thead>
+              <tbody id="screener-tbody">
+              </tbody>
+            </table>
+          </div>
+          <div id="screener-empty" style="display:none; padding:16px; text-align:center; font-size:0.52rem; text-transform:uppercase; letter-spacing:0.12em; color:var(--ink-dim); border:1px dashed var(--line-bold); margin-top:12px;">
+            Enter tickers above and press Screen
           </div>
         </div>
 
@@ -977,6 +1288,17 @@
     </div><!-- /terminal-layout -->
   </div><!-- /app-screen -->
 </main>
+
+<!-- ── Info Modal ── -->
+<div class="info-overlay" id="info-overlay" onclick="closeInfo(event)">
+  <div class="info-modal" id="info-modal">
+    <div class="info-modal-header">
+      <span class="info-modal-title" id="info-modal-title">How to Read This Chart</span>
+      <button class="info-modal-close" onclick="closeInfo()">✕ Close</button>
+    </div>
+    <div class="info-modal-body" id="info-modal-body"></div>
+  </div>
+</div>
 
 <footer>
   <div class="title-block">
@@ -1679,24 +2001,429 @@ function renderDonut(positions, totalValue) {
   if (totalEl) totalEl.textContent = '$' + totalValue.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2});
 }
 
+
 // ════════════════════════════════════════════
-//  KEYBOARD SHORTCUTS
+//  CHART ACCORDION
 // ════════════════════════════════════════════
-document.addEventListener('keydown', e => {
-  // Shift+R — manual sync (ignore when typing in an input)
-  if (e.shiftKey && e.key === 'R' && !['INPUT','TEXTAREA','SELECT'].includes(document.activeElement.tagName)) {
-    e.preventDefault();
-    const btn = document.getElementById('sync-btn');
-    if (btn && !btn.disabled && btn.style.display !== 'none') {
-      doManualSync();
-      showToast('Shift+R — Sync triggered');
-    }
+function toggleChart(id) {
+  const drop = document.getElementById(id);
+  if (!drop) return;
+  const body   = drop.querySelector('.chart-drop-body');
+  const btn    = drop.querySelector('.chart-drop-btn');
+  const isOpen = drop.classList.contains('open');
+
+  drop.classList.toggle('open', !isOpen);
+  btn.setAttribute('aria-expanded', String(!isOpen));
+  body.style.display = isOpen ? 'none' : 'block';
+
+  // Trigger chart resize after opening so Chart.js fills the container
+  if (!isOpen) {
+    setTimeout(() => {
+      window.dispatchEvent(new Event('resize'));
+      // Scroll scrollable viewports to right
+      ['scroll-vix','scroll-spy','scroll-rsi','scroll-div'].forEach(sid => {
+        const el = document.getElementById(sid);
+        if (el && drop.contains(el)) el.scrollLeft = el.scrollWidth;
+      });
+    }, 60);
   }
+}
+
+// ════════════════════════════════════════════
+//  INFO MODAL — per-chart explainers
+// ════════════════════════════════════════════
+const INFO_CONTENT = {
+  vix: {
+    title: 'VIX Volatility — How to Read',
+    sections: [
+      { title: 'What It Is', rows: [
+        ['VIX', 'The CBOE Volatility Index — measures implied volatility priced into S&P 500 options. It represents the market\'s expectation of 30-day volatility.'],
+        ['30D SMA', 'The 30-day moving average of VIX. When VIX is above its SMA, volatility is expanding; below = contracting.'],
+      ]},
+      { title: 'Reading the Levels', rows: [
+        ['< 12', '<span class="tag-good">COMPLACENCY</span> Market is calm, possibly too calm. Tail risk underpriced.'],
+        ['12 – 18', '<span class="tag-good">CALM</span> Normal low-volatility environment. Favourable for equity longs.'],
+        ['18 – 25', '<span class="tag-warn">MODERATE</span> Slight uncertainty. Monitor positions closely.'],
+        ['25 – 35', '<span class="tag-bad">ELEVATED</span> Market stress rising. Consider reducing risk.'],
+        ['35+', '<span class="tag-bad">FEAR / SPIKE</span> Panic or crisis. Historically precedes sharp reversals.'],
+      ]},
+      { title: 'Best / Worst Conditions', rows: [
+        ['Ideal (Long)', 'VIX below 18, falling, below its 30D SMA — calm market, IV cheap.'],
+        ['Caution', 'VIX rising while crossing above its SMA — volatility regime is shifting.'],
+        ['Worst', 'VIX spiking above 30 rapidly — market dislocation, wide bid/ask spreads, stops getting hit.'],
+      ]},
+    ]
+  },
+  bb: {
+    title: 'Bollinger Bands — How to Read',
+    sections: [
+      { title: 'What It Is', rows: [
+        ['Middle Band', '20-day simple moving average (SMA) of price — the trend baseline.'],
+        ['Upper / Lower', 'SMA ± 2 standard deviations. ~95% of price action falls inside these bands.'],
+        ['Band Width', 'Distance between bands as % of SMA. Narrow = low volatility / squeeze. Wide = post-move expansion.'],
+      ]},
+      { title: 'Reading Price Position', rows: [
+        ['Upper Band Touch', '<span class="tag-bad">OVERBOUGHT</span> Price extended. Mean-reversion risk. Not a shorting signal alone.'],
+        ['Upper Zone (75–95%)', '<span class="tag-warn">ELEVATED</span> Momentum is strong but caution warranted.'],
+        ['Mid-Range (25–75%)', '<span class="tag-good">NEUTRAL</span> Healthy price action, trend intact.'],
+        ['Lower Zone (5–25%)', '<span class="tag-warn">WEAK</span> Selling pressure, possible support zone.'],
+        ['Lower Band Touch', '<span class="tag-good">OVERSOLD</span> Price compressed. Mean-reversion bounce likely.'],
+      ]},
+      { title: 'Best / Worst Conditions', rows: [
+        ['Ideal Entry', 'Price near lower band during bull trend — pullback-to-value entry.'],
+        ['Ideal Exit', 'Price touching or exceeding upper band with rising RSI — take partial profits.'],
+        ['Squeeze', 'Very narrow bands predict an imminent big move. Direction unknown — wait for breakout.'],
+        ['Worst', 'Price walking up/down the band in a trending market — bands alone mislead without RSI context.'],
+      ]},
+    ]
+  },
+  rsi: {
+    title: '14-Day RSI — How to Read',
+    sections: [
+      { title: 'What It Is', rows: [
+        ['RSI', 'Relative Strength Index (0–100). Measures the speed and magnitude of recent price changes. A momentum oscillator.'],
+        ['Period', '14 trading days is the standard. Shorter = more sensitive, more noise.'],
+      ]},
+      { title: 'Key Levels', rows: [
+        ['> 80', '<span class="tag-bad">STRONGLY OVERBOUGHT</span> Correction risk is high. Often precedes pullbacks.'],
+        ['70 – 80', '<span class="tag-bad">OVERBOUGHT</span> Momentum is stretched. Watch for divergence.'],
+        ['60 – 70', '<span class="tag-warn">UPPER NEUTRAL</span> Bullish momentum, not yet extreme.'],
+        ['40 – 60', '<span class="tag-good">NEUTRAL ZONE</span> Healthy range. Trend is sustainable.'],
+        ['30 – 40', '<span class="tag-warn">LOWER NEUTRAL</span> Weak momentum. Watch for breakdown or recovery.'],
+        ['20 – 30', '<span class="tag-good">OVERSOLD</span> Potential mean-reversion bounce. Wait for uptick.'],
+        ['< 20', '<span class="tag-good">STRONGLY OVERSOLD</span> Deep value territory or serious trend breakdown.'],
+      ]},
+      { title: 'Best / Worst Conditions', rows: [
+        ['Ideal (Long)', 'RSI recovering from below 30, crossing 35 upward — strong entry signal.'],
+        ['Ideal (Short)', 'RSI failing above 70, crossing back below 65 — momentum exhaustion.'],
+        ['Divergence', 'Price makes new high but RSI makes lower high = bearish divergence (and vice versa). Most powerful signal.'],
+        ['Worst', 'Using RSI alone in a trending market — can stay overbought/oversold for extended periods.'],
+      ]},
+    ]
+  },
+  div: {
+    title: 'SPY / VIX Divergence — How to Read',
+    sections: [
+      { title: 'What It Is', rows: [
+        ['Concept', 'SPY and VIX normally move inversely — when stocks rise, fear falls, and vice versa. Both series are normalised to 0–100 for visual comparison.'],
+        ['Divergence Index', 'Measures how much they deviate from that expected inverse relationship. Near zero = healthy inverse. Large positive = both rising (stress signal).'],
+        ['30D Correlation', 'Rolling Pearson correlation. Should be strongly negative (−0.6 to −0.9) in a healthy market.'],
+      ]},
+      { title: 'Reading the Divergence Index', rows: [
+        ['< −8', '<span class="tag-warn">OVERSOLD FLUSH</span> SPY falling hard, VIX spiking — potential capitulation.'],
+        ['−8 to 8', '<span class="tag-good">NORMAL INVERSE</span> Healthy relationship. No structural concern.'],
+        ['8 to 15', '<span class="tag-warn">MILD DIVERGENCE</span> Slight decoupling. Bear watching.'],
+        ['> 15', '<span class="tag-bad">STRONG DIVERGENCE</span> Both SPY and VIX rising — regime shift risk, potential distribution phase.'],
+      ]},
+      { title: 'Best / Worst Conditions', rows: [
+        ['Ideal', 'Correlation between −0.6 and −0.9. Divergence Index near 0. Markets are behaving predictably.'],
+        ['Warning', 'Correlation drifting toward 0 or positive — SPY and VIX decoupling. Regime change signal.'],
+        ['Worst', 'Both rising together — typical before a volatility event where equities reprice sharply lower.'],
+      ]},
+    ]
+  },
+  screener: {
+    title: 'Stock Screener — How It Works',
+    sections: [
+      { title: 'Methodology', rows: [
+        ['Signal', 'Buy / Sell / Hold derived from RSI zone, Bollinger Band position, and momentum direction combined.'],
+        ['Upside/Downside', 'Estimated % potential move based on distance to Bollinger Bands and RSI headroom. Not a price target.'],
+        ['Conviction', 'A 1–5 bar score weighting signal alignment across RSI, band position, and trend direction.'],
+        ['Vol Risk', 'Based on current VIX regime and the instrument\'s historical sensitivity.'],
+      ]},
+      { title: 'Signal Interpretation', rows: [
+        ['BUY', '<span class="tag-good">BUY</span> RSI recovering from oversold or in neutral zone, price near or below SMA, low band position.'],
+        ['SELL', '<span class="tag-bad">SELL</span> RSI overbought zone, price at or above upper Bollinger Band, momentum exhausted.'],
+        ['HOLD', '<span class="tag-warn">HOLD</span> Mixed signals or mid-range conditions. No strong directional edge.'],
+      ]},
+      { title: 'Limitations', rows: [
+        ['Data Lag', 'Screener uses your Google Sheets bridge data, which has an inherent sync delay.'],
+        ['No Fundamentals', 'This is purely technical analysis. Earnings, news, and macro context are not factored in.'],
+        ['Not Advice', 'All signals are illustrative. Always combine with your own research and risk management.'],
+      ]},
+    ]
+  }
+};
+
+function showInfo(key) {
+  const content = INFO_CONTENT[key];
+  if (!content) return;
+  document.getElementById('info-modal-title').textContent = content.title;
+  document.getElementById('info-modal-body').innerHTML = content.sections.map(sec => `
+    <div class="info-section">
+      <div class="info-section-title">${sec.title}</div>
+      ${sec.rows.map(([label, val]) => `
+        <div class="info-row">
+          <span class="info-row-label">${label}</span>
+          <span class="info-row-val">${val}</span>
+        </div>`).join('')}
+    </div>`).join('');
+  document.getElementById('info-overlay').classList.add('open');
+}
+
+function closeInfo(e) {
+  if (!e || e.target === document.getElementById('info-overlay')) {
+    document.getElementById('info-overlay').classList.remove('open');
+  }
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeInfo();
 });
 
-// Tooltip hint in nav
-const syncBtn = document.getElementById('sync-btn');
-if (syncBtn) syncBtn.title = 'Refresh all data  [Shift+R]';
+// ════════════════════════════════════════════
+//  UPDATE CHART BADGES after data loads
+// ════════════════════════════════════════════
+function updateChartBadges(latestVix, vixRegime, vixColor, bandPos, bandColor, latestRSI, rsiSignal, rsiColor, divSignal, divColor) {
+  const badges = [
+    { id: 'badge-vix', text: `${latestVix?.toFixed(1) || '—'} · ${vixRegime}`, color: vixColor },
+    { id: 'badge-spy', text: bandPos, color: bandColor },
+    { id: 'badge-rsi', text: `${latestRSI?.toFixed(1) || '—'} · ${rsiSignal}`, color: rsiColor },
+    { id: 'badge-div', text: divSignal || '—', color: divColor },
+  ];
+  badges.forEach(b => {
+    const el = document.getElementById(b.id);
+    if (el) { el.textContent = b.text; el.style.color = b.color; el.style.borderColor = b.color; }
+  });
+}
+
+// Patch renderEnhancedDiagnostics to also update badges
+const _origRenderDiag = renderEnhancedDiagnostics;
+renderEnhancedDiagnostics = function(...args) {
+  _origRenderDiag(...args);
+  // Extract values to update badges
+  const [latestRSI, latestPrice, latestSMA, latestUpperBand, latestLowerBand, latestVix] = args;
+
+  let rsiSignal = 'NEUTRAL', rsiColor = 'var(--ink)';
+  if (latestRSI > 70) { rsiSignal = 'OVERBOUGHT'; rsiColor = 'var(--red)'; }
+  else if (latestRSI > 60) { rsiSignal = 'UPPER NEUTRAL'; rsiColor = 'var(--gold)'; }
+  else if (latestRSI < 30) { rsiSignal = 'OVERSOLD'; rsiColor = 'var(--green)'; }
+  else if (latestRSI < 40) { rsiSignal = 'LOWER NEUTRAL'; rsiColor = 'var(--gold)'; }
+
+  let vixRegime = 'MODERATE', vixColor = 'var(--gold)';
+  if (latestVix < 18) { vixRegime = 'CALM'; vixColor = 'var(--green)'; }
+  else if (latestVix > 25) { vixRegime = 'ELEVATED'; vixColor = 'var(--red)'; }
+
+  const bandPct = (latestPrice && latestUpperBand && latestLowerBand)
+    ? Math.max(0, Math.min(100, ((latestPrice - latestLowerBand) / (latestUpperBand - latestLowerBand)) * 100))
+    : null;
+  let bandPos = 'MID-RANGE', bandColor = 'var(--ink)';
+  if (bandPct !== null) {
+    if (bandPct >= 85) { bandPos = 'UPPER ZONE'; bandColor = 'var(--red)'; }
+    else if (bandPct <= 15) { bandPos = 'LOWER ZONE'; bandColor = 'var(--green)'; }
+  }
+
+  // Defer div badge update — set placeholder until divergence computes
+  const divEl = document.getElementById('badge-div');
+  if (divEl && divEl.textContent === '—') divEl.textContent = 'COMPUTING...';
+
+  updateChartBadges(latestVix, vixRegime, vixColor, bandPos, bandColor, latestRSI, rsiSignal, rsiColor,
+    document.getElementById('div-signal')?.textContent || '—',
+    'var(--ink)'
+  );
+};
+
+// ════════════════════════════════════════════
+//  STOCK SCREENER
+// ════════════════════════════════════════════
+async function runScreener() {
+  const tickerInput = document.getElementById('screener-tickers').value.trim().toUpperCase();
+  const bias        = document.getElementById('screener-bias').value;
+  const horizon     = document.getElementById('screener-horizon').value;
+  const btn         = document.getElementById('screener-run-btn');
+  const wrap        = document.getElementById('screener-table-wrap');
+  const empty       = document.getElementById('screener-empty');
+  const tbody       = document.getElementById('screener-tbody');
+
+  if (!tickerInput) { showToast('Enter at least one ticker'); return; }
+
+  const tickers = tickerInput.split(/[\s,]+/).filter(Boolean).slice(0, 12); // max 12
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner" style="display:inline-block;width:10px;height:10px;border:2px solid var(--paper);border-top-color:transparent;border-radius:50%;animation:spin-cw 0.7s linear infinite;margin-right:6px;vertical-align:middle;"></span>Screening...';
+  wrap.style.display = 'none';
+  empty.style.display = 'none';
+  tbody.innerHTML = '';
+
+  // Fetch fresh chart data once for market context
+  let latestVix = null, latestRSI = null;
+  try {
+    const r = await apiFetch('/api/finance/charts');
+    const d = await r.json();
+    if (d.vix?.chart?.result?.[0]) latestVix = d.vix.chart.result[0].indicators.quote[0].close.filter(v=>v!=null).at(-1);
+    if (d.spy?.chart?.result?.[0]) {
+      const sp = d.spy.chart.result[0].indicators.quote[0].close;
+      const ri = calculateRSI(sp, 14);
+      latestRSI = ri.filter(v=>v!=null).at(-1);
+    }
+  } catch(e) {}
+
+  // For each ticker fetch from Yahoo Finance (public endpoint via your CF Worker or direct)
+  const rows = await Promise.all(tickers.map(ticker => screenTicker(ticker, latestVix, horizon)));
+
+  const filtered = bias === 'buy'  ? rows.filter(r => r.signal === 'BUY')
+                 : bias === 'sell' ? rows.filter(r => r.signal === 'SELL')
+                 : rows;
+
+  if (!filtered.length) {
+    empty.textContent = `No ${bias === 'any' ? '' : bias + ' '}candidates found`;
+    empty.style.display = 'block';
+  } else {
+    tbody.innerHTML = filtered.map(renderScreenerRow).join('');
+    wrap.style.display = 'block';
+  }
+
+  btn.disabled = false;
+  btn.innerHTML = '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:4px;"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>Screen';
+}
+
+async function screenTicker(ticker, latestVix, horizon) {
+  // Fetch price history for this ticker via Yahoo Finance
+  // Period: 3 months, interval: 1d
+  const yahooUrl = `https://query1.finance.yahoo.com/v8/finance/chart/${ticker}?interval=1d&range=3mo`;
+
+  let prices = [], latestPrice = null, prevClose = null, priceChange = null;
+
+  try {
+    const res = await fetch(yahooUrl);
+    const json = await res.json();
+    const result = json?.chart?.result?.[0];
+    if (result) {
+      prices = result.indicators.quote[0].close.filter(v => v != null);
+      latestPrice = prices.at(-1);
+      prevClose   = prices.at(-2);
+      priceChange = prevClose ? ((latestPrice - prevClose) / prevClose * 100) : null;
+    }
+  } catch(e) {}
+
+  if (!prices.length || prices.length < 20) {
+    return { ticker, signal: 'N/A', upside: null, rsi: null, bandPos: '—', volRisk: '—', conviction: 0, notes: 'Insufficient data', priceChange, latestPrice };
+  }
+
+  // Technical indicators
+  const rsiArr = calculateRSI(prices, 14);
+  const rsi    = rsiArr.filter(v=>v!=null).at(-1);
+  const { sma, upper, lower } = calculateBollingerBands(prices, 20, 2);
+  const curSMA   = sma.filter(v=>v!=null).at(-1);
+  const curUpper = upper.filter(v=>v!=null).at(-1);
+  const curLower = lower.filter(v=>v!=null).at(-1);
+
+  const bandPct = curUpper && curLower
+    ? Math.max(0, Math.min(100, ((latestPrice - curLower) / (curUpper - curLower)) * 100))
+    : 50;
+
+  const bandWidth = curUpper && curLower && curSMA
+    ? ((curUpper - curLower) / curSMA * 100) : null;
+
+  const aboveSMA = latestPrice > curSMA;
+
+  // Signal scoring
+  let score = 0; // negative = sell, positive = buy
+
+  // RSI contribution
+  if (rsi < 30)      score += 3;
+  else if (rsi < 40) score += 2;
+  else if (rsi < 50) score += 1;
+  else if (rsi > 80) score -= 3;
+  else if (rsi > 70) score -= 2;
+  else if (rsi > 60) score -= 1;
+
+  // Band contribution
+  if (bandPct < 15)      score += 2;
+  else if (bandPct < 30) score += 1;
+  else if (bandPct > 85) score -= 2;
+  else if (bandPct > 70) score -= 1;
+
+  // Trend
+  if (aboveSMA) score += 1; else score -= 1;
+
+  // Horizon modifier — longer horizon needs stronger signal
+  const threshold = horizon === 'short' ? 1 : horizon === 'medium' ? 2 : 3;
+
+  let signal = 'HOLD';
+  if (score >= threshold) signal = 'BUY';
+  else if (score <= -threshold) signal = 'SELL';
+
+  // Upside/downside potential
+  let upside = null;
+  if (signal === 'BUY' && curUpper) {
+    upside = ((curUpper - latestPrice) / latestPrice * 100);
+  } else if (signal === 'SELL' && curLower) {
+    upside = ((curLower - latestPrice) / latestPrice * 100); // will be negative
+  } else if (signal === 'HOLD') {
+    // Show both
+    upside = curUpper ? ((curUpper - latestPrice) / latestPrice * 100) : null;
+  }
+
+  // Band position label
+  let bandLabel = 'MID-RANGE';
+  if (bandPct >= 85) bandLabel = 'UPPER';
+  else if (bandPct >= 65) bandLabel = 'UPPER-MID';
+  else if (bandPct <= 15) bandLabel = 'LOWER';
+  else if (bandPct <= 35) bandLabel = 'LOWER-MID';
+
+  // Vol risk from VIX
+  let volRisk = 'MODERATE';
+  if (latestVix != null) {
+    if (latestVix < 15) volRisk = 'LOW';
+    else if (latestVix > 28) volRisk = 'HIGH';
+  }
+
+  // Conviction (1–5)
+  const conviction = Math.min(5, Math.abs(score));
+
+  // Notes
+  const notes = [];
+  if (rsi < 30) notes.push('Oversold RSI');
+  else if (rsi > 70) notes.push('Overbought RSI');
+  if (bandPct < 15) notes.push('Lower band support');
+  else if (bandPct > 85) notes.push('Upper band resistance');
+  if (!aboveSMA) notes.push('Below 20D SMA');
+  else notes.push('Above 20D SMA');
+  if (bandWidth !== null && bandWidth < 4) notes.push('BB squeeze');
+
+  return { ticker, signal, upside, rsi, bandPos: bandLabel, volRisk, conviction, notes: notes.join(' · '), priceChange, latestPrice };
+}
+
+function renderScreenerRow(r) {
+  const signalClass = r.signal === 'BUY' ? 'signal-buy' : r.signal === 'SELL' ? 'signal-sell' : 'signal-hold';
+  const signalIcon  = r.signal === 'BUY' ? '↑' : r.signal === 'SELL' ? '↓' : '→';
+
+  let upsideStr = '—';
+  if (r.upside !== null && r.signal !== 'HOLD') {
+    const color = r.upside >= 0 ? 'var(--green)' : 'var(--red)';
+    upsideStr = `<span style="color:${color}; font-weight:700;">${r.upside >= 0 ? '+' : ''}${r.upside.toFixed(2)}%</span>`;
+  } else if (r.upside !== null && r.signal === 'HOLD') {
+    upsideStr = `<span style="color:var(--gold);">±${Math.abs(r.upside).toFixed(2)}%</span>`;
+  }
+
+  const convBars = Array.from({length: 5}, (_, i) =>
+    `<span style="display:inline-block;width:5px;height:${6+i*2}px;background:${i < r.conviction ? 'var(--ink)' : 'rgba(10,22,40,0.12)'};margin-right:1px;vertical-align:bottom;"></span>`
+  ).join('');
+
+  const priceStr = r.latestPrice != null
+    ? `$${r.latestPrice.toFixed(2)}${r.priceChange != null ? ` <span style="color:${r.priceChange>=0?'var(--green)':'var(--red)'}; font-size:0.46rem;">(${r.priceChange>=0?'+':''}${r.priceChange.toFixed(2)}%)</span>` : ''}`
+    : '—';
+
+  const volColor = r.volRisk === 'LOW' ? 'var(--green)' : r.volRisk === 'HIGH' ? 'var(--red)' : 'var(--gold)';
+
+  return `
+    <tr>
+      <td style="font-weight:700;">${r.ticker}<br><span style="font-size:0.46rem; font-weight:400; color:var(--ink-dim);">${priceStr}</span></td>
+      <td class="${signalClass}">${signalIcon} ${r.signal}</td>
+      <td>${upsideStr}<br><span style="font-size:0.44rem; color:var(--ink-dim);">to BB target</span></td>
+      <td>${r.rsi != null ? r.rsi.toFixed(1) : '—'}</td>
+      <td>${r.bandPos}</td>
+      <td style="color:${volColor}; font-weight:700;">${r.volRisk}</td>
+      <td>${convBars}</td>
+      <td style="font-size:0.46rem; color:var(--ink-dim); max-width:160px;">${r.notes || '—'}</td>
+    </tr>`;
+}
+
+// Show screener-empty placeholder on load
+document.addEventListener('DOMContentLoaded', () => {
+  const empty = document.getElementById('screener-empty');
+  if (empty) empty.style.display = 'block';
+});
 </script>
 </body>
 </html>
