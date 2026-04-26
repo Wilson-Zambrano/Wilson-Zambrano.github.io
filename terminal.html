@@ -412,6 +412,13 @@
   /* ══════════════════════════════════════════════════
      RESPONSIVE
   ══════════════════════════════════════════════════ */
+  /* Sync button */
+  #sync-btn:hover { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+  #sync-btn:hover svg { stroke: var(--paper); }
+  #sync-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  @keyframes spin-cw { to { transform: rotate(360deg); } }
+  .syncing { animation: spin-cw 0.7s linear infinite; }
+
   @media (max-width: 1100px) {
     .terminal-layout { grid-template-columns: 1fr; border-bottom: none; }
     #view-finance { border-right: none; border-bottom: 2px solid var(--ink); }
@@ -457,7 +464,35 @@
     <div class="nav-doc-ref" style="margin-left: 0;">
       <div class="nav-doc-cell" style="border-left: none;"><span class="nav-doc-key">Document</span><span class="nav-doc-val">WZ-TERM-002</span></div>
       <div class="nav-doc-cell"><span class="nav-doc-key">Access</span><span class="nav-doc-val" id="nav-access-val" style="color:var(--red);">● Locked</span></div>
-      <div class="nav-doc-cell"><span class="nav-doc-key">Last Sync</span><span class="nav-doc-val" id="nav-last-sync">—</span></div>
+      <div class="nav-doc-cell" style="flex-direction: row; align-items: center; gap: 10px; padding-right: 10px;">
+        <div style="display:flex; flex-direction:column; justify-content:center;">
+          <span class="nav-doc-key">Last Sync</span>
+          <span class="nav-doc-val" id="nav-last-sync">—</span>
+        </div>
+        <button id="sync-btn" onclick="doManualSync()" title="Refresh all data" style="
+          display: none;
+          font-family: 'IBM Plex Mono', monospace;
+          font-size: 0.48rem;
+          text-transform: uppercase;
+          letter-spacing: 0.12em;
+          padding: 5px 9px;
+          cursor: pointer;
+          background: transparent;
+          border: 1px solid var(--line-bold);
+          color: var(--ink-dim);
+          transition: all 0.15s;
+          align-items: center;
+          gap: 5px;
+          white-space: nowrap;
+        ">
+          <svg id="sync-icon" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="flex-shrink:0;">
+            <polyline points="23 4 23 10 17 10"/>
+            <polyline points="1 20 1 14 7 14"/>
+            <path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/>
+          </svg>
+          Sync
+        </button>
+      </div>
     </div>
   </nav>
 </header>
@@ -922,8 +957,29 @@ showApp = function() {
   _baseShowApp();
   const access = document.getElementById('nav-access-val');
   if (access) { access.textContent = '● Authenticated'; access.style.color = 'var(--green)'; }
+  const syncBtn = document.getElementById('sync-btn');
+  if (syncBtn) syncBtn.style.display = 'inline-flex';
   fetchFinanceData();
 };
+
+async function doManualSync() {
+  const btn  = document.getElementById('sync-btn');
+  const icon = document.getElementById('sync-icon');
+  if (!btn) return;
+
+  btn.disabled = true;
+  icon.classList.add('syncing');
+
+  try {
+    await fetchFinanceData();
+    showToast('Sync complete');
+  } catch(e) {
+    showToast('Sync failed', true);
+  } finally {
+    btn.disabled = false;
+    icon.classList.remove('syncing');
+  }
+}
 
 // If already authenticated, init finance
 if (sessionStorage.getItem('wz_drop_jwt')) {
