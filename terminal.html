@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>W.Zambrano — Portfolio Terminal</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:ital,wght@0,300;0,400;0,600;0,700;1,400&family=Crimson+Pro:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<link href="blueprint.css" rel="stylesheet">
+</head>
+<body>
+
+<div class="reg-mark tl"></div><div class="reg-mark tr"></div><div class="reg-mark bl"></div><div class="reg-mark br"></div>
+
+<header id="header">
+  <nav class="nav-inner">
+    <div style="display: flex; align-items: center;">
+      <a href="index.html" class="nav-brand" title="Return to Portfolio">W<span>.</span>Zambrano</a>
+    </div>
+    
+    <div style="display: flex; align-items: center; gap: 12px; margin-left: auto; padding-right: 16px; border-right: 1px solid var(--line-bold);">
+      <a href="drop.html" class="btn btn-outline" style="padding: 6px 12px; font-size: 0.5rem; text-decoration: none;">
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:inline;vertical-align:middle;margin-right:4px;"><polyline points="15 18 9 12 15 6"/></svg>
+        <span>Return to Drop Zone</span>
+      </a>
+      <button id="top-logout-btn" onclick="doLogout()" class="btn btn-outline" style="display:none; padding: 6px 12px; font-size: 0.5rem; border-color: var(--red); color: var(--red);">
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:inline;vertical-align:middle;margin-right:4px;"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        Logout
+      </button>
+    </div>
+
+    <div class="nav-doc-ref" style="margin-left: 0;">
+      <div class="nav-doc-cell" style="border-left: none;"><span class="nav-doc-key">Document</span><span class="nav-doc-val">WZ-TERM-002</span></div>
+      <div class="nav-doc-cell"><span class="nav-doc-key">Access</span><span class="nav-doc-val" id="nav-access-val" style="color:var(--red);">● Locked</span></div>
+    </div>
+  </nav>
+</header>
+
+<main>
+  <div id="login-screen">
+    <div style="margin-bottom:28px; width: 100%; max-width: 480px;">
+      <p class="dwg-section-label">Document WZ-TERM-002 Rev A — Financial Telemetry</p>
+      <h1 class="dwg-title">Portfolio Terminal</h1>
+    </div>
+
+    <div class="login-box-wrapper">
+      <div class="login-box">
+        <div class="login-header">
+          <span class="login-header-title">Authentication Required</span>
+          <span class="login-doc-ref">WZ-TERM / AUTH</span>
+        </div>
+        <div class="login-body">
+          <p class="login-eyebrow">Secure Access — JWT Protected</p>
+          <div id="login-error">Invalid credentials. Access denied.</div>
+          <div class="form-group">
+            <label class="form-label">Username</label>
+            <input type="text" id="login-username" class="form-input" placeholder="username" autocomplete="username">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Password</label>
+            <input type="password" id="login-password" class="form-input" placeholder="••••••••" autocomplete="current-password">
+          </div>
+          <button class="btn btn-solid btn-full" id="login-btn" onclick="doLogin()">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg> Authenticate
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="app-screen" style="display:none;">
+    <div id="view-finance">
+      <div style="margin-bottom:28px;">
+        <p class="dwg-section-label">Module 02 — Financial Telemetry</p>
+        <h1 class="dwg-title">Margin & Portfolio Status</h1>
+      </div>
+
+      <div style="border: 2px solid var(--ink); padding: 32px; background: rgba(10,22,40,0.02);">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
+          <div style="border: 1px solid var(--line-bold); padding: 16px; background: var(--paper);">
+            <p style="font-size: 0.55rem; text-transform: uppercase; letter-spacing: 0.15em; color: var(--ink-dim);">Available Margin</p>
+            <p style="font-size: 1.4rem; font-weight: 700; color: var(--ink); margin-top: 8px;" id="dash-margin-avail">Loading...</p>
+          </div>
+          <div style="border: 1px solid var(--line-bold); padding: 16px; background: var(--paper);">
+            <p style="font-size: 0.55rem; text-transform: uppercase; letter-spacing: 0.15em; color: var(--ink-dim);">Safety Level</p>
+            <p style="font-size: 1.4rem; font-weight: 700; color: var(--green); margin-top: 8px;" id="dash-margin-safe">Loading...</p>
+          </div>
+          <div style="border: 1px solid var(--line-bold); padding: 16px; background: var(--paper);">
+            <p style="font-size: 0.55rem; text-transform: uppercase; letter-spacing: 0.15em; color: var(--ink-dim);">Total Interest</p>
+            <p style="font-size: 1.4rem; font-weight: 700; color: var(--red); margin-top: 8px;" id="dash-interest">Loading...</p>
+          </div>
+        </div>
+
+        <div style="margin-top: 24px; padding: 24px; border: 1px dashed var(--line-bold); text-align: center;" id="connection-status">
+          <p style="font-size: 0.6rem; color: var(--ink-dim); text-transform: uppercase; letter-spacing: 0.1em;">Initializing Secure Bridge...</p>
+        </div>
+
+        <div style="margin-top: 32px;">
+          <h3 style="font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.2em; color: var(--ink-dim); margin-bottom: 12px; border-bottom: 1px solid var(--line-bold); padding-bottom: 8px;">Active Positions Ledger (Live)</h3>
+          <div style="overflow-x: auto; border: 1px solid var(--line-bold); background: var(--paper);">
+            <table style="width: 100%; border-collapse: collapse; font-size: 0.6rem; text-align: left;">
+              <thead>
+                <tr style="background: rgba(10,22,40,0.04); border-bottom: 1px solid var(--line-bold);">
+                  <th style="padding: 10px; border-right: 1px solid var(--line);">Ticker</th>
+                  <th style="padding: 10px; border-right: 1px solid var(--line);">Shares</th>
+                  <th style="padding: 10px; border-right: 1px solid var(--line);">Avg Cost</th>
+                  <th style="padding: 10px; border-right: 1px solid var(--line);">Current Price</th>
+                  <th style="padding: 10px;">Live ROI (%)</th>
+                </tr>
+              </thead>
+              <tbody id="dash-positions-table">
+                <tr><td colspan="5" style="padding: 16px; text-align: center; color: var(--ink-dim); text-transform: uppercase; letter-spacing: 0.1em;">Awaiting data stream...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div> 
+  </div>
+</main>
+
+<footer>
+  <div class="title-block">
+    <div class="tb-cell"><span class="tb-key">Drawing No.</span><span class="tb-val">WZ-TERM-002-A</span></div>
+    <div class="tb-cell"><span class="tb-key">Title</span><span class="tb-val">Portfolio Terminal</span></div>
+    <div class="tb-cell"><span class="tb-key">Drawn By</span><span class="tb-val">Wilson A. Zambrano</span></div>
+    <div class="tb-cell"><span class="tb-key">Status</span><span class="tb-val">Active Data Feed</span></div>
+    <div class="tb-cell"><span class="tb-key">Year</span><span class="tb-val" id="footer-year"></span></div>
+  </div>
+</footer>
+
+<div id="toast"></div>
+
+<script src="app.js"></script>
+
+</body>
+</html>
