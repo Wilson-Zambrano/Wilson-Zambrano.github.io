@@ -238,7 +238,7 @@ footer { position: relative; z-index: 1; border-top: 3px solid var(--ink); backg
     
     <div style="display: flex; align-items: center; gap: 12px; margin-left: auto; padding-right: 16px; border-right: 1px solid var(--line-bold);">
       
-      <button id="nav-app-toggle" onclick="toggleAppView()" class="btn btn-outline" style="display:none; padding: 6px 12px; font-size: 0.5rem; border-color: var(--ink); color: var(--ink);">
+      <button id="nav-app-toggle" onclick="toggleAppView()" class="btn btn-outline" style="display:none; padding: 6px 12px; font-size: 0.5rem;">
         <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:inline;vertical-align:middle;margin-right:4px;"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
         <span>Portfolio Terminal</span>
       </button>
@@ -496,6 +496,27 @@ footer { position: relative; z-index: 1; border-top: 3px solid var(--ink); backg
             Secure Google Sheets Bridge disconnected.<br>Awaiting API integration.
           </p>
         </div>
+
+        <div style="margin-top: 32px;">
+          <h3 style="font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.2em; color: var(--ink-dim); margin-bottom: 12px; border-bottom: 1px solid var(--line-bold); padding-bottom: 8px;">Active Positions Ledger</h3>
+          <div style="overflow-x: auto; border: 1px solid var(--line-bold); background: var(--paper);">
+            <table style="width: 100%; border-collapse: collapse; font-size: 0.6rem; text-align: left;">
+              <thead>
+                <tr style="background: rgba(10,22,40,0.04); border-bottom: 1px solid var(--line-bold);">
+                  <th style="padding: 10px; border-right: 1px solid var(--line);">Ticker</th>
+                  <th style="padding: 10px; border-right: 1px solid var(--line);">Shares</th>
+                  <th style="padding: 10px; border-right: 1px solid var(--line);">Avg Cost</th>
+                  <th style="padding: 10px; border-right: 1px solid var(--line);">Current Price</th>
+                  <th style="padding: 10px;">ROI (%)</th>
+                </tr>
+              </thead>
+              <tbody id="dash-positions-table">
+                <tr><td colspan="5" style="padding: 16px; text-align: center; color: var(--ink-dim); text-transform: uppercase; letter-spacing: 0.1em;">Awaiting data stream...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
       </div>
     </div> </div> </main>
 
@@ -772,16 +793,14 @@ function toggleAppView() {
 
 async function fetchFinanceData() {
   try {
-    // The requireAuth middleware on your worker automatically uses your JWT
     const res = await apiFetch('/api/finance/dashboard');
     const data = await res.json();
     
     if (data.error) throw new Error(data.error);
 
-    // Format and inject the Google Sheets data into the HTML grid
+    // 1. Populate the Top Summary Cards
     document.getElementById('dash-margin-avail').textContent = '$' + Number(data.availableMargin).toLocaleString(undefined, {minimumFractionDigits: 2});
     
-    // Check if safetyLevel is a raw decimal (0.483) or a string from your sheet
     if (typeof data.safetyLevel === 'number') {
         document.getElementById('dash-margin-safe').textContent = (data.safetyLevel * 100).toFixed(1) + '%';
     } else {
@@ -790,8 +809,43 @@ async function fetchFinanceData() {
     
     document.getElementById('dash-interest').textContent = '$' + Number(data.totalInterest).toLocaleString(undefined, {minimumFractionDigits: 2});
 
-    // Update the connection status visual
-    const statusBox = document.querySelector('#view-finance > div > div:last-child');
+    // 2. Populate the Positions Table
+    const tableBody = document.getElementById('dash-positions-table');
+    tableBody.innerHTML = ''; // Clear the "awaiting stream" text
+
+    if (data.portfolioTable && data.portfolioTable.length > 1) {
+        // Skip the header row (index 0) and loop through the data
+        data.portfolioTable.slice(1).forEach(row => {
+            const ticker = row[0]; // Column A
+            
+            // Stop rendering if we hit the empty rows at the bottom of your sheet
+            if (!ticker || typeof ticker !== 'string') return; 
+
+            const shares = row[2] || 0;     // Column C
+            const avgCost = row[3] || 0;    // Column D
+            const price = row[4] || 0;      // Column E
+            const roi = row[18] || 0;       // Column S
+
+            const tr = document.createElement('tr');
+            tr.style.borderBottom = '1px solid var(--line)';
+
+            // Dynamically color the ROI red or green
+            const roiColor = roi >= 0 ? 'var(--green)' : 'var(--red)';
+            const roiFormatted = (roi * 100).toFixed(2) + '%';
+
+            tr.innerHTML = `
+              <td style="padding: 8px 10px; font-weight: 700; border-right: 1px solid var(--line);">${ticker}</td>
+              <td style="padding: 8px 10px; border-right: 1px solid var(--line);">${shares}</td>
+              <td style="padding: 8px 10px; border-right: 1px solid var(--line);">$${Number(avgCost).toFixed(2)}</td>
+              <td style="padding: 8px 10px; border-right: 1px solid var(--line);">$${Number(price).toFixed(2)}</td>
+              <td style="padding: 8px 10px; font-weight: 600; color: ${roiColor};">${roiFormatted}</td>
+            `;
+            tableBody.appendChild(tr);
+        });
+    }
+
+    // 3. Update the connection status visual
+    const statusBox = document.querySelector('#view-finance > div > div:nth-child(3)');
     if (statusBox) {
         statusBox.style.borderColor = 'var(--green)';
         statusBox.innerHTML = '<p style="font-size: 0.6rem; color: var(--green); text-transform: uppercase; letter-spacing: 0.1em;">Secure Google Sheets Bridge Connected.</p>';
