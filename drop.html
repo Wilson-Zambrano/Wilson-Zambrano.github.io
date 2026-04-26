@@ -305,16 +305,23 @@ footer { position: relative; z-index: 1; border-top: 3px solid var(--ink); backg
 
   <div id="app-screen">
     
-    <div style="margin-bottom: 24px; display: flex; gap: 12px; border-bottom: 2px solid var(--ink); padding-bottom: 16px;">
-      <button class="btn btn-solid" id="tab-drop" onclick="switchTab('drop')" style="font-size: 0.65rem;">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:6px;"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-        Drop Zone
-      </button>
-      <button class="btn btn-outline" id="tab-finance" onclick="switchTab('finance')" style="font-size: 0.65rem;">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:6px;"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-        Portfolio Terminal
-      </button>
-    </div>
+    <div style="display: flex; align-items: center;">
+          <a href="index.html" class="nav-brand">W<span>.</span>Zambrano</a>
+          <a href="index.html" class="btn btn-outline" style="margin-left: 16px; padding: 6px 12px; font-size: 0.5rem;">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:inline;vertical-align:middle;margin-right:4px;"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+            Return to Portfolio
+          </a>
+          
+          <button id="nav-app-toggle" onclick="toggleAppView()" class="btn btn-outline" style="display:none; margin-left: 8px; padding: 6px 12px; font-size: 0.5rem; border-color: var(--ink); color: var(--ink);">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:inline;vertical-align:middle;margin-right:4px;"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+            <span>Portfolio Terminal</span>
+          </button>
+
+          <button id="top-logout-btn" onclick="doLogout()" class="btn btn-outline" style="display:none; margin-left: 8px; padding: 6px 12px; font-size: 0.5rem; border-color: var(--red); color: var(--red);">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:inline;vertical-align:middle;margin-right:4px;"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+            Logout
+          </button>
+        </div>
 
     <div id="view-drop">
       <div class="drop-layout">
@@ -631,6 +638,7 @@ function showLogin() {
   document.getElementById('status-text').innerHTML = 'System <strong>Locked</strong>';
   document.getElementById('logout-btn').style.display = 'none';
   document.getElementById('top-logout-btn').style.display = 'none'; 
+  document.getElementById('nav-app-toggle').style.display = 'none'; // ADD THIS LINE
   document.getElementById('login-username').focus();
 }
 
@@ -643,6 +651,7 @@ function showApp() {
   document.getElementById('status-text').innerHTML = 'System <strong>Online</strong>';
   document.getElementById('logout-btn').style.display = 'block';
   document.getElementById('top-logout-btn').style.display = 'inline-flex'; 
+  document.getElementById('nav-app-toggle').style.display = 'inline-flex'; // ADD THIS LINE
 }
 
 // ═══════════════════════════════════════════════
@@ -730,26 +739,38 @@ function switchMode(mode) {
 // ═══════════════════════════════════════════════
 //  APP TAB ROUTING & FINANCE
 // ═══════════════════════════════════════════════
-function switchTab(tab) {
-  // Toggle UI Views
-  document.getElementById('view-drop').style.display = tab === 'drop' ? 'block' : 'none';
-  document.getElementById('view-finance').style.display = tab === 'finance' ? 'block' : 'none';
+// ═══════════════════════════════════════════════
+//  APP VIEW ROUTING & FINANCE
+// ═══════════════════════════════════════════════
+let currentAppView = 'drop'; // Track which app is currently open
+
+function toggleAppView() {
+  const toggleBtn = document.getElementById('nav-app-toggle');
+  const btnSpan = toggleBtn.querySelector('span');
   
-  // Toggle Button Styles
-  const dropBtn = document.getElementById('tab-drop');
-  const finBtn = document.getElementById('tab-finance');
-  
-  if (tab === 'drop') {
-    dropBtn.className = 'btn btn-solid';
-    finBtn.className = 'btn btn-outline';
-    document.getElementById('nav-access-val').textContent = '● Drop Zone';
-  } else {
-    dropBtn.className = 'btn btn-outline';
-    finBtn.className = 'btn btn-solid';
-    document.getElementById('nav-access-val').textContent = '● Terminal';
+  if (currentAppView === 'drop') {
+    // Switch to Finance
+    currentAppView = 'finance';
+    document.getElementById('view-drop').style.display = 'none';
+    document.getElementById('view-finance').style.display = 'block';
     
-    // Trigger Google Sheets fetch
+    // Update Header UI
+    document.getElementById('nav-access-val').textContent = '● Terminal';
+    toggleBtn.classList.replace('btn-outline', 'btn-solid');
+    btnSpan.textContent = 'Back to Drop Zone';
+    
+    // Fire the API fetch
     fetchFinanceData(); 
+  } else {
+    // Switch to Drop
+    currentAppView = 'drop';
+    document.getElementById('view-drop').style.display = 'block';
+    document.getElementById('view-finance').style.display = 'none';
+    
+    // Update Header UI
+    document.getElementById('nav-access-val').textContent = '● Authenticated';
+    toggleBtn.classList.replace('btn-solid', 'btn-outline');
+    btnSpan.textContent = 'Portfolio Terminal';
   }
 }
 
