@@ -3,14 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Wilson Zambrano \u2014 Engineering Portfolio</title>
+<title>Wilson Zambrano — Engineering Portfolio</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:ital,wght@0,300;0,400;0,600;0,700;1,400&family=Crimson+Pro:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
 <style>
-/* \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
+/* ═══════════════════════════════════════════════════════
    BLUEPRINT DESIGN SYSTEM
-   Aesthetic: Authentic technical drawing \u2014
+   Aesthetic: Authentic technical drawing —
    drafting paper, ink lines, callouts, title block
-\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550 */
+═══════════════════════════════════════════════════════ */
 :root {
   --paper: #dce8f0;
   --paper-dark: #c8d8e4;
@@ -52,7 +52,7 @@ body::before {
   z-index: 0;
 }
 
-/* \u2500\u2500 NAV / HEADER \u2500\u2500 */
+/* ── NAV / HEADER ── */
 #header {
   position: sticky;
   top: 0;
@@ -116,7 +116,7 @@ body::before {
 #mobile-menu a { display: block; padding: 12px 24px; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.15em; color: var(--ink-dim); text-decoration: none; border-bottom: 1px solid var(--line); }
 #mobile-menu a:hover { background: rgba(10,22,40,0.06); }
 
-/* \u2500\u2500 SHARED SECTION FRAME \u2500\u2500 */
+/* ── SHARED SECTION FRAME ── */
 .section-frame {
   position: relative;
   z-index: 1;
@@ -204,9 +204,9 @@ body::before {
 .reveal { opacity: 0; transform: translateY(16px); transition: opacity 0.5s ease, transform 0.5s ease; }
 .reveal.visible { opacity: 1; transform: translateY(0); }
 
-/* \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
+/* ═══════════════════════════════════════════════════════
    HERO SECTION
-\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550 */
+═══════════════════════════════════════════════════════ */
 #home {
   position: relative;
   z-index: 1;
@@ -233,7 +233,7 @@ body::before {
   border: 2px solid var(--ink);
 }
 .ortho-box::after {
-  content: 'FRONT VIEW \u2014 SCALE 1:1';
+  content: 'FRONT VIEW — SCALE 1:1';
   position: absolute;
   bottom: -22px; left: 0;
   font-size: 0.5rem;
@@ -351,7 +351,7 @@ h1.hero-name em {
 
 .hero-cta { display: flex; gap: 12px; flex-wrap: wrap; }
 
-/* \u2500\u2500 Buttons \u2500\u2500 */
+/* ── Buttons ── */
 .btn {
   font-family: 'IBM Plex Mono', monospace;
   font-size: 0.6rem;
@@ -372,9 +372,9 @@ h1.hero-name em {
 .btn-outline:hover { background: rgba(10,22,40,0.07); }
 .btn-sm { padding: 7px 14px; font-size: 0.55rem; }
 
-/* \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
+/* ═══════════════════════════════════════════════════════
    ABOUT
-\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550 */
+═══════════════════════════════════════════════════════ */
 #about { background: transparent; }
 
 .about-grid {
@@ -461,14 +461,14 @@ h1.hero-name em {
   letter-spacing: 0.04em;
 }
 .skill-item::before {
-  content: '\u2014';
+  content: '—';
   color: var(--red);
   font-size: 0.5rem;
 }
 
-/* \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
+/* ═══════════════════════════════════════════════════════
    PROJECTS
-\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550 */
+═══════════════════════════════════════════════════════ */
 #projects { background: rgba(10,22,40,0.02); }
 
 .projects-grid {
@@ -520,7 +520,8 @@ h1.hero-name em {
 }
 .card-img-wrap img {
   width: 100%; height: 100%;
-  object-fit: cover;
+  object-fit: contain; 
+  padding: 24px;
   object-position: center;
   filter: sepia(0.2) contrast(1.05);
   transition: transform 0.4s ease;
@@ -577,9 +578,9 @@ h1.hero-name em {
 }
 .card-desc strong { color: var(--ink); font-weight: 600; }
 
-/* \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
+/* ═══════════════════════════════════════════════════════
    RESUME
-\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550 */
+═══════════════════════════════════════════════════════ */
 #resume { background: transparent; }
 
 .resume-wrap {
@@ -592,7 +593,7 @@ h1.hero-name em {
   overflow: hidden;
 }
 .resume-frame::before {
-  content: 'DOCUMENT WZ-CV-001 \u2014 CLICK TO OPEN PDF';
+  content: 'DOCUMENT WZ-CV-001 — CLICK TO OPEN PDF';
   position: absolute;
   bottom: 0; left: 0; right: 0;
   background: var(--ink);
@@ -615,9 +616,9 @@ h1.hero-name em {
 }
 .resume-frame:hover img { filter: sepia(0.2) brightness(0.97); }
 
-/* \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
+/* ═══════════════════════════════════════════════════════
    CONTACT
-\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550 */
+═══════════════════════════════════════════════════════ */
 #contact { background: rgba(10,22,40,0.02); }
 
 .contact-grid {
@@ -701,9 +702,9 @@ h1.hero-name em {
 .form-input::placeholder, .form-textarea::placeholder { color: rgba(10,22,40,0.3); }
 .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 
-/* \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
+/* ═══════════════════════════════════════════════════════
    TITLE BLOCK (footer)
-\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550 */
+═══════════════════════════════════════════════════════ */
 footer {
   position: relative;
   z-index: 1;
@@ -754,7 +755,7 @@ footer {
 }
 .footer-link:hover { color: var(--ink); }
 
-/* \u2500\u2500 Cross-hatch pattern for empty card \u2500\u2500 */
+/* ── Cross-hatch pattern for empty card ── */
 .hatch-bg {
   background-image: repeating-linear-gradient(
     45deg,
@@ -765,7 +766,7 @@ footer {
   );
 }
 
-/* \u2500\u2500 Responsive \u2500\u2500 */
+/* ── Responsive ── */
 @media (max-width: 900px) {
   .hero-inner { grid-template-columns: 1fr; }
   .about-grid { grid-template-columns: 1fr; }
@@ -797,7 +798,6 @@ footer {
 </head>
 <body>
 
-<!-- \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550 HEADER \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550 -->
 <header id="header">
   <nav class="nav-inner">
     <a href="#home" class="nav-brand">W<span>.</span>Zambrano</a>
@@ -814,20 +814,18 @@ footer {
     </button>
   </nav>
   <div id="mobile-menu">
-    <a href="#home">01 \u2014 Home</a>
-    <a href="#about">02 \u2014 About</a>
-    <a href="#projects">03 \u2014 Projects</a>
-    <a href="#resume">04 \u2014 Resume</a>
-    <a href="#contact">05 \u2014 Contact</a>
-    <a href="drop.html" style="color:var(--red);">06 \u2014 Drop Zone \u2197</a>
+    <a href="#home">01 — Home</a>
+    <a href="#about">02 — About</a>
+    <a href="#projects">03 — Projects</a>
+    <a href="#resume">04 — Resume</a>
+    <a href="#contact">05 — Contact</a>
+    <a href="drop.html" style="color:var(--red);">06 — Drop Zone ↗</a>
   </div>
 </header>
 
 <main>
 
-<!-- \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550 HERO \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550 -->
 <section id="home">
-  <!-- Corner registration marks -->
   <div style="position:absolute;top:20px;left:20px;width:24px;height:24px;border-top:2px solid var(--ink-faint);border-left:2px solid var(--ink-faint);z-index:2;"></div>
   <div style="position:absolute;top:20px;right:20px;width:24px;height:24px;border-top:2px solid var(--ink-faint);border-right:2px solid var(--ink-faint);z-index:2;"></div>
   <div style="position:absolute;bottom:20px;left:20px;width:24px;height:24px;border-bottom:2px solid var(--ink-faint);border-left:2px solid var(--ink-faint);z-index:2;"></div>
@@ -835,29 +833,24 @@ footer {
 
   <div class="hero-inner">
 
-    <!-- Left: Photo as orthographic view -->
-    <div style="position:relative; padding: 40px 48px 32px 20px;">
+    <div style="position:relative; padding: 40px 48px 48px 20px;">
       <div class="ortho-box">
-        <!-- dimension top -->
         <div class="dim-top">
           <div class="dim-line"></div>
           <span>287 mm</span>
           <div class="dim-line"></div>
         </div>
-        <!-- dimension right -->
         <div class="dim-right">
           <div class="dim-line" style="width:1px;min-height:12px;"></div>
           <span>287 mm</span>
           <div class="dim-line" style="width:1px;min-height:12px;"></div>
         </div>
 
-        <img src="AboutImg.jpeg" alt="Wilson Zambrano" class="hero-photo" onerror="this.outerHTML='<div class=\\'hero-photo-placeholder\\'>PHOTO<br>AboutImg.jpeg</div>'">
+        <img src="AboutImg.jpeg" alt="Wilson Zambrano" class="hero-photo" onerror="this.outerHTML='<div class=\'hero-photo-placeholder\'>PHOTO<br>AboutImg.jpeg</div>'">
       </div>
 
-      <!-- Section indicator -->
-      <div style="position:absolute;bottom:8px;left:20px;font-size:0.5rem;letter-spacing:0.2em;color:var(--ink-dim);text-transform:uppercase;">SECTION A-A</div>
+      <div style="position:absolute;bottom:0px;left:20px;font-size:0.5rem;letter-spacing:0.2em;color:var(--ink-dim);text-transform:uppercase;">SECTION A-A</div>
 
-      <!-- Detail callout circles -->
       <div style="position:absolute;top:54px;left:6px;display:flex;flex-direction:column;gap:8px;">
         <div class="callout"><div class="callout-circle" style="font-size:0.5rem;">ME</div></div>
         <div class="callout"><div class="callout-circle" style="font-size:0.5rem;">FL</div></div>
@@ -865,7 +858,6 @@ footer {
       </div>
     </div>
 
-    <!-- Right: Text -->
     <div class="hero-text">
       <p class="hero-eyebrow">Drawing No. WZ-PORT-001</p>
 
@@ -877,7 +869,7 @@ footer {
       <p class="hero-title">Mechanical Engineer &amp; Mechatronic Designer</p>
 
       <p class="hero-desc">
-        Specializing in <strong>Fluid Dynamics</strong>, <strong>Mechanical Design</strong>, and <strong>Autonomous Systems</strong>. I bridge the gap between theoretical analysis and physical fabrication \u2014 from fish hydrodynamics to aerospace mating systems.
+        Specializing in <strong>Fluid Dynamics</strong>, <strong>Mechanical Design</strong>, and <strong>Autonomous Systems</strong>. I bridge the gap between theoretical analysis and physical fabrication — from fish hydrodynamics to aerospace mating systems.
       </p>
 
       <div class="spec-table">
@@ -895,11 +887,11 @@ footer {
         </div>
         <div class="spec-row">
           <span class="spec-key">Status</span>
-          <span class="spec-val" style="color:#2a7a2a;">\u25cf Seeking Full-Time Roles</span>
+          <span class="spec-val" style="color:#2a7a2a;">● Seeking Full-Time Roles</span>
         </div>
         <div class="spec-row">
           <span class="spec-key">Tolerance</span>
-          <span class="spec-val">\u00b1 0.001" on all critical dims</span>
+          <span class="spec-val">± 0.001" on all critical dims</span>
         </div>
       </div>
 
@@ -911,31 +903,26 @@ footer {
   </div>
 </section>
 
-<!-- \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550 ABOUT \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550 -->
 <section id="about">
   <div class="section-frame">
     <div class="reveal" style="margin-bottom:28px;">
-      <p class="dwg-section-label">Section 02 \u2014 System Overview</p>
+      <p class="dwg-section-label">Section 02 — System Overview</p>
       <h2 class="dwg-title">About Me</h2>
     </div>
 
     <div class="about-grid reveal">
-      <!-- Left panel -->
       <div class="about-left">
         <div class="institution-badge">
           <img src="HMC Logo.png" alt="Harvey Mudd College" onerror="this.style.display='none'">
           <p>Institution</p>
           <strong>Harvey Mudd College</strong>
-          <p style="margin-top:4px;">Class of 2026 \u00b7 Engineering</p>
+          <p style="margin-top:4px;">Class of 2026 · Engineering</p>
         </div>
 
-        <!-- Decorative orthographic view placeholder -->
         <div style="border:1px solid var(--line-bold); padding:16px; text-align:center; background: var(--paper-dark);">
           <svg width="100%" viewBox="0 0 160 120" style="max-width:160px;">
-            <!-- Simple gear drawing -->
             <circle cx="80" cy="60" r="35" fill="none" stroke="var(--ink)" stroke-width="1.5"/>
             <circle cx="80" cy="60" r="14" fill="none" stroke="var(--ink)" stroke-width="1.5"/>
-            <!-- Gear teeth -->
             <g stroke="var(--ink)" stroke-width="1.2" fill="none">
               <rect x="76" y="20" width="8" height="8" rx="1" transform="rotate(0,80,60)"/>
               <rect x="76" y="20" width="8" height="8" rx="1" transform="rotate(30,80,60)"/>
@@ -950,11 +937,9 @@ footer {
               <rect x="76" y="20" width="8" height="8" rx="1" transform="rotate(300,80,60)"/>
               <rect x="76" y="20" width="8" height="8" rx="1" transform="rotate(330,80,60)"/>
             </g>
-            <!-- Cross hairs -->
             <line x1="80" y1="5" x2="80" y2="115" stroke="var(--ink-faint)" stroke-width="0.5" stroke-dasharray="4,4"/>
             <line x1="5" y1="60" x2="155" y2="60" stroke="var(--ink-faint)" stroke-width="0.5" stroke-dasharray="4,4"/>
-            <!-- Dim lines -->
-            <text x="80" y="110" text-anchor="middle" style="font-family:'IBM Plex Mono',monospace;font-size:7px;fill:var(--ink-dim);">DETAIL D \u2014 GEAR ASSY</text>
+            <text x="80" y="110" text-anchor="middle" style="font-family:'IBM Plex Mono',monospace;font-size:7px;fill:var(--ink-dim);">DETAIL D — GEAR ASSY</text>
           </svg>
         </div>
 
@@ -963,21 +948,20 @@ footer {
           <div style="display:flex;flex-direction:column;gap:0;border:1px solid var(--line-bold);">
             <div style="display:flex;border-bottom:1px solid var(--line);">
               <span style="flex:1;padding:5px 8px;font-size:0.55rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--ink-dim);border-right:1px solid var(--line);background:rgba(10,22,40,0.04);">CAD</span>
-              <span style="flex:2;padding:5px 8px;font-size:0.6rem;color:var(--ink);">SolidWorks \u00b7 Fusion 360</span>
+              <span style="flex:2;padding:5px 8px;font-size:0.6rem;color:var(--ink);">SolidWorks · Fusion 360</span>
             </div>
             <div style="display:flex;border-bottom:1px solid var(--line);">
               <span style="flex:1;padding:5px 8px;font-size:0.55rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--ink-dim);border-right:1px solid var(--line);background:rgba(10,22,40,0.04);">SIM</span>
-              <span style="flex:2;padding:5px 8px;font-size:0.6rem;color:var(--ink);">ANSYS \u00b7 COMSOL \u00b7 PIV</span>
+              <span style="flex:2;padding:5px 8px;font-size:0.6rem;color:var(--ink);">ANSYS · COMSOL · PIV</span>
             </div>
             <div style="display:flex;">
               <span style="flex:1;padding:5px 8px;font-size:0.55rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--ink-dim);border-right:1px solid var(--line);background:rgba(10,22,40,0.04);">FAB</span>
-              <span style="flex:2;padding:5px 8px;font-size:0.6rem;color:var(--ink);">Bambu X1C \u00b7 SLA \u00b7 Mill</span>
+              <span style="flex:2;padding:5px 8px;font-size:0.6rem;color:var(--ink);">Bambu X1C · SLA · Mill</span>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- Right panel -->
       <div class="about-right">
         <p style="font-family:'Crimson Pro',serif;font-size:1.05rem;line-height:1.8;color:var(--ink-dim);margin-bottom:24px;">
           I am a senior Engineering major at <strong style="color:var(--ink);">Harvey Mudd College</strong> (Class of '26) with a passion for understanding the "why" and "how" of physical systems. My background spans from investigating <strong style="color:var(--ink);">fish hydrodynamics</strong> in the lab to designing <strong style="color:var(--ink);">autonomous mating systems</strong> for aerospace applications. Whether I'm running FEA simulations or fabricating parts for a hybrid go-kart, I am driven by the challenge of creating efficient, robust engineering solutions.
@@ -1002,17 +986,16 @@ footer {
           <div class="skill-col">
             <p class="skill-col-title">Fabrication</p>
             <p class="skill-item">Rapid Prototyping</p>
-            <p class="skill-item">Bambu X1C \u00b7 Prusa \u00b7 SLA</p>
+            <p class="skill-item">Bambu X1C · Prusa · SLA</p>
             <p class="skill-item">Circuit Design</p>
             <p class="skill-item">Project Management</p>
           </div>
         </div>
 
-        <!-- Tolerance note -->
         <div style="margin-top:20px;border:1px solid var(--line);padding:12px 16px;background:rgba(10,22,40,0.03);display:flex;align-items:flex-start;gap:12px;">
           <div style="font-family:'Bebas Neue',sans-serif;font-size:1.6rem;color:var(--red);line-height:1;flex-shrink:0;">NOTE</div>
           <p style="font-size:0.65rem;line-height:1.7;color:var(--ink-dim);">
-            All designs unless otherwise specified: <strong style="color:var(--ink);">tolerances \u00b10.005"</strong>, material <strong style="color:var(--ink);">6061-T6 Aluminum</strong> or as noted. Mechatronic integration (electrical + software) on all autonomous system projects.
+            All designs unless otherwise specified: <strong style="color:var(--ink);">tolerances ±0.005"</strong>, material <strong style="color:var(--ink);">6061-T6 Aluminum</strong> or as noted. Mechatronic integration (electrical + software) on all autonomous system projects.
           </p>
         </div>
       </div>
@@ -1020,17 +1003,15 @@ footer {
   </div>
 </section>
 
-<!-- \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550 PROJECTS \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550 -->
 <section id="projects">
   <div class="section-frame">
     <div class="reveal" style="margin-bottom:28px;">
-      <p class="dwg-section-label">Section 03 \u2014 Project Log</p>
+      <p class="dwg-section-label">Section 03 — Project Log</p>
       <h2 class="dwg-title">Projects &amp; Experience</h2>
     </div>
 
     <div class="projects-grid">
 
-      <!-- 1 \u2014 Indomo -->
       <div class="project-card reveal">
         <div class="card-callout">01</div>
         <div class="card-img-wrap">
@@ -1045,13 +1026,12 @@ footer {
             <span class="card-tag">GD&T</span>
           </div>
           <p class="card-desc">
-            Optimized the design of an at-home corticosteroid autoinjector. Ensuring exactly <strong>0.1 \u00b1 5% cc</strong> fluid delivery at <strong>1.1 mm</strong> depth. Iterated mechanism for facial and neck reliability.
+            Optimized the design of an at-home corticosteroid autoinjector. Ensuring exactly <strong>0.1 ± 5% cc</strong> fluid delivery at <strong>1.1 mm</strong> depth. Iterated mechanism for facial and neck reliability.
           </p>
-          <a href="Indomo-Injector_Poster.pdf" target="_blank" class="btn btn-outline btn-sm">View Technical Poster \u2192</a>
+          <a href="Indomo-Injector_Poster.pdf" target="_blank" class="btn btn-outline btn-sm">View Technical Poster →</a>
         </div>
       </div>
 
-      <!-- 2 \u2014 Blue Origin -->
       <div class="project-card reveal">
         <div class="card-callout">02</div>
         <div class="card-img-wrap">
@@ -1071,7 +1051,6 @@ footer {
         </div>
       </div>
 
-      <!-- 3 \u2014 Fish Hydrodynamics -->
       <div class="project-card reveal">
         <div class="card-callout">03</div>
         <div class="card-img-wrap">
@@ -1088,11 +1067,10 @@ footer {
           <p class="card-desc">
             Synchronized <strong>6-axis load cell</strong> with high-speed video and PIV to correlate Archer fish thrust with wake topology. Custom MATLAB flow-field scripts.
           </p>
-          <a href="poster.html" target="_blank" class="btn btn-outline btn-sm">View Research Data \u2192</a>
+          <a href="poster.html" target="_blank" class="btn btn-outline btn-sm">View Research Data →</a>
         </div>
       </div>
 
-      <!-- 4 \u2014 AUV -->
       <div class="project-card reveal">
         <div class="card-callout">04</div>
         <div class="card-img-wrap">
@@ -1109,11 +1087,10 @@ footer {
           <p class="card-desc">
             Designed and tested AUV nose cone geometries. Validated Exp. Cone Cd <strong>0.959</strong> vs COMSOL sim <strong>0.636</strong>. Analyzed deviations for geometry optimization recommendations.
           </p>
-          <a href="Final Report IEEE.docx.pdf" target="_blank" class="btn btn-outline btn-sm">Read IEEE Report \u2192</a>
+          <a href="Final Report IEEE.docx.pdf" target="_blank" class="btn btn-outline btn-sm">Read IEEE Report →</a>
         </div>
       </div>
 
-      <!-- 5 \u2014 PWM -->
       <div class="project-card reveal">
         <div class="card-callout">05</div>
         <div class="card-img-wrap">
@@ -1131,17 +1108,16 @@ footer {
             Custom AC-DC converter with <strong>Pulse Width Modulation</strong> for variable power delivery. Duty cycle modulation for motors and thermal systems. Validated via oscilloscope.
           </p>
           <div style="display:flex;gap:8px;">
-            <a href="E84 Hardware Circuit Testing.pdf" target="_blank" class="btn btn-outline btn-sm">Test Report \u2192</a>
-            <a href="E84 Final...entation.pdf" target="_blank" class="btn btn-outline btn-sm">Presentation \u2192</a>
+            <a href="E84 Hardware Circuit Testing.pdf" target="_blank" class="btn btn-outline btn-sm">Test Report →</a>
+            <a href="E84 Final...entation.pdf" target="_blank" class="btn btn-outline btn-sm">Presentation →</a>
           </div>
         </div>
       </div>
 
-      <!-- 6 \u2014 Placeholder -->
       <div class="project-card reveal hatch-bg" style="display:flex;align-items:center;justify-content:center;min-height:200px;">
         <div style="text-align:center;">
           <p style="font-family:'Bebas Neue',sans-serif;font-size:1.2rem;letter-spacing:0.1em;color:var(--ink-faint);">RESERVED</p>
-          <p style="font-size:0.5rem;text-transform:uppercase;letter-spacing:0.2em;color:var(--ink-faint);margin-top:4px;">Future Project \u2014 TBD</p>
+          <p style="font-size:0.5rem;text-transform:uppercase;letter-spacing:0.2em;color:var(--ink-faint);margin-top:4px;">Future Project — TBD</p>
         </div>
       </div>
 
@@ -1149,16 +1125,15 @@ footer {
   </div>
 </section>
 
-<!-- \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550 RESUME \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550 -->
 <section id="resume">
   <div class="section-frame">
     <div class="reveal" style="margin-bottom:28px;">
-      <p class="dwg-section-label">Section 04 \u2014 Credentials</p>
+      <p class="dwg-section-label">Section 04 — Credentials</p>
       <h2 class="dwg-title">Resume</h2>
     </div>
     <div class="resume-wrap reveal">
       <a href="WilsonZambrano.pdf" target="_blank" class="resume-frame" style="display:block;text-decoration:none;">
-        <img src="WilsonZambrano.jpg" alt="Wilson Zambrano Resume" onerror="this.outerHTML='<div style=\\'padding:80px;text-align:center;font-family:IBM Plex Mono,monospace;font-size:0.7rem;color:var(--ink-dim);background:var(--paper-dark);\\'>WilsonZambrano.jpg<br><br>Resume Preview</div>'">
+        <img src="WilsonZambrano.jpg" alt="Wilson Zambrano Resume" onerror="this.outerHTML='<div style=\'padding:80px;text-align:center;font-family:IBM Plex Mono,monospace;font-size:0.7rem;color:var(--ink-dim);background:var(--paper-dark);\'>WilsonZambrano.jpg<br><br>Resume Preview</div>'">
       </a>
       <div style="margin-top:16px;display:flex;gap:12px;">
         <a href="WilsonZambrano.pdf" download class="btn btn-outline" style="display:inline-flex;align-items:center;gap:8px;">
@@ -1174,16 +1149,14 @@ footer {
   </div>
 </section>
 
-<!-- \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550 CONTACT \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550 -->
 <section id="contact">
   <div class="section-frame">
     <div class="reveal" style="margin-bottom:28px;">
-      <p class="dwg-section-label">Section 05 \u2014 Correspondence</p>
+      <p class="dwg-section-label">Section 05 — Correspondence</p>
       <h2 class="dwg-title">Get In Touch</h2>
     </div>
 
     <div class="contact-grid reveal">
-      <!-- Left: info -->
       <div class="contact-left">
         <div class="contact-status">
           <span class="status-dot"></span>
@@ -1193,7 +1166,6 @@ footer {
           Seeking opportunities in <strong>Mechanical Design</strong>, <strong>Mechatronics</strong>, and <strong>Aerospace Engineering</strong>. Open to roles that blend physical systems with intelligent design.
         </p>
 
-        <!-- Decorative revision block -->
         <div style="border:1px solid var(--line-bold);margin-bottom:24px;">
           <div style="background:rgba(10,22,40,0.06);padding:6px 12px;border-bottom:1px solid var(--line-bold);font-size:0.5rem;text-transform:uppercase;letter-spacing:0.2em;color:var(--ink-dim);">Revision History</div>
           <div style="display:grid;grid-template-columns:40px 60px 1fr;font-size:0.55rem;">
@@ -1213,7 +1185,7 @@ footer {
         </div>
 
         <div class="contact-links">
-          <a href="#" class="contact-link">
+          <a href="https://www.linkedin.com/in/wilson-zambrano/" class="contact-link">
             <span class="contact-link-icon">in</span>
             LinkedIn Profile
           </a>
@@ -1222,13 +1194,12 @@ footer {
             GitHub Repository
           </a>
           <a href="WilsonZambrano.pdf" target="_blank" class="contact-link">
-            <span class="contact-link-icon">\u2193</span>
+            <span class="contact-link-icon">↓</span>
             Download Resume PDF
           </a>
         </div>
       </div>
 
-      <!-- Right: form -->
       <div class="contact-right">
         <form action="https://formspree.io/f/mwvedoro" method="POST">
           <div class="form-row">
@@ -1260,7 +1231,6 @@ footer {
 
 </main>
 
-<!-- \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550 FOOTER / TITLE BLOCK \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550 -->
 <footer>
   <div class="title-block">
     <div class="tb-cell">
@@ -1289,7 +1259,7 @@ footer {
     </div>
     <div class="tb-cell" style="border-left:1px solid var(--ink);">
       <div class="footer-links">
-        <a href="#" class="footer-link">LinkedIn</a>
+        <a href="https://www.linkedin.com/in/wilson-zambrano/" class="footer-link">LinkedIn</a>
         <a href="#" class="footer-link">GitHub</a>
       </div>
     </div>
