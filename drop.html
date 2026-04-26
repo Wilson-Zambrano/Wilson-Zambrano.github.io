@@ -61,10 +61,12 @@ body::before {
 /* ── HEADER ── */
 #header { position: sticky; top: 0; z-index: 100; background: var(--paper-dark); border-bottom: 2px solid var(--ink); }
 .nav-inner { display: flex; justify-content: space-between; align-items: stretch; max-width: 1200px; margin: 0 auto; }
-.nav-brand { font-family: 'Bebas Neue', sans-serif; font-size: 1.4rem; letter-spacing: 0.12em; color: var(--ink); text-decoration: none; padding: 12px 24px; border-right: 1px solid var(--line-bold); display: flex; align-items: center; gap: 10px; }
+.nav-brand { font-family: 'Bebas Neue', sans-serif; font-size: 1.4rem; letter-spacing: 0.12em; color: var(--ink); text-decoration: none; padding: 12px 24px; border-right: 1px solid var(--line-bold); display: flex; align-items: center; gap: 10px; transition: background 0.15s; }
+.nav-brand:hover { background: rgba(10,22,40,0.05); }
 .nav-brand span { color: var(--red); }
-.nav-doc-ref { display: flex; align-items: center; margin-left: auto; }
+.nav-doc-ref { display: flex; align-items: center; margin-left: auto; border-left: 1px solid var(--line-bold); }
 .nav-doc-cell { padding: 6px 18px; border-left: 1px solid var(--line); display: flex; flex-direction: column; justify-content: center; }
+.nav-doc-cell:first-child { border-left: none; }
 .nav-doc-key { font-size: 0.45rem; text-transform: uppercase; letter-spacing: 0.2em; color: var(--ink-dim); }
 .nav-doc-val { font-size: 0.6rem; font-weight: 700; color: var(--ink); letter-spacing: 0.06em; }
 
@@ -200,8 +202,6 @@ code[class*="language-"], pre[class*="language-"] * { font-family: 'IBM Plex Mon
 .status-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); animation: blink 2s ease infinite; }
 .status-dot.offline { background: var(--red); animation: none; }
 @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
-.status-logout { margin-left: auto; padding: 0 16px; cursor: pointer; font-size: 0.5rem; text-transform: uppercase; letter-spacing: 0.12em; color: var(--ink-dim); background: none; border: none; border-left: 1px solid var(--line); transition: color 0.15s; }
-.status-logout:hover { color: var(--red); }
 
 footer { position: relative; z-index: 1; border-top: 3px solid var(--ink); background: var(--paper-dark); margin-bottom: 30px; }
 .title-block { max-width: 1200px; margin: 0 auto; display: flex; align-items: stretch; }
@@ -234,31 +234,36 @@ footer { position: relative; z-index: 1; border-top: 3px solid var(--ink); backg
 <header id="header">
   <nav class="nav-inner">
     <div style="display: flex; align-items: center;">
-      <a href="index.html" class="nav-brand">W<span>.</span>Zambrano</a>
-      <a href="index.html" class="btn btn-outline" style="margin-left: 16px; padding: 6px 12px; font-size: 0.5rem;">
-        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:inline;vertical-align:middle;margin-right:4px;"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
-        Return to Portfolio
-      </a>
-      <button id="top-logout-btn" onclick="doLogout()" class="btn btn-outline" style="display:none; margin-left: 8px; padding: 6px 12px; font-size: 0.5rem; border-color: var(--red); color: var(--red);">
+      <a href="index.html" class="nav-brand" title="Return to Portfolio">W<span>.</span>Zambrano</a>
+    </div>
+    
+    <div style="display: flex; align-items: center; gap: 12px;">
+      
+      <button id="nav-app-toggle" onclick="toggleAppView()" class="btn btn-outline" style="display:none; padding: 6px 12px; font-size: 0.5rem; border-color: var(--ink); color: var(--ink);">
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:inline;vertical-align:middle;margin-right:4px;"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        <span>Portfolio Terminal</span>
+      </button>
+
+      <button id="top-logout-btn" onclick="doLogout()" class="btn btn-outline" style="display:none; padding: 6px 12px; font-size: 0.5rem; border-color: var(--red); color: var(--red);">
         <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:inline;vertical-align:middle;margin-right:4px;"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
         Logout
       </button>
-    </div>
-    <div class="nav-doc-ref">
-      <div class="nav-doc-cell"><span class="nav-doc-key">Document</span><span class="nav-doc-val">WZ-DROP-001</span></div>
-      <div class="nav-doc-cell"><span class="nav-doc-key">Function</span><span class="nav-doc-val">File / Clip Receiver</span></div>
-      <div class="nav-doc-cell"><span class="nav-doc-key">Access</span><span class="nav-doc-val" id="nav-access-val" style="color:var(--red);">● Locked</span></div>
+
+      <div class="nav-doc-ref">
+        <div class="nav-doc-cell"><span class="nav-doc-key">Document</span><span class="nav-doc-val">WZ-DROP-001</span></div>
+        <div class="nav-doc-cell"><span class="nav-doc-key">Access</span><span class="nav-doc-val" id="nav-access-val" style="color:var(--red);">● Locked</span></div>
+      </div>
     </div>
   </nav>
 </header>
 
 <main>
-  <div style="margin-bottom:28px;">
-    <p class="dwg-section-label">Document WZ-DROP-001 Rev C — Intake Station</p>
-    <h1 class="dwg-title">Drop Zone</h1>
-  </div>
-
   <div id="login-screen">
+    <div style="margin-bottom:28px;">
+      <p class="dwg-section-label">Document WZ-DROP-001 Rev C — Intake Station</p>
+      <h1 class="dwg-title">Drop Zone</h1>
+    </div>
+
     <div class="login-box-wrapper">
       <div class="login-box">
         <div class="login-header">
@@ -305,27 +310,13 @@ footer { position: relative; z-index: 1; border-top: 3px solid var(--ink); backg
 
   <div id="app-screen">
     
-    <div style="display: flex; align-items: center;">
-          <a href="index.html" class="nav-brand">W<span>.</span>Zambrano</a>
-          <a href="index.html" class="btn btn-outline" style="margin-left: 16px; padding: 6px 12px; font-size: 0.5rem;">
-            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:inline;vertical-align:middle;margin-right:4px;"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
-            Return to Portfolio
-          </a>
-          
-          <button id="nav-app-toggle" onclick="toggleAppView()" class="btn btn-outline" style="display:none; margin-left: 8px; padding: 6px 12px; font-size: 0.5rem; border-color: var(--ink); color: var(--ink);">
-            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:inline;vertical-align:middle;margin-right:4px;"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-            <span>Portfolio Terminal</span>
-          </button>
-
-          <button id="top-logout-btn" onclick="doLogout()" class="btn btn-outline" style="display:none; margin-left: 8px; padding: 6px 12px; font-size: 0.5rem; border-color: var(--red); color: var(--red);">
-            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:inline;vertical-align:middle;margin-right:4px;"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-            Logout
-          </button>
-        </div>
-
     <div id="view-drop">
-      <div class="drop-layout">
+      <div style="margin-bottom:28px;">
+        <p class="dwg-section-label">Document WZ-DROP-001 Rev C — Intake Station</p>
+        <h1 class="dwg-title">Drop Zone</h1>
+      </div>
 
+      <div class="drop-layout">
         <div class="drop-panel">
           <div>
             <p class="form-label" style="margin-bottom:8px;">Input Mode</p>
@@ -476,10 +467,12 @@ footer { position: relative; z-index: 1; border-top: 3px solid var(--ink); backg
 
       </div>
     </div> <div id="view-finance" style="display:none;">
-      <div style="border: 2px solid var(--ink); padding: 32px; background: rgba(10,22,40,0.02);">
+      <div style="margin-bottom:28px;">
         <p class="dwg-section-label">Module 02 — Financial Telemetry</p>
-        <h2 style="font-family: 'Bebas Neue', sans-serif; font-size: 2rem; color: var(--ink); margin-bottom: 24px;">Margin & Portfolio Status</h2>
-        
+        <h1 class="dwg-title">Margin & Portfolio Status</h1>
+      </div>
+
+      <div style="border: 2px solid var(--ink); padding: 32px; background: rgba(10,22,40,0.02);">
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
           
           <div style="border: 1px solid var(--line-bold); padding: 16px; background: var(--paper);">
@@ -524,7 +517,6 @@ footer { position: relative; z-index: 1; border-top: 3px solid var(--ink); backg
   </div>
   <div class="status-cell">Mode: <strong id="status-mode">File</strong></div>
   <div class="status-cell">Items: <strong id="status-count">—</strong></div>
-  <button class="status-logout" id="logout-btn" onclick="doLogout()" style="display:none;">↩ Logout</button>
 </div>
 
 <div id="preview-overlay">
@@ -567,6 +559,7 @@ let jwt = null;
 let currentMode = 'file';
 let selectedFiles = []; 
 let drops = [];
+let currentAppView = 'drop'; // Track which app is currently open
 
 // ═══════════════════════════════════════════════
 //  INIT
@@ -624,6 +617,12 @@ function doLogout() {
   jwt = null;
   sessionStorage.removeItem('wz_drop_jwt');
   drops = [];
+  
+  // Reset view back to drop zone if they log out from the terminal
+  if (currentAppView === 'finance') {
+    toggleAppView();
+  }
+
   showLogin();
   loadPublicDrops();
   showToast('Logged out');
@@ -636,9 +635,11 @@ function showLogin() {
   document.getElementById('nav-access-val').style.color = 'var(--red)';
   document.getElementById('status-dot').classList.add('offline');
   document.getElementById('status-text').innerHTML = 'System <strong>Locked</strong>';
-  document.getElementById('logout-btn').style.display = 'none';
+  
+  // Hide Top Header Buttons
   document.getElementById('top-logout-btn').style.display = 'none'; 
-  document.getElementById('nav-app-toggle').style.display = 'none'; // ADD THIS LINE
+  document.getElementById('nav-app-toggle').style.display = 'none';
+  
   document.getElementById('login-username').focus();
 }
 
@@ -649,9 +650,10 @@ function showApp() {
   document.getElementById('nav-access-val').style.color = 'var(--green)';
   document.getElementById('status-dot').classList.remove('offline');
   document.getElementById('status-text').innerHTML = 'System <strong>Online</strong>';
-  document.getElementById('logout-btn').style.display = 'block';
+  
+  // Show Top Header Buttons
   document.getElementById('top-logout-btn').style.display = 'inline-flex'; 
-  document.getElementById('nav-app-toggle').style.display = 'inline-flex'; // ADD THIS LINE
+  document.getElementById('nav-app-toggle').style.display = 'inline-flex';
 }
 
 // ═══════════════════════════════════════════════
@@ -737,17 +739,12 @@ function switchMode(mode) {
 }
 
 // ═══════════════════════════════════════════════
-//  APP TAB ROUTING & FINANCE
-// ═══════════════════════════════════════════════
-// ═══════════════════════════════════════════════
 //  APP VIEW ROUTING & FINANCE
 // ═══════════════════════════════════════════════
-let currentAppView = 'drop'; // Track which app is currently open
-
 function toggleAppView() {
   const toggleBtn = document.getElementById('nav-app-toggle');
   const btnSpan = toggleBtn.querySelector('span');
-  
+
   if (currentAppView === 'drop') {
     // Switch to Finance
     currentAppView = 'finance';
@@ -757,7 +754,7 @@ function toggleAppView() {
     // Update Header UI
     document.getElementById('nav-access-val').textContent = '● Terminal';
     toggleBtn.classList.replace('btn-outline', 'btn-solid');
-    btnSpan.textContent = 'Back to Drop Zone';
+    btnSpan.textContent = 'Return to Drop Zone';
     
     // Fire the API fetch
     fetchFinanceData(); 
@@ -815,7 +812,7 @@ async function fetchFinanceData() {
 function setupDragDrop() {
   const zone = document.getElementById('drop-zone');
   ['dragenter','dragover'].forEach(e => zone.addEventListener(e, ev => { ev.preventDefault(); zone.classList.add('drag-over'); }));
-  ['dragleave','dragend'].forEach(e => zone.addEventListener(e, () => zone.classList.remove('drag-over')));
+  ['dragleave','dragend'].forEach(e => zone.addEventListener(e, () => zone.classList.remove('drag-over'); }));
   zone.addEventListener('drop', e => { 
     e.preventDefault(); 
     zone.classList.remove('drag-over'); 
