@@ -187,6 +187,48 @@ async function fetchFinanceData() {
   }
 }
 
+async function submitTrade() {
+  const btn = document.getElementById('trade-submit-btn');
+  const action = document.getElementById('trade-action').value;
+  const ticker = document.getElementById('trade-ticker').value.trim().toUpperCase();
+  const shares = parseFloat(document.getElementById('trade-shares').value);
+  const price = parseFloat(document.getElementById('trade-price').value);
+
+  if (!ticker || isNaN(shares) || isNaN(price)) {
+    showToast('Please fill out all trade fields', true);
+    return;
+  }
+
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>&nbsp; Logging...';
+
+  try {
+    const res = await apiFetch('/api/finance/trade', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action, ticker, shares, price })
+    });
+    
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Failed to log trade');
+
+    showToast(`Logged: ${action} ${shares} ${ticker}`);
+    
+    // Clear the form
+    document.getElementById('trade-ticker').value = '';
+    document.getElementById('trade-shares').value = '';
+    document.getElementById('trade-price').value = '';
+
+    // Immediately refresh the dashboard to show the new data!
+    fetchFinanceData();
+
+  } catch (err) {
+    showToast(err.message, true);
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 6px;"><polyline points="20 6 9 17 4 12"/></svg> Log Trade';
+  }
+}
 // ═══════════════════════════════════════════════
 //  DROP ZONE LOGIC
 // ═══════════════════════════════════════════════
