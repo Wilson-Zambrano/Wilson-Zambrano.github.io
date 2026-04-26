@@ -120,7 +120,7 @@ async function apiFetch(path, options = {}) {
 }
 
 // ═══════════════════════════════════════════════
-//  FINANCE TERMINAL LOGIC (Alpaca + Sheets + Charts)
+//  FINANCE TERMINAL LOGIC
 // ═══════════════════════════════════════════════
 async function fetchFinanceData() {
   try {
@@ -128,52 +128,53 @@ async function fetchFinanceData() {
     const data = await res.json();
     if (data.error) throw new Error(data.error);
 
-    // Populate Top Cards
     const margin = Number(data.availableMargin);
-    document.getElementById('dash-margin-avail').textContent = !isNaN(margin) ? '$' + margin.toLocaleString(undefined, {minimumFractionDigits: 2}) : 'ERR';
+    const availEl = document.getElementById('dash-margin-avail');
+    if (availEl) availEl.textContent = !isNaN(margin) ? '$' + margin.toLocaleString(undefined, {minimumFractionDigits: 2}) : 'ERR';
     
-    document.getElementById('dash-vix').textContent = data.vix || '—';
+    const vixEl = document.getElementById('dash-vix');
+    if (vixEl) vixEl.textContent = data.vix || '—';
     
     const net = Number(data.netEarnings);
     const netEl = document.getElementById('dash-net');
-    netEl.textContent = !isNaN(net) ? '$' + net.toLocaleString(undefined, {minimumFractionDigits: 2}) : 'ERR';
-    netEl.style.color = net >= 0 ? 'var(--green)' : 'var(--red)';
+    if (netEl) {
+        netEl.textContent = !isNaN(net) ? '$' + net.toLocaleString(undefined, {minimumFractionDigits: 2}) : 'ERR';
+        netEl.style.color = net >= 0 ? 'var(--green)' : 'var(--red)';
+    }
 
-    // Populate Ledger Table
     const tableBody = document.getElementById('dash-positions-table');
-    if (!tableBody) return; 
-    tableBody.innerHTML = ''; 
+    if (tableBody) {
+        tableBody.innerHTML = ''; 
+        if (data.portfolioTable && data.portfolioTable.length > 1) {
+            data.portfolioTable.slice(1).forEach(row => {
+                const ticker = row[0]; 
+                if (!ticker || typeof ticker !== 'string') return; 
 
-    if (data.portfolioTable && data.portfolioTable.length > 1) {
-        data.portfolioTable.slice(1).forEach(row => {
-            const ticker = row[0]; 
-            if (!ticker || typeof ticker !== 'string') return; 
+                const shares = row[2] || 0;     
+                const avgCost = row[3] || 0;    
+                let price = row[4] || 0;    
+                
+                if (data.liveMarket && data.liveMarket[ticker] && data.liveMarket[ticker].latestTrade) {
+                    price = data.liveMarket[ticker].latestTrade.p;
+                }
 
-            const shares = row[2] || 0;     
-            const avgCost = row[3] || 0;    
-            let price = row[4] || 0;    
-            
-            // Override with live market data if available
-            if (data.liveMarket && data.liveMarket[ticker] && data.liveMarket[ticker].latestTrade) {
-                price = data.liveMarket[ticker].latestTrade.p;
-            }
+                let roi = row[18] || 0; 
+                if (avgCost > 0 && price > 0) roi = (price - avgCost) / avgCost;
 
-            let roi = row[18] || 0; 
-            if (avgCost > 0 && price > 0) roi = (price - avgCost) / avgCost;
+                const tr = document.createElement('tr');
+                tr.style.borderBottom = '1px solid var(--line)';
+                const roiColor = roi >= 0 ? 'var(--green)' : 'var(--red)';
 
-            const tr = document.createElement('tr');
-            tr.style.borderBottom = '1px solid var(--line)';
-            const roiColor = roi >= 0 ? 'var(--green)' : 'var(--red)';
-
-            tr.innerHTML = `
-              <td style="padding: 8px 10px; font-weight: 700; border-right: 1px solid var(--line);">${ticker}</td>
-              <td style="padding: 8px 10px; border-right: 1px solid var(--line);">${shares}</td>
-              <td style="padding: 8px 10px; border-right: 1px solid var(--line);">$${Number(avgCost).toFixed(2)}</td>
-              <td style="padding: 8px 10px; border-right: 1px solid var(--line);">$${Number(price).toFixed(2)}</td>
-              <td style="padding: 8px 10px; font-weight: 600; color: ${roiColor};">${(roi * 100).toFixed(2)}%</td>
-            `;
-            tableBody.appendChild(tr);
-        });
+                tr.innerHTML = `
+                  <td style="padding: 8px 10px; font-weight: 700; border-right: 1px solid var(--line);">${ticker}</td>
+                  <td style="padding: 8px 10px; border-right: 1px solid var(--line);">${shares}</td>
+                  <td style="padding: 8px 10px; border-right: 1px solid var(--line);">$${Number(avgCost).toFixed(2)}</td>
+                  <td style="padding: 8px 10px; border-right: 1px solid var(--line);">$${Number(price).toFixed(2)}</td>
+                  <td style="padding: 8px 10px; font-weight: 600; color: ${roiColor};">${(roi * 100).toFixed(2)}%</td>
+                `;
+                tableBody.appendChild(tr);
+            });
+        }
     }
 
     const statusBox = document.getElementById('connection-status');
@@ -182,16 +183,16 @@ async function fetchFinanceData() {
         statusBox.innerHTML = '<p style="font-size: 0.6rem; color: var(--green); text-transform: uppercase; letter-spacing: 0.1em;">Secure Alpaca/Sheets Bridge Connected.</p>';
     }
 
-    // Render the charts
-    renderTerminalCharts();
+    // Render the charts independently so if they fail, the rest stays intact
+    renderTerminalCharts().catch(e => console.error("Chart Render Failed", e));
 
   } catch (err) {
-    if (document.getElementById('dash-margin-avail')) {
-      document.getElementById('dash-margin-avail').textContent = "ERR";
-      document.getElementById('dash-vix').textContent = "ERR";
-      document.getElementById('dash-net').textContent = "ERR";
-      showToast('Failed to sync financial data', true);
-    }
+    console.error(err);
+    ['dash-margin-avail', 'dash-vix', 'dash-net'].forEach(id => {
+       const el = document.getElementById(id);
+       if (el) el.textContent = "ERR";
+    });
+    showToast('Failed to sync financial data', true);
   }
 }
 
@@ -227,7 +228,6 @@ async function submitTrade() {
     document.getElementById('trade-price').value = '';
 
     fetchFinanceData();
-
   } catch (err) {
     showToast(err.message, true);
   } finally {
@@ -271,7 +271,7 @@ async function renderTerminalCharts() {
     const res = await apiFetch('/api/finance/charts');
     const data = await res.json();
     
-    if(!data.vix || !data.spy) return;
+    if(!data.vix || !data.spy || data.error) throw new Error("Chart data missing");
 
     const vixResult = data.vix.chart.result[0];
     const spyResult = data.spy.chart.result[0];
@@ -288,35 +288,38 @@ async function renderTerminalCharts() {
     const gridColor = "rgba(10,22,40,0.1)";
 
     const ctxVix = document.getElementById('chartVix');
-    if (chartVixInstance) chartVixInstance.destroy();
-    chartVixInstance = new Chart(ctxVix, {
-        type: 'line',
-        data: {
-            labels: timestamps,
-            datasets: [
-                { label: 'VIX', data: vixPrices, borderColor: '#0a1628', borderWidth: 1.5, pointRadius: 0, tension: 0.1 },
-                { label: '30D SMA', data: vixSMA30, borderColor: '#b01020', borderWidth: 1, borderDash: [5, 5], pointRadius: 0, tension: 0.1 }
-            ]
-        },
-        options: { responsive: true, maintainAspectRatio: false, scales: { x: { grid: { color: gridColor } }, y: { grid: { color: gridColor } } } }
-    });
+    if (ctxVix) {
+        if (chartVixInstance) chartVixInstance.destroy();
+        chartVixInstance = new Chart(ctxVix, {
+            type: 'line',
+            data: {
+                labels: timestamps,
+                datasets: [
+                    { label: 'VIX', data: vixPrices, borderColor: '#0a1628', borderWidth: 1.5, pointRadius: 0, tension: 0.1 },
+                    { label: '30D SMA', data: vixSMA30, borderColor: '#b01020', borderWidth: 1, borderDash: [5, 5], pointRadius: 0, tension: 0.1 }
+                ]
+            },
+            options: { responsive: true, maintainAspectRatio: false, scales: { x: { grid: { color: gridColor } }, y: { grid: { color: gridColor } } } }
+        });
+    }
 
     const ctxS5 = document.getElementById('chartS5FI');
-    if (chartS5FIInstance) chartS5FIInstance.destroy();
-    chartS5FIInstance = new Chart(ctxS5, {
-        type: 'line',
-        data: {
-            labels: timestamps,
-            datasets: [
-                { label: 'Price', data: spyPrices, borderColor: '#0a1628', borderWidth: 1.5, pointRadius: 0, tension: 0.1 },
-                { label: 'Upper', data: spyUpper, borderColor: 'rgba(42,122,42,0.5)', backgroundColor: 'rgba(42,122,42,0.05)', borderWidth: 1, pointRadius: 0, fill: '+1' },
-                { label: 'Lower', data: spyLower, borderColor: 'rgba(176,16,32,0.5)', borderWidth: 1, pointRadius: 0, fill: false },
-                { label: '20D SMA', data: spySMA20, borderColor: '#2a4060', borderWidth: 1, borderDash: [3, 3], pointRadius: 0 }
-            ]
-        },
-        options: { responsive: true, maintainAspectRatio: false, scales: { x: { grid: { color: gridColor } }, y: { grid: { color: gridColor } } } }
-    });
-
+    if (ctxS5) {
+        if (chartS5FIInstance) chartS5FIInstance.destroy();
+        chartS5FIInstance = new Chart(ctxS5, {
+            type: 'line',
+            data: {
+                labels: timestamps,
+                datasets: [
+                    { label: 'Price', data: spyPrices, borderColor: '#0a1628', borderWidth: 1.5, pointRadius: 0, tension: 0.1 },
+                    { label: 'Upper', data: spyUpper, borderColor: 'rgba(42,122,42,0.5)', backgroundColor: 'rgba(42,122,42,0.05)', borderWidth: 1, pointRadius: 0, fill: '+1' },
+                    { label: 'Lower', data: spyLower, borderColor: 'rgba(176,16,32,0.5)', borderWidth: 1, pointRadius: 0, fill: false },
+                    { label: '20D SMA', data: spySMA20, borderColor: '#2a4060', borderWidth: 1, borderDash: [3, 3], pointRadius: 0 }
+                ]
+            },
+            options: { responsive: true, maintainAspectRatio: false, scales: { x: { grid: { color: gridColor } }, y: { grid: { color: gridColor } } } }
+        });
+    }
   } catch (err) {
       console.error("Failed to render charts", err);
   }
