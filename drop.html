@@ -728,7 +728,7 @@ function switchMode(mode) {
 }
 
 // ═══════════════════════════════════════════════
-//  APP TAB ROUTING
+//  APP TAB ROUTING & FINANCE
 // ═══════════════════════════════════════════════
 function switchTab(tab) {
   // Toggle UI Views
@@ -748,8 +748,43 @@ function switchTab(tab) {
     finBtn.className = 'btn btn-solid';
     document.getElementById('nav-access-val').textContent = '● Terminal';
     
-    // Trigger Google Sheets fetch here in the future
-    // fetchFinanceData(); 
+    // Trigger Google Sheets fetch
+    fetchFinanceData(); 
+  }
+}
+
+async function fetchFinanceData() {
+  try {
+    // The requireAuth middleware on your worker automatically uses your JWT
+    const res = await apiFetch('/api/finance/dashboard');
+    const data = await res.json();
+    
+    if (data.error) throw new Error(data.error);
+
+    // Format and inject the Google Sheets data into the HTML grid
+    document.getElementById('dash-margin-avail').textContent = '$' + Number(data.availableMargin).toLocaleString(undefined, {minimumFractionDigits: 2});
+    
+    // Check if safetyLevel is a raw decimal (0.483) or a string from your sheet
+    if (typeof data.safetyLevel === 'number') {
+        document.getElementById('dash-margin-safe').textContent = (data.safetyLevel * 100).toFixed(1) + '%';
+    } else {
+        document.getElementById('dash-margin-safe').textContent = data.safetyLevel; 
+    }
+    
+    document.getElementById('dash-interest').textContent = '$' + Number(data.totalInterest).toLocaleString(undefined, {minimumFractionDigits: 2});
+
+    // Update the connection status visual
+    const statusBox = document.querySelector('#view-finance > div > div:last-child');
+    if (statusBox) {
+        statusBox.style.borderColor = 'var(--green)';
+        statusBox.innerHTML = '<p style="font-size: 0.6rem; color: var(--green); text-transform: uppercase; letter-spacing: 0.1em;">Secure Google Sheets Bridge Connected.</p>';
+    }
+
+  } catch (err) {
+    document.getElementById('dash-margin-avail').textContent = "ERR";
+    document.getElementById('dash-margin-safe').textContent = "ERR";
+    document.getElementById('dash-interest').textContent = "ERR";
+    showToast('Failed to sync with Google Sheets', true);
   }
 }
 
