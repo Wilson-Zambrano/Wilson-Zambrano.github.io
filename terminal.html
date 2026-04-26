@@ -9,93 +9,433 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
-  /* ── Desktop/Mobile Grid Architecture ── */
+  /* ══════════════════════════════════════════════════
+     TERMINAL — LAYOUT
+  ══════════════════════════════════════════════════ */
   .terminal-layout {
     display: grid;
-    grid-template-columns: 1fr 320px;
-    gap: 0; /* Removed gap to merge borders */
-    border: 2px solid var(--ink); /* Matches Drop Zone outer border */
+    grid-template-columns: 1fr 300px;
+    gap: 0;
+    border: 2px solid var(--ink);
     background: var(--paper);
     min-width: 0;
   }
 
   #view-finance {
-    border-right: 2px solid var(--ink); /* Divider line */
+    border-right: 2px solid var(--ink);
     padding: 32px;
     background: rgba(10,22,40,0.02);
-    min-width: 0; /* CRITICAL FIX: Stops the 2400px chart from blowing out the grid */
+    min-width: 0;
   }
 
-  /* ── Analysis Sidebar ── */
-  .analysis-sidebar {
-    padding: 28px;
+  /* ══════════════════════════════════════════════════
+     KPI STRIP — top stat cards
+  ══════════════════════════════════════════════════ */
+  .kpi-strip {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 0;
+    border: 1px solid var(--line-bold);
+    margin-bottom: 24px;
+  }
+  .kpi-card {
+    padding: 14px 16px;
+    border-right: 1px solid var(--line-bold);
+    background: var(--paper);
+    position: relative;
+    transition: background 0.15s;
+  }
+  .kpi-card:last-child { border-right: none; }
+  .kpi-card::after {
+    content: '';
+    position: absolute;
+    inset: 4px;
+    border: 0.5px solid var(--ink-faint);
+    pointer-events: none;
+  }
+  .kpi-label {
+    font-size: 0.48rem;
+    text-transform: uppercase;
+    letter-spacing: 0.22em;
+    color: var(--ink-dim);
+    margin-bottom: 8px;
     display: flex;
-    flex-direction: column;
-    gap: 24px;
-    position: sticky;
-    top: 72px; /* Sticks just below the header */
-    height: calc(100vh - 80px); /* Makes it a fixed scrollable panel */
-    overflow-y: auto;
-    scrollbar-width: thin;
-    scrollbar-color: var(--ink-dim) var(--paper-dark);
+    align-items: center;
+    gap: 6px;
+  }
+  .kpi-label::before {
+    content: '';
+    display: inline-block;
+    width: 8px;
+    height: 1px;
+    background: currentColor;
+  }
+  .kpi-value {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--ink);
+    letter-spacing: 0.02em;
+    line-height: 1;
+  }
+  .kpi-sub {
+    font-size: 0.48rem;
+    color: var(--ink-dim);
+    margin-top: 5px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+  }
+  .kpi-badge {
+    display: inline-block;
+    font-size: 0.45rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    padding: 2px 6px;
+    border: 1px solid;
+    margin-top: 6px;
   }
 
-  .analysis-sidebar::-webkit-scrollbar { width: 4px; }
-  .analysis-sidebar::-webkit-scrollbar-track { background: var(--paper-dark); }
-  .analysis-sidebar::-webkit-scrollbar-thumb { background: var(--ink-dim); }
+  /* ══════════════════════════════════════════════════
+     MARKET HEALTH GRID — 2-col indicators
+  ══════════════════════════════════════════════════ */
+  .market-health-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 28px;
+  }
+  .health-panel {
+    border: 1px solid var(--line-bold);
+    background: var(--paper);
+  }
+  .health-panel-header {
+    background: rgba(10,22,40,0.05);
+    border-bottom: 1px solid var(--line-bold);
+    padding: 7px 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .health-panel-title {
+    font-size: 0.5rem;
+    text-transform: uppercase;
+    letter-spacing: 0.22em;
+    color: var(--red);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .health-panel-title::before { content: ''; display: inline-block; width: 10px; height: 1px; background: var(--red); }
+  .health-panel-ref { font-size: 0.42rem; text-transform: uppercase; letter-spacing: 0.15em; color: var(--ink-dim); }
+  .health-row { display: flex; border-bottom: 1px solid var(--line); align-items: stretch; }
+  .health-row:last-child { border-bottom: none; }
+  .health-key {
+    flex: 0 0 130px;
+    padding: 6px 10px;
+    font-size: 0.5rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--ink-dim);
+    background: rgba(10,22,40,0.03);
+    border-right: 1px solid var(--line);
+    display: flex;
+    align-items: center;
+  }
+  .health-val {
+    padding: 6px 10px;
+    font-size: 0.58rem;
+    font-weight: 700;
+    color: var(--ink);
+    letter-spacing: 0.06em;
+    display: flex;
+    align-items: center;
+    flex: 1;
+    justify-content: flex-end;
+  }
+  .health-bar-row {
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--line);
+  }
+  .health-bar-row:last-child { border-bottom: none; }
+  .health-bar-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.48rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--ink-dim);
+    margin-bottom: 5px;
+  }
+  .health-bar-track {
+    height: 5px;
+    background: rgba(10,22,40,0.08);
+    border: 1px solid var(--line-bold);
+    overflow: hidden;
+  }
+  .health-bar-fill {
+    height: 100%;
+    transition: width 0.6s ease, background-color 0.4s;
+  }
+  .regime-dot {
+    display: inline-block;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    margin-right: 5px;
+    vertical-align: middle;
+    flex-shrink: 0;
+  }
 
- /* ── Chart Viewport Styling ── */
+  /* ══════════════════════════════════════════════════
+     MACRO CONDITIONS RIBBON — horizontal row
+  ══════════════════════════════════════════════════ */
+  .macro-ribbon {
+    display: flex;
+    border: 1px solid var(--line-bold);
+    margin-bottom: 28px;
+    overflow: hidden;
+  }
+  .macro-cell {
+    flex: 1;
+    padding: 10px 14px;
+    border-right: 1px solid var(--line-bold);
+    text-align: center;
+  }
+  .macro-cell:last-child { border-right: none; }
+  .macro-cell-label {
+    font-size: 0.44rem;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    color: var(--ink-dim);
+    margin-bottom: 5px;
+  }
+  .macro-cell-val {
+    font-size: 0.62rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    color: var(--ink);
+  }
+
+  /* ══════════════════════════════════════════════════
+     CHART SECTION
+  ══════════════════════════════════════════════════ */
+  .chart-section { margin-bottom: 28px; }
+  .chart-section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+  }
   .chart-viewport {
-    overflow-x: auto; 
+    overflow-x: auto;
     overflow-y: hidden;
     cursor: grab;
     border: 1px solid var(--line-bold);
     background: var(--paper);
     padding: 16px;
-    height: 380px;
-    width: 100%; /* Force it to respect the grid column */
+    height: 360px;
+    width: 100%;
     scrollbar-width: thin;
     scrollbar-color: var(--ink-dim) var(--paper-dark);
   }
-  .chart-viewport.small-chart { height: 260px; }
-  
-  .chart-viewport::-webkit-scrollbar { height: 6px; }
+  .chart-viewport.small-chart { height: 230px; }
+  .chart-viewport::-webkit-scrollbar { height: 5px; }
   .chart-viewport::-webkit-scrollbar-track { background: var(--paper-dark); }
-  .chart-viewport::-webkit-scrollbar-thumb { background: var(--ink-dim); border-radius: 3px; }
+  .chart-viewport::-webkit-scrollbar-thumb { background: var(--ink-dim); }
   .chart-viewport:active { cursor: grabbing; }
-  
-  .chart-canvas-wrapper {
-    height: 100%;
-    /* Removed the fixed 2400px width. We will set this dynamically in JS */
-    min-width: 100%; 
-    position: relative;
+  .chart-canvas-wrapper { height: 100%; min-width: 100%; position: relative; }
+
+  /* ══════════════════════════════════════════════════
+     POSITIONS LEDGER
+  ══════════════════════════════════════════════════ */
+  .ledger-table { width: 100%; border-collapse: collapse; font-size: 0.58rem; text-align: left; }
+  .ledger-table th {
+    padding: 9px 10px;
+    border-right: 1px solid var(--line);
+    background: rgba(10,22,40,0.05);
+    border-bottom: 1px solid var(--line-bold);
+    font-size: 0.48rem;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--ink-dim);
+    font-weight: 600;
+  }
+  .ledger-table th:last-child { border-right: none; }
+  .ledger-table td { padding: 8px 10px; border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+  .ledger-table td:last-child { border-right: none; }
+  .ledger-table tr:last-child td { border-bottom: none; }
+
+  /* ══════════════════════════════════════════════════
+     TRADE LOG INPUT
+  ══════════════════════════════════════════════════ */
+  .trade-panel {
+    margin-top: 28px;
+    padding: 22px;
+    border: 1px solid var(--line-bold);
+    background: var(--paper);
+  }
+  .trade-panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--line-bold);
   }
 
-  /* ── Screener Elements ── */
+  /* ══════════════════════════════════════════════════
+     ANALYSIS SIDEBAR
+  ══════════════════════════════════════════════════ */
+  .analysis-sidebar {
+    padding: 24px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+    position: sticky;
+    top: 72px;
+    height: calc(100vh - 80px);
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--ink-dim) var(--paper-dark);
+  }
+  .analysis-sidebar::-webkit-scrollbar { width: 3px; }
+  .analysis-sidebar::-webkit-scrollbar-track { background: var(--paper-dark); }
+  .analysis-sidebar::-webkit-scrollbar-thumb { background: var(--ink-dim); }
+
+  .sidebar-section-title {
+    font-size: 0.5rem;
+    text-transform: uppercase;
+    letter-spacing: 0.28em;
+    color: var(--red);
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--line-bold);
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    margin-bottom: 10px;
+  }
+  .sidebar-section-title::before { content: ''; display: inline-block; width: 10px; height: 1px; background: var(--red); }
+
   .spec-block { border: 1px solid var(--line-bold); font-size: 0.55rem; }
-  .spec-block-header { background: rgba(10,22,40,0.06); padding: 6px 10px; border-bottom: 1px solid var(--line-bold); text-transform: uppercase; letter-spacing: 0.2em; color: var(--ink-dim); }
+  .spec-block-header { background: rgba(10,22,40,0.06); padding: 6px 10px; border-bottom: 1px solid var(--line-bold); text-transform: uppercase; letter-spacing: 0.2em; color: var(--ink-dim); font-size: 0.48rem; }
   .spec-row { display: flex; border-bottom: 1px solid var(--line); }
   .spec-row:last-child { border-bottom: none; }
-  .spec-key { flex: 1; padding: 5px 8px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink-dim); background: rgba(10,22,40,0.03); border-right: 1px solid var(--line); }
-  .spec-val { flex: 1; padding: 5px 8px; color: var(--ink); font-weight: 600; text-align: right; }
+  .spec-key { flex: 1; padding: 6px 8px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink-dim); background: rgba(10,22,40,0.03); border-right: 1px solid var(--line); font-size: 0.48rem; }
+  .spec-val { flex: 1; padding: 6px 8px; color: var(--ink); font-weight: 700; text-align: right; font-size: 0.52rem; }
 
-  /* ── Mobile Terminal Fixes ── */
+  /* Alert cards */
+  .alert-card {
+    border-left: 3px solid;
+    padding: 9px 10px;
+    font-size: 0.55rem;
+    background: var(--paper);
+    border-top: 1px solid var(--line);
+    border-right: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+    line-height: 1.6;
+  }
+  .alert-card.critical { border-left-color: var(--red); }
+  .alert-card.warning { border-left-color: var(--gold); }
+  .alert-card.signal { border-left-color: var(--green); }
+  .alert-card.info { border-left-color: var(--blue); }
+  .alert-label {
+    font-size: 0.44rem;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    font-weight: 700;
+    margin-bottom: 3px;
+  }
+
+  /* Regime gauge */
+  .regime-gauge {
+    border: 1px solid var(--line-bold);
+    padding: 12px;
+    background: var(--paper);
+  }
+  .regime-gauge-label {
+    font-size: 0.44rem;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    color: var(--ink-dim);
+    margin-bottom: 8px;
+  }
+  .regime-gauge-track {
+    height: 8px;
+    background: linear-gradient(to right, #2a7a2a 0%, #8a6a00 40%, #8a6a00 70%, #b01020 100%);
+    border: 1px solid var(--line-bold);
+    position: relative;
+    margin-bottom: 6px;
+  }
+  .regime-gauge-needle {
+    position: absolute;
+    top: -4px;
+    width: 2px;
+    height: 16px;
+    background: var(--ink);
+    transform: translateX(-50%);
+    transition: left 0.8s ease;
+  }
+  .regime-gauge-ticks {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.42rem;
+    color: var(--ink-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  /* Composite score ring (SVG) */
+  .score-ring-wrap {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 10px 12px;
+    border: 1px solid var(--line-bold);
+    background: var(--paper);
+  }
+  .score-ring-text { flex: 1; }
+  .score-ring-big { font-size: 1.6rem; font-weight: 700; line-height: 1; }
+  .score-ring-sub { font-size: 0.46rem; text-transform: uppercase; letter-spacing: 0.15em; color: var(--ink-dim); margin-top: 4px; }
+
+  /* Connection banner */
+  .conn-banner {
+    padding: 10px 16px;
+    border: 1px dashed var(--line-bold);
+    text-align: center;
+    font-size: 0.55rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--ink-dim);
+    margin-bottom: 24px;
+  }
+  .conn-banner.connected { border-color: var(--green); color: var(--green); border-style: solid; }
+
+  /* ══════════════════════════════════════════════════
+     RESPONSIVE
+  ══════════════════════════════════════════════════ */
   @media (max-width: 1100px) {
     .terminal-layout { grid-template-columns: 1fr; border-bottom: none; }
     #view-finance { border-right: none; border-bottom: 2px solid var(--ink); }
     .analysis-sidebar { position: static !important; height: auto; width: 100%; border-bottom: 2px solid var(--ink); }
+    .market-health-grid { grid-template-columns: 1fr; }
+    .macro-ribbon { flex-wrap: wrap; }
+    .macro-cell { flex: 1 1 30%; }
   }
   @media (max-width: 768px) {
-    #dash-positions-table { display: block; overflow-x: auto; white-space: nowrap; }
+    .kpi-strip { grid-template-columns: repeat(2, 1fr); }
+    .kpi-card { border-bottom: 1px solid var(--line-bold); }
     #trade-submit-btn { width: 100%; margin-top: 8px; }
-    .trade-inputs { flex-direction: column; align-items: stretch; }
-    .trade-inputs > div { min-width: 100%; }
+    .trade-inputs { flex-direction: column !important; align-items: stretch !important; }
+    .trade-inputs > div { min-width: 100% !important; }
+    .macro-cell { flex: 1 1 45%; }
   }
 </style>
 </head>
 <body>
 
-<div class="reg-mark tl"></div><div class="reg-mark tr"></div><div class="reg-mark bl"></div><div class="reg-mark br"></div>
+<div class="reg-mark tl"></div>
+<div class="reg-mark tr"></div>
+<div class="reg-mark bl"></div>
+<div class="reg-mark br"></div>
 
 <header id="header">
   <nav class="nav-inner">
@@ -117,17 +457,18 @@
     <div class="nav-doc-ref" style="margin-left: 0;">
       <div class="nav-doc-cell" style="border-left: none;"><span class="nav-doc-key">Document</span><span class="nav-doc-val">WZ-TERM-002</span></div>
       <div class="nav-doc-cell"><span class="nav-doc-key">Access</span><span class="nav-doc-val" id="nav-access-val" style="color:var(--red);">● Locked</span></div>
+      <div class="nav-doc-cell"><span class="nav-doc-key">Last Sync</span><span class="nav-doc-val" id="nav-last-sync">—</span></div>
     </div>
   </nav>
 </header>
 
 <main>
+  <!-- ─── LOGIN ─── -->
   <div id="login-screen">
     <div style="margin-bottom:28px; width: 100%; max-width: 480px;">
-      <p class="dwg-section-label">Document WZ-TERM-002 Rev B — Financial Telemetry</p>
+      <p class="dwg-section-label">Document WZ-TERM-002 Rev C — Financial Telemetry</p>
       <h1 class="dwg-title">Portfolio Terminal</h1>
     </div>
-
     <div class="login-box-wrapper">
       <div class="login-box">
         <div class="login-header">
@@ -153,133 +494,407 @@
     </div>
   </div>
 
+  <!-- ─── APP ─── -->
   <div id="app-screen" style="display:none;">
-    <div style="margin-bottom:28px;">
+    <div style="margin-bottom: 28px;">
       <p class="dwg-section-label">Module 02 — Financial Telemetry</p>
       <h1 class="dwg-title">Margin & Portfolio Status</h1>
     </div>
 
     <div class="terminal-layout">
-      
+
+      <!-- ════════════════════ MAIN PANEL ════════════════════ -->
       <div id="view-finance">
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
-          <div style="border: 1px solid var(--line-bold); padding: 16px; background: var(--paper);">
-            <p style="font-size: 0.55rem; text-transform: uppercase; letter-spacing: 0.15em; color: var(--ink-dim);">Available Margin</p>
-            <p style="font-size: 1.4rem; font-weight: 700; color: var(--ink); margin-top: 8px;" id="dash-margin-avail">Loading...</p>
+
+        <!-- Connection Banner -->
+        <div class="conn-banner" id="connection-status">
+          Initializing Secure Bridge...
+        </div>
+
+        <!-- ── KPI Strip ── -->
+        <div class="kpi-strip">
+          <div class="kpi-card">
+            <div class="kpi-label">Available Margin</div>
+            <div class="kpi-value" id="dash-margin-avail">—</div>
+            <div class="kpi-sub" id="kpi-margin-sub">Buying power</div>
           </div>
-          <div style="border: 1px solid var(--line-bold); padding: 16px; background: var(--paper);">
-            <p style="font-size: 0.55rem; text-transform: uppercase; letter-spacing: 0.15em; color: var(--ink-dim);">CBOE Volatility (VIX)</p>
-            <p style="font-size: 1.4rem; font-weight: 700; color: var(--gold); margin-top: 8px;" id="dash-vix">Loading...</p>
+          <div class="kpi-card">
+            <div class="kpi-label">VIX (CBOE)</div>
+            <div class="kpi-value" id="dash-vix" style="color: var(--gold);">—</div>
+            <div class="kpi-sub" id="kpi-vix-regime">Implied volatility index</div>
           </div>
-          <div style="border: 1px solid var(--line-bold); padding: 16px; background: var(--paper);">
-            <p style="font-size: 0.55rem; text-transform: uppercase; letter-spacing: 0.15em; color: var(--ink-dim);">Net Earnings</p>
-            <p style="font-size: 1.4rem; font-weight: 700; color: var(--green); margin-top: 8px;" id="dash-net">Loading...</p>
+          <div class="kpi-card">
+            <div class="kpi-label">Net Earnings</div>
+            <div class="kpi-value" id="dash-net">—</div>
+            <div class="kpi-sub" id="kpi-net-sub">Realized P&amp;L</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">SPY RSI (14D)</div>
+            <div class="kpi-value" id="kpi-rsi-big">—</div>
+            <div class="kpi-sub" id="kpi-rsi-label">Momentum oscillator</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">Market Trend</div>
+            <div class="kpi-value" id="kpi-trend-big" style="font-size: 0.9rem; letter-spacing: 0.06em;">—</div>
+            <div class="kpi-sub" id="kpi-trend-sub">vs 20D SMA</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">Health Score</div>
+            <div class="kpi-value" id="kpi-health-score">—</div>
+            <div class="kpi-sub" id="kpi-health-label">Composite /100</div>
           </div>
         </div>
 
-        <div style="margin-top: 24px; padding: 24px; border: 1px dashed var(--line-bold); text-align: center;" id="connection-status">
-          <p style="font-size: 0.6rem; color: var(--ink-dim); text-transform: uppercase; letter-spacing: 0.1em;">Initializing Secure Bridge...</p>
+        <!-- ── Macro Conditions Ribbon ── -->
+        <div class="macro-ribbon" id="macro-ribbon">
+          <div class="macro-cell">
+            <div class="macro-cell-label">VIX Regime</div>
+            <div class="macro-cell-val" id="macro-vix-regime">—</div>
+          </div>
+          <div class="macro-cell">
+            <div class="macro-cell-label">Volatility Trend</div>
+            <div class="macro-cell-val" id="macro-vol-trend">—</div>
+          </div>
+          <div class="macro-cell">
+            <div class="macro-cell-label">Band Position</div>
+            <div class="macro-cell-val" id="macro-band-pos">—</div>
+          </div>
+          <div class="macro-cell">
+            <div class="macro-cell-label">RSI Zone</div>
+            <div class="macro-cell-val" id="macro-rsi-zone">—</div>
+          </div>
+          <div class="macro-cell">
+            <div class="macro-cell-label">SMA Cross</div>
+            <div class="macro-cell-val" id="macro-sma-cross">—</div>
+          </div>
+          <div class="macro-cell">
+            <div class="macro-cell-label">BB Width</div>
+            <div class="macro-cell-val" id="macro-bb-width">—</div>
+          </div>
         </div>
 
-        <div style="display: grid; grid-template-columns: 1fr; gap: 32px; margin-top: 24px;">
-          <div>
-            <p class="dwg-section-label" style="margin-bottom: 8px;">Telemetry 01 — VIX Volatility (30D SMA Overlay)</p>
-            <div class="chart-viewport" id="scroll-vix">
-              <div class="chart-canvas-wrapper"><canvas id="chartVix"></canvas></div>
+        <!-- ── Market Health Panels ── -->
+        <div class="market-health-grid">
+
+          <!-- Momentum Panel -->
+          <div class="health-panel">
+            <div class="health-panel-header">
+              <span class="health-panel-title">Momentum Diagnostics</span>
+              <span class="health-panel-ref">MOD-A</span>
+            </div>
+            <div class="health-row">
+              <span class="health-key">14D RSI</span>
+              <span class="health-val" id="diag-rsi">—</span>
+            </div>
+            <div class="health-row">
+              <span class="health-key">RSI Signal</span>
+              <span class="health-val" id="diag-rsi-signal">—</span>
+            </div>
+            <div class="health-row">
+              <span class="health-key">Trend (20D SMA)</span>
+              <span class="health-val" id="diag-trend">—</span>
+            </div>
+            <div class="health-row">
+              <span class="health-key">Price vs SMA Δ</span>
+              <span class="health-val" id="diag-sma-delta">—</span>
+            </div>
+            <div class="health-bar-row">
+              <div class="health-bar-label">
+                <span>RSI Position</span>
+                <span id="diag-rsi-bar-pct">—</span>
+              </div>
+              <div class="health-bar-track">
+                <div class="health-bar-fill" id="diag-rsi-bar" style="width:0%; background: var(--blue);"></div>
+              </div>
             </div>
           </div>
 
-          <div>
-            <p class="dwg-section-label" style="margin-bottom: 8px;">Telemetry 02 — Market Proxy (Bollinger Band Analysis)</p>
-            <div class="chart-viewport" id="scroll-spy">
-              <div class="chart-canvas-wrapper"><canvas id="chartS5FI"></canvas></div>
+          <!-- Volatility Panel -->
+          <div class="health-panel">
+            <div class="health-panel-header">
+              <span class="health-panel-title">Volatility Diagnostics</span>
+              <span class="health-panel-ref">MOD-B</span>
+            </div>
+            <div class="health-row">
+              <span class="health-key">VIX Level</span>
+              <span class="health-val" id="diag-vix-level">—</span>
+            </div>
+            <div class="health-row">
+              <span class="health-key">VIX vs 30D SMA</span>
+              <span class="health-val" id="diag-vix">—</span>
+            </div>
+            <div class="health-row">
+              <span class="health-key">VIX SMA (30D)</span>
+              <span class="health-val" id="diag-vix-sma">—</span>
+            </div>
+            <div class="health-row">
+              <span class="health-key">VIX Regime</span>
+              <span class="health-val" id="diag-vix-regime-label">—</span>
+            </div>
+            <div class="health-bar-row">
+              <div class="health-bar-label">
+                <span>VIX Stress (0–40)</span>
+                <span id="diag-vix-bar-pct">—</span>
+              </div>
+              <div class="health-bar-track">
+                <div class="health-bar-fill" id="diag-vix-bar" style="width:0%; background: var(--green);"></div>
+              </div>
             </div>
           </div>
 
-          <div>
-            <p class="dwg-section-label" style="margin-bottom: 8px;">Telemetry 03 — Market Proxy Momentum (14-Day RSI)</p>
-            <div class="chart-viewport small-chart" id="scroll-rsi">
-              <div class="chart-canvas-wrapper" style="height: 200px;"><canvas id="chartRSI"></canvas></div>
+          <!-- Bollinger Panel -->
+          <div class="health-panel">
+            <div class="health-panel-header">
+              <span class="health-panel-title">Bollinger Band Analysis</span>
+              <span class="health-panel-ref">MOD-C</span>
+            </div>
+            <div class="health-row">
+              <span class="health-key">Band Position</span>
+              <span class="health-val" id="diag-bands">—</span>
+            </div>
+            <div class="health-row">
+              <span class="health-key">Upper Band</span>
+              <span class="health-val" id="diag-upper-band">—</span>
+            </div>
+            <div class="health-row">
+              <span class="health-key">Lower Band</span>
+              <span class="health-val" id="diag-lower-band">—</span>
+            </div>
+            <div class="health-row">
+              <span class="health-key">Band Width</span>
+              <span class="health-val" id="diag-band-width">—</span>
+            </div>
+            <div class="health-bar-row">
+              <div class="health-bar-label">
+                <span>Price in Band</span>
+                <span id="diag-band-bar-pct">—</span>
+              </div>
+              <div class="health-bar-track">
+                <div class="health-bar-fill" id="diag-band-bar" style="width:0%; background: var(--blue);"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Regime / Forecast Panel -->
+          <div class="health-panel">
+            <div class="health-panel-header">
+              <span class="health-panel-title">Regime & Outlook</span>
+              <span class="health-panel-ref">MOD-D</span>
+            </div>
+            <div class="health-row">
+              <span class="health-key">Market Regime</span>
+              <span class="health-val" id="diag-regime">—</span>
+            </div>
+            <div class="health-row">
+              <span class="health-key">Bias</span>
+              <span class="health-val" id="diag-bias">—</span>
+            </div>
+            <div class="health-row">
+              <span class="health-key">Pullback Risk</span>
+              <span class="health-val" id="diag-pullback">—</span>
+            </div>
+            <div class="health-row">
+              <span class="health-key">Compression</span>
+              <span class="health-val" id="diag-compression">—</span>
+            </div>
+            <div class="health-bar-row">
+              <div class="health-bar-label">
+                <span>Regime Gauge (Bear → Bull)</span>
+                <span id="diag-regime-pct">—</span>
+              </div>
+              <div class="health-bar-track" style="background: linear-gradient(to right, rgba(176,16,32,0.3) 0%, rgba(138,106,0,0.3) 50%, rgba(42,122,42,0.3) 100%);">
+                <div class="health-bar-fill" id="diag-regime-bar" style="width: 0%; background: transparent; border-right: 2px solid var(--ink);"></div>
+              </div>
             </div>
           </div>
         </div>
 
-        <div style="margin-top: 32px; padding: 24px; border: 1px solid var(--line-bold); background: var(--paper);">
-          <p class="dwg-section-label" style="margin-bottom: 12px;">Terminal Input</p>
-          <h3 style="font-size: 0.8rem; font-family: 'Bebas Neue', sans-serif; letter-spacing: 0.1em; color: var(--ink); margin-bottom: 16px;">Log Execution</h3>
-          
+        <!-- ── Chart 01 — VIX ── -->
+        <div class="chart-section">
+          <div class="chart-section-header">
+            <p class="dwg-section-label" style="margin-bottom:0;">Telemetry 01 — VIX Volatility (30D SMA Overlay)</p>
+            <span style="font-size:0.44rem; text-transform:uppercase; letter-spacing:0.15em; color:var(--ink-dim);">Drag to scroll · Latest at right</span>
+          </div>
+          <div class="chart-viewport" id="scroll-vix">
+            <div class="chart-canvas-wrapper"><canvas id="chartVix"></canvas></div>
+          </div>
+        </div>
+
+        <!-- ── Chart 02 — SPY Bollinger ── -->
+        <div class="chart-section">
+          <div class="chart-section-header">
+            <p class="dwg-section-label" style="margin-bottom:0;">Telemetry 02 — Market Proxy (Bollinger Band Analysis)</p>
+          </div>
+          <div class="chart-viewport" id="scroll-spy">
+            <div class="chart-canvas-wrapper"><canvas id="chartS5FI"></canvas></div>
+          </div>
+        </div>
+
+        <!-- ── Chart 03 — RSI ── -->
+        <div class="chart-section">
+          <div class="chart-section-header">
+            <p class="dwg-section-label" style="margin-bottom:0;">Telemetry 03 — Market Proxy Momentum (14-Day RSI)</p>
+          </div>
+          <div class="chart-viewport small-chart" id="scroll-rsi">
+            <div class="chart-canvas-wrapper" style="height: 170px;"><canvas id="chartRSI"></canvas></div>
+          </div>
+        </div>
+
+        <!-- ── Trade Log Input ── -->
+        <div class="trade-panel">
+          <div class="trade-panel-header">
+            <div>
+              <p class="dwg-section-label" style="margin-bottom:4px;">Terminal Input</p>
+              <h3 style="font-size: 0.75rem; font-family: 'Bebas Neue', sans-serif; letter-spacing: 0.1em; color: var(--ink);">Log Execution</h3>
+            </div>
+            <span style="font-size:0.44rem; text-transform:uppercase; letter-spacing:0.18em; color:var(--ink-dim); border: 1px solid var(--line-bold); padding: 3px 8px;">Alpaca Bridge Active</span>
+          </div>
           <div class="form-group trade-inputs" style="display: flex; gap: 12px; flex-wrap: wrap; align-items: flex-end;">
-            <div style="flex: 1; min-width: 120px;">
+            <div style="flex: 1; min-width: 100px;">
               <label class="form-label">Action</label>
               <select id="trade-action" class="form-input" style="cursor:pointer; padding: 8px 12px;"><option value="Buy">Buy</option><option value="Sell">Sell</option></select>
             </div>
-            <div style="flex: 1; min-width: 120px;">
+            <div style="flex: 1.5; min-width: 120px;">
               <label class="form-label">Ticker</label>
               <input type="text" id="trade-ticker" class="form-input" placeholder="e.g. AAPL" style="text-transform: uppercase;">
             </div>
-            <div style="flex: 1; min-width: 120px;">
+            <div style="flex: 1; min-width: 100px;">
               <label class="form-label">Shares</label>
               <input type="number" id="trade-shares" class="form-input" placeholder="0.00" step="0.01">
             </div>
-            <div style="flex: 1; min-width: 120px;">
+            <div style="flex: 1; min-width: 110px;">
               <label class="form-label">Exec. Price ($)</label>
               <input type="number" id="trade-price" class="form-input" placeholder="0.00" step="0.01">
             </div>
             <div>
-              <button class="btn btn-solid" id="trade-submit-btn" onclick="submitTrade()" style="padding: 10px 24px;">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 6px;"><polyline points="20 6 9 17 4 12"/></svg> Log Trade
+              <button class="btn btn-solid" id="trade-submit-btn" onclick="submitTrade()" style="padding: 10px 20px; white-space: nowrap;">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:5px;"><polyline points="20 6 9 17 4 12"/></svg> Log Trade
               </button>
             </div>
           </div>
         </div>
 
-        <div style="margin-top: 32px;">
-          <h3 style="font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.2em; color: var(--ink-dim); margin-bottom: 12px; border-bottom: 1px solid var(--line-bold); padding-bottom: 8px;">Active Positions Ledger (Live)</h3>
+        <!-- ── Active Positions Ledger ── -->
+        <div style="margin-top: 28px;">
+          <h3 style="font-size: 0.55rem; text-transform: uppercase; letter-spacing: 0.22em; color: var(--ink-dim); margin-bottom: 10px; border-bottom: 1px solid var(--line-bold); padding-bottom: 8px; display: flex; align-items: center; gap: 8px;">
+            <span style="color:var(--red); display:inline-block; width:8px; height:1px; background:var(--red);"></span>
+            Active Positions Ledger — Live
+          </h3>
           <div style="overflow-x: auto; border: 1px solid var(--line-bold); background: var(--paper);">
-            <table style="width: 100%; border-collapse: collapse; font-size: 0.6rem; text-align: left;">
+            <table class="ledger-table">
               <thead>
-                <tr style="background: rgba(10,22,40,0.04); border-bottom: 1px solid var(--line-bold);">
-                  <th style="padding: 10px; border-right: 1px solid var(--line);">Ticker</th>
-                  <th style="padding: 10px; border-right: 1px solid var(--line);">Shares</th>
-                  <th style="padding: 10px; border-right: 1px solid var(--line);">Avg Cost</th>
-                  <th style="padding: 10px; border-right: 1px solid var(--line);">Current Price</th>
-                  <th style="padding: 10px;">Live ROI (%)</th>
+                <tr>
+                  <th>Ticker</th>
+                  <th>Shares</th>
+                  <th>Avg Cost</th>
+                  <th>Live Price</th>
+                  <th>Mkt Value</th>
+                  <th>Live ROI</th>
+                  <th>P&amp;L ($)</th>
                 </tr>
               </thead>
               <tbody id="dash-positions-table">
-                <tr><td colspan="5" style="padding: 16px; text-align: center; color: var(--ink-dim); text-transform: uppercase; letter-spacing: 0.1em;">Awaiting data stream...</td></tr>
+                <tr>
+                  <td colspan="7" style="padding: 18px; text-align: center; color: var(--ink-dim); text-transform: uppercase; letter-spacing: 0.12em; font-size: 0.52rem;">
+                    Awaiting data stream...
+                  </td>
+                </tr>
               </tbody>
             </table>
           </div>
         </div>
-      </div> 
 
+      </div><!-- /view-finance -->
+
+      <!-- ════════════════════ SIDEBAR ════════════════════ -->
       <aside class="analysis-sidebar">
-        
+
+        <!-- Composite Health Score -->
         <div>
-          <p class="dwg-section-label" style="color:var(--ink); margin-bottom: 10px;">Market Context</p>
-          <div class="spec-block">
-            <div class="spec-block-header">SPY Proxy Diagnostics</div>
-            <div class="spec-row"><span class="spec-key">14-Day RSI</span><span class="spec-val" id="diag-rsi">—</span></div>
-            <div class="spec-row"><span class="spec-key">Trend (20D SMA)</span><span class="spec-val" id="diag-trend">—</span></div>
-            <div class="spec-row"><span class="spec-key">Band Position</span><span class="spec-val" id="diag-bands">—</span></div>
-            <div class="spec-row"><span class="spec-key">VIX Condition</span><span class="spec-val" id="diag-vix">—</span></div>
+          <div class="sidebar-section-title">Health Score</div>
+          <div class="score-ring-wrap">
+            <svg width="56" height="56" viewBox="0 0 56 56">
+              <circle cx="28" cy="28" r="22" fill="none" stroke="rgba(10,22,40,0.12)" stroke-width="5"/>
+              <circle cx="28" cy="28" r="22" fill="none" stroke="var(--ink)" stroke-width="5"
+                stroke-dasharray="138.2" stroke-dashoffset="138.2"
+                stroke-linecap="square" transform="rotate(-90 28 28)"
+                id="score-ring-circle" style="transition: stroke-dashoffset 1s ease, stroke 0.5s;"/>
+            </svg>
+            <div class="score-ring-text">
+              <div class="score-ring-big" id="sidebar-health-score">—</div>
+              <div class="score-ring-sub">Market Health / 100</div>
+              <div style="margin-top: 6px;" id="sidebar-health-label">
+                <span style="font-size:0.48rem; text-transform:uppercase; letter-spacing:0.15em; color:var(--ink-dim);">Computing...</span>
+              </div>
+            </div>
           </div>
         </div>
 
+        <!-- Regime Gauge -->
         <div>
-          <p class="dwg-section-label" style="color:var(--red); margin-bottom: 10px;">Automated Alerts</p>
-          <div id="screener-results" style="display: flex; flex-direction: column; gap: 8px;">
-            <div style="padding: 12px; border: 1px solid var(--line-bold); background: rgba(10,22,40,0.03); font-size: 0.6rem; color: var(--ink-dim); text-transform: uppercase; letter-spacing: 0.1em; text-align: center;">
+          <div class="sidebar-section-title">Market Regime</div>
+          <div class="regime-gauge">
+            <div class="regime-gauge-label">Bull–Bear Spectrum</div>
+            <div class="regime-gauge-track">
+              <div class="regime-gauge-needle" id="regime-needle" style="left: 50%;"></div>
+            </div>
+            <div class="regime-gauge-ticks">
+              <span>Bear</span>
+              <span>Neutral</span>
+              <span>Bull</span>
+            </div>
+            <div style="margin-top: 8px; font-size: 0.55rem; font-weight: 700; color: var(--ink); text-align: center;" id="regime-label-sidebar">Computing...</div>
+          </div>
+        </div>
+
+        <!-- SPY Diagnostics -->
+        <div>
+          <div class="sidebar-section-title">SPY Proxy Diagnostics</div>
+          <div class="spec-block">
+            <div class="spec-block-header">Technicals Summary</div>
+            <div class="spec-row"><span class="spec-key">14-Day RSI</span><span class="spec-val" id="sidebar-rsi">—</span></div>
+            <div class="spec-row"><span class="spec-key">Trend (20D SMA)</span><span class="spec-val" id="sidebar-trend">—</span></div>
+            <div class="spec-row"><span class="spec-key">Band Position</span><span class="spec-val" id="sidebar-bands">—</span></div>
+            <div class="spec-row"><span class="spec-key">VIX Condition</span><span class="spec-val" id="sidebar-vix-cond">—</span></div>
+            <div class="spec-row"><span class="spec-key">BB Width</span><span class="spec-val" id="sidebar-bb-width">—</span></div>
+            <div class="spec-row"><span class="spec-key">Price vs SMA</span><span class="spec-val" id="sidebar-price-sma">—</span></div>
+          </div>
+        </div>
+
+        <!-- Automated Alerts -->
+        <div>
+          <div class="sidebar-section-title" style="color:var(--red);">Automated Alerts</div>
+          <div id="screener-results" style="display: flex; flex-direction: column; gap: 6px;">
+            <div style="padding: 12px; border: 1px solid var(--line-bold); background: rgba(10,22,40,0.03); font-size: 0.55rem; color: var(--ink-dim); text-transform: uppercase; letter-spacing: 0.1em; text-align: center;">
               Compiling telemetry...
             </div>
           </div>
         </div>
-        
+
+        <!-- Forward Outlook -->
+        <div>
+          <div class="sidebar-section-title">Forward Outlook</div>
+          <div class="spec-block">
+            <div class="spec-block-header">Probabilistic Bias</div>
+            <div class="spec-row"><span class="spec-key">Near-Term Bias</span><span class="spec-val" id="outlook-near">—</span></div>
+            <div class="spec-row"><span class="spec-key">Risk Level</span><span class="spec-val" id="outlook-risk">—</span></div>
+            <div class="spec-row"><span class="spec-key">Vol Forecast</span><span class="spec-val" id="outlook-vol">—</span></div>
+            <div class="spec-row"><span class="spec-key">Breakout Watch</span><span class="spec-val" id="outlook-breakout">—</span></div>
+          </div>
+        </div>
+
+        <!-- Checklist -->
+        <div>
+          <div class="sidebar-section-title">Signal Checklist</div>
+          <div id="signal-checklist" style="display: flex; flex-direction: column; gap: 0; border: 1px solid var(--line-bold);">
+            <div style="padding: 10px; font-size: 0.52rem; color: var(--ink-dim); text-transform: uppercase; letter-spacing: 0.1em;">Loading signals...</div>
+          </div>
+        </div>
+
       </aside>
 
-    </div>
-  </div>
+    </div><!-- /terminal-layout -->
+  </div><!-- /app-screen -->
 </main>
 
 <footer>
@@ -297,18 +912,395 @@
 <script src="app.js"></script>
 
 <script>
-const originalShowApp = showApp;
+// ══════════════════════════════════════════════════
+//  TERMINAL OVERRIDE — augments base app.js
+// ══════════════════════════════════════════════════
+
+// Patch showApp to also init finance data
+const _baseShowApp = showApp;
 showApp = function() {
-    originalShowApp();
-    const access = document.getElementById('nav-access-val');
-    if (access) access.textContent = '● Authenticated';
-    fetchFinanceData();
+  _baseShowApp();
+  const access = document.getElementById('nav-access-val');
+  if (access) { access.textContent = '● Authenticated'; access.style.color = 'var(--green)'; }
+  fetchFinanceData();
 };
 
+// If already authenticated, init finance
 if (sessionStorage.getItem('wz_drop_jwt')) {
-    fetchFinanceData();
+  fetchFinanceData();
 }
-</script>
 
+// ── Helpers ──
+function lerp(a, b, t) { return a + (b - a) * t; }
+function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
+function fmtNum(n, dec = 2) { return typeof n === 'number' ? n.toFixed(dec) : '—'; }
+function colorVal(el, val, greenThresh, redThresh, inverse = false) {
+  if (el && typeof val === 'number') {
+    let isGood = inverse ? val <= greenThresh : val >= greenThresh;
+    let isBad  = inverse ? val >= redThresh  : val <= redThresh;
+    el.style.color = isGood ? 'var(--green)' : isBad ? 'var(--red)' : 'var(--gold)';
+  }
+}
+
+// ── Enhanced Diagnostics Renderer ──
+function renderEnhancedDiagnostics(latestRSI, latestPrice, latestSMA, latestUpperBand, latestLowerBand, latestVix, latestVixSMA) {
+
+  // ── Derived values ──
+  const bandWidth = latestUpperBand && latestLowerBand && latestSMA
+    ? ((latestUpperBand - latestLowerBand) / latestSMA * 100)
+    : null;
+
+  const bandPct = (latestPrice && latestUpperBand && latestLowerBand)
+    ? clamp(((latestPrice - latestLowerBand) / (latestUpperBand - latestLowerBand)) * 100, 0, 100)
+    : null;
+
+  const smaDeltaPct = (latestPrice && latestSMA)
+    ? ((latestPrice - latestSMA) / latestSMA * 100)
+    : null;
+
+  const vixStressPct = latestVix ? clamp((latestVix / 40) * 100, 0, 100) : 0;
+
+  // ── RSI signal ──
+  let rsiSignal = 'NEUTRAL';
+  let rsiColor = 'var(--ink)';
+  if (latestRSI > 80)      { rsiSignal = 'STRONGLY OVERBOUGHT'; rsiColor = 'var(--red)'; }
+  else if (latestRSI > 70) { rsiSignal = 'OVERBOUGHT';          rsiColor = 'var(--red)'; }
+  else if (latestRSI > 60) { rsiSignal = 'UPPER NEUTRAL';       rsiColor = 'var(--gold)'; }
+  else if (latestRSI > 40) { rsiSignal = 'NEUTRAL';             rsiColor = 'var(--ink)'; }
+  else if (latestRSI > 30) { rsiSignal = 'LOWER NEUTRAL';       rsiColor = 'var(--gold)'; }
+  else if (latestRSI > 20) { rsiSignal = 'OVERSOLD';            rsiColor = 'var(--green)'; }
+  else                     { rsiSignal = 'STRONGLY OVERSOLD';   rsiColor = 'var(--green)'; }
+
+  // ── VIX regime ──
+  let vixRegime = 'ELEVATED';
+  let vixColor  = 'var(--gold)';
+  if (latestVix < 12)      { vixRegime = 'COMPLACENCY'; vixColor = 'var(--green)'; }
+  else if (latestVix < 18) { vixRegime = 'CALM';         vixColor = 'var(--green)'; }
+  else if (latestVix < 25) { vixRegime = 'MODERATE';     vixColor = 'var(--gold)'; }
+  else if (latestVix < 35) { vixRegime = 'ELEVATED';     vixColor = 'var(--red)'; }
+  else                     { vixRegime = 'FEAR / SPIKE'; vixColor = 'var(--red)'; }
+
+  // ── Band position label ──
+  let bandPos = 'MID-RANGE';
+  if (bandPct !== null) {
+    if (bandPct >= 95)     bandPos = 'UPPER BAND TOUCH';
+    else if (bandPct >= 75) bandPos = 'UPPER ZONE';
+    else if (bandPct >= 25) bandPos = 'MID-RANGE';
+    else if (bandPct >= 5)  bandPos = 'LOWER ZONE';
+    else                    bandPos = 'LOWER BAND TOUCH';
+  }
+
+  // ── Composite health score (0–100) ──
+  let score = 50;
+  if (latestRSI) {
+    // RSI: 45–65 is ideal, extremes subtract
+    const rsiScore = 100 - Math.abs(latestRSI - 55) * 2.5;
+    score = clamp(rsiScore, 0, 100);
+  }
+  // VIX: lower is better for equity holders
+  if (latestVix) {
+    const vixScore = clamp(100 - (latestVix - 12) * 3, 0, 100);
+    score = (score + vixScore) / 2;
+  }
+  // Trend adds/subtracts
+  if (latestPrice && latestSMA) {
+    score += latestPrice > latestSMA ? 8 : -8;
+  }
+  // Bollinger: extremes are risky
+  if (bandPct !== null) {
+    if (bandPct > 90 || bandPct < 10) score -= 10;
+  }
+  score = clamp(Math.round(score), 0, 100);
+
+  // ── Health label ──
+  let healthLabel = 'NEUTRAL';
+  let healthColor = 'var(--ink)';
+  if (score >= 80)      { healthLabel = 'STRONG';    healthColor = 'var(--green)'; }
+  else if (score >= 65) { healthLabel = 'HEALTHY';   healthColor = 'var(--green)'; }
+  else if (score >= 50) { healthLabel = 'CAUTIOUS';  healthColor = 'var(--gold)'; }
+  else if (score >= 35) { healthLabel = 'STRESSED';  healthColor = 'var(--red)'; }
+  else                  { healthLabel = 'CRITICAL';  healthColor = 'var(--red)'; }
+
+  // ── Regime (0–100: 0=bear, 100=bull) ──
+  let regimePct = 50;
+  if (latestRSI)  regimePct += (latestRSI - 50) * 0.6;
+  if (latestPrice && latestSMA) regimePct += latestPrice > latestSMA ? 10 : -10;
+  if (latestVix)  regimePct -= (latestVix - 18) * 0.5;
+  regimePct = clamp(Math.round(regimePct), 0, 100);
+
+  let regimeLabel = 'NEUTRAL';
+  if (regimePct >= 70)      regimeLabel = 'BULL TREND';
+  else if (regimePct >= 55) regimeLabel = 'MILD BULL';
+  else if (regimePct >= 45) regimeLabel = 'NEUTRAL';
+  else if (regimePct >= 30) regimeLabel = 'MILD BEAR';
+  else                      regimeLabel = 'BEAR TREND';
+
+  // ── Outlook ──
+  let nearBias = 'NEUTRAL', nearColor = 'var(--ink)';
+  let riskLevel = 'MODERATE', riskColor = 'var(--gold)';
+  let volForecast = 'STABLE', volColor = 'var(--ink)';
+  let breakout = 'WATCH';
+
+  if (latestRSI > 70 && bandPct > 85) { nearBias = 'PULLBACK RISK'; nearColor = 'var(--red)'; }
+  else if (latestRSI < 30 && bandPct < 15) { nearBias = 'BOUNCE SETUP'; nearColor = 'var(--green)'; }
+  else if (regimePct > 60) { nearBias = 'BULLISH'; nearColor = 'var(--green)'; }
+  else if (regimePct < 40) { nearBias = 'BEARISH'; nearColor = 'var(--red)'; }
+
+  if (latestVix > 30)      { riskLevel = 'HIGH';     riskColor = 'var(--red)'; }
+  else if (latestVix > 20) { riskLevel = 'MODERATE'; riskColor = 'var(--gold)'; }
+  else                     { riskLevel = 'LOW';       riskColor = 'var(--green)'; }
+
+  const volTrend = latestVix > latestVixSMA;
+  volForecast = volTrend ? 'EXPANDING' : 'CONTRACTING';
+  volColor = volTrend ? 'var(--red)' : 'var(--green)';
+
+  if (bandWidth !== null) {
+    if (bandWidth < 3)       breakout = 'SQUEEZE — IMMINENT';
+    else if (bandWidth < 5)  breakout = 'COMPRESSING';
+    else if (bandWidth > 10) breakout = 'WIDE — POST-MOVE';
+    else                     breakout = 'NORMAL RANGE';
+  }
+
+  // ──────────────────────────────────
+  //  UPDATE DOM
+  // ──────────────────────────────────
+
+  // KPI strip
+  const kpiRsiBig = document.getElementById('kpi-rsi-big');
+  if (kpiRsiBig) { kpiRsiBig.textContent = fmtNum(latestRSI, 1); kpiRsiBig.style.color = rsiColor; }
+  const kpiRsiLabel = document.getElementById('kpi-rsi-label');
+  if (kpiRsiLabel) kpiRsiLabel.textContent = rsiSignal;
+
+  const kpiTrendBig = document.getElementById('kpi-trend-big');
+  if (kpiTrendBig) {
+    kpiTrendBig.textContent = latestPrice > latestSMA ? 'BULLISH' : 'BEARISH';
+    kpiTrendBig.style.color = latestPrice > latestSMA ? 'var(--green)' : 'var(--red)';
+  }
+  const kpiTrendSub = document.getElementById('kpi-trend-sub');
+  if (kpiTrendSub && smaDeltaPct !== null) kpiTrendSub.textContent = `${smaDeltaPct >= 0 ? '+' : ''}${smaDeltaPct.toFixed(2)}% vs SMA`;
+
+  const kpiHealthScore = document.getElementById('kpi-health-score');
+  if (kpiHealthScore) { kpiHealthScore.textContent = score; kpiHealthScore.style.color = healthColor; }
+  const kpiHealthLabel = document.getElementById('kpi-health-label');
+  if (kpiHealthLabel) { kpiHealthLabel.textContent = healthLabel + ' — /100'; kpiHealthLabel.style.color = healthColor; }
+
+  const kpiVixRegime = document.getElementById('kpi-vix-regime');
+  if (kpiVixRegime) { kpiVixRegime.textContent = vixRegime; kpiVixRegime.style.color = vixColor; }
+
+  // Macro ribbon
+  const setMacro = (id, val, color) => { const el = document.getElementById(id); if (el) { el.textContent = val; el.style.color = color || 'var(--ink)'; }};
+  setMacro('macro-vix-regime', vixRegime, vixColor);
+  setMacro('macro-vol-trend', volForecast, volColor);
+  setMacro('macro-band-pos', bandPos, bandPct > 80 || bandPct < 20 ? 'var(--red)' : 'var(--ink)');
+  setMacro('macro-rsi-zone', rsiSignal, rsiColor);
+  setMacro('macro-sma-cross', latestPrice > latestSMA ? 'ABOVE SMA' : 'BELOW SMA', latestPrice > latestSMA ? 'var(--green)' : 'var(--red)');
+  setMacro('macro-bb-width', bandWidth !== null ? bandWidth.toFixed(2) + '%' : '—', null);
+
+  // Momentum diagnostics
+  const setEl = (id, val, color) => { const el = document.getElementById(id); if (el) { el.textContent = val; if (color) el.style.color = color; }};
+  setEl('diag-rsi', fmtNum(latestRSI, 1), rsiColor);
+  setEl('diag-rsi-signal', rsiSignal, rsiColor);
+  setEl('diag-trend', latestPrice > latestSMA ? 'BULLISH' : 'BEARISH', latestPrice > latestSMA ? 'var(--green)' : 'var(--red)');
+  setEl('diag-sma-delta', smaDeltaPct !== null ? `${smaDeltaPct >= 0 ? '+' : ''}${smaDeltaPct.toFixed(2)}%` : '—', smaDeltaPct >= 0 ? 'var(--green)' : 'var(--red)');
+  
+  const rsiBar = document.getElementById('diag-rsi-bar');
+  if (rsiBar) { rsiBar.style.width = clamp(latestRSI || 0, 0, 100) + '%'; rsiBar.style.background = rsiColor; }
+  const rsiBarPct = document.getElementById('diag-rsi-bar-pct');
+  if (rsiBarPct) rsiBarPct.textContent = fmtNum(latestRSI, 1);
+
+  // Volatility diagnostics
+  setEl('diag-vix-level', fmtNum(latestVix, 2), vixColor);
+  setEl('diag-vix', latestVix > latestVixSMA ? 'EXPANDING' : 'CONTRACTING', latestVix > latestVixSMA ? 'var(--red)' : 'var(--green)');
+  setEl('diag-vix-sma', fmtNum(latestVixSMA, 2), null);
+  setEl('diag-vix-regime-label', vixRegime, vixColor);
+  
+  const vixBar = document.getElementById('diag-vix-bar');
+  if (vixBar) { vixBar.style.width = vixStressPct + '%'; vixBar.style.background = latestVix > 25 ? 'var(--red)' : latestVix > 18 ? 'var(--gold)' : 'var(--green)'; }
+  const vixBarPct = document.getElementById('diag-vix-bar-pct');
+  if (vixBarPct) vixBarPct.textContent = fmtNum(latestVix, 2);
+
+  // Bollinger diagnostics
+  setEl('diag-bands', bandPos, (bandPct > 85 || bandPct < 15) ? 'var(--red)' : 'var(--ink)');
+  setEl('diag-upper-band', latestUpperBand ? '$' + latestUpperBand.toFixed(2) : '—', null);
+  setEl('diag-lower-band', latestLowerBand ? '$' + latestLowerBand.toFixed(2) : '—', null);
+  setEl('diag-band-width', bandWidth !== null ? bandWidth.toFixed(2) + '%' : '—', null);
+  
+  const bandBar = document.getElementById('diag-band-bar');
+  if (bandBar && bandPct !== null) { bandBar.style.width = bandPct + '%'; bandBar.style.background = bandPct > 85 || bandPct < 15 ? 'var(--red)' : 'var(--blue)'; }
+  const bandBarPct = document.getElementById('diag-band-bar-pct');
+  if (bandBarPct) bandBarPct.textContent = bandPct !== null ? bandPct.toFixed(1) + '%' : '—';
+
+  // Regime diagnostics
+  const regimeEl = document.getElementById('diag-regime');
+  if (regimeEl) { regimeEl.textContent = regimeLabel; regimeEl.style.color = regimePct > 55 ? 'var(--green)' : regimePct < 45 ? 'var(--red)' : 'var(--gold)'; }
+  setEl('diag-bias', nearBias, nearColor);
+  setEl('diag-pullback', latestRSI > 70 ? 'HIGH' : latestRSI > 60 ? 'MODERATE' : 'LOW', latestRSI > 70 ? 'var(--red)' : latestRSI > 60 ? 'var(--gold)' : 'var(--green)');
+  setEl('diag-compression', breakout, null);
+  
+  const regimeBar = document.getElementById('diag-regime-bar');
+  if (regimeBar) regimeBar.style.width = regimePct + '%';
+  const regimePctEl = document.getElementById('diag-regime-pct');
+  if (regimePctEl) regimePctEl.textContent = regimePct + '%';
+
+  // ── Sidebar ──
+  setEl('sidebar-rsi', fmtNum(latestRSI, 1), rsiColor);
+  setEl('sidebar-trend', latestPrice > latestSMA ? 'BULLISH' : 'BEARISH', latestPrice > latestSMA ? 'var(--green)' : 'var(--red)');
+  setEl('sidebar-bands', bandPos, null);
+  setEl('sidebar-vix-cond', latestVix > latestVixSMA ? 'EXPANDING' : 'CONTRACTING', latestVix > latestVixSMA ? 'var(--red)' : 'var(--green)');
+  setEl('sidebar-bb-width', bandWidth !== null ? bandWidth.toFixed(2) + '%' : '—', null);
+  setEl('sidebar-price-sma', smaDeltaPct !== null ? `${smaDeltaPct >= 0 ? '+' : ''}${smaDeltaPct.toFixed(2)}%` : '—', smaDeltaPct >= 0 ? 'var(--green)' : 'var(--red)');
+
+  // Health score ring
+  const scoreEl = document.getElementById('sidebar-health-score');
+  if (scoreEl) { scoreEl.textContent = score; scoreEl.style.color = healthColor; }
+  const scoreLabelEl = document.getElementById('sidebar-health-label');
+  if (scoreLabelEl) {
+    scoreLabelEl.innerHTML = `<span style="font-size:0.52rem; font-weight:700; text-transform:uppercase; letter-spacing:0.15em; color:${healthColor};">${healthLabel}</span>`;
+  }
+  const ring = document.getElementById('score-ring-circle');
+  if (ring) {
+    const circumference = 138.2;
+    const offset = circumference - (score / 100) * circumference;
+    ring.style.strokeDashoffset = offset;
+    ring.style.stroke = healthColor;
+  }
+
+  // Regime gauge needle
+  const needle = document.getElementById('regime-needle');
+  if (needle) needle.style.left = regimePct + '%';
+  const regimeSidebarLabel = document.getElementById('regime-label-sidebar');
+  if (regimeSidebarLabel) { regimeSidebarLabel.textContent = regimeLabel; regimeSidebarLabel.style.color = regimePct > 55 ? 'var(--green)' : regimePct < 45 ? 'var(--red)' : 'var(--gold)'; }
+
+  // Forward outlook
+  setEl('outlook-near', nearBias, nearColor);
+  setEl('outlook-risk', riskLevel, riskColor);
+  setEl('outlook-vol', volForecast, volColor);
+  setEl('outlook-breakout', breakout, null);
+
+  // Automated alerts
+  let alertsHTML = '';
+  if (latestRSI > 80)       alertsHTML += `<div class="alert-card critical"><div class="alert-label" style="color:var(--red);">⚠ Critical — Extreme Overbought</div>RSI ${latestRSI.toFixed(1)} — Correction risk is high. Consider reducing exposure.</div>`;
+  else if (latestRSI > 70)  alertsHTML += `<div class="alert-card critical"><div class="alert-label" style="color:var(--red);">⚠ Warning — Overbought</div>RSI ${latestRSI.toFixed(1)} exceeds 70. Pullback probability elevated.</div>`;
+  else if (latestRSI < 20)  alertsHTML += `<div class="alert-card signal"><div class="alert-label" style="color:var(--green);">↑ Signal — Deep Oversold</div>RSI ${latestRSI.toFixed(1)} — Strong mean-reversion setup potentially forming.</div>`;
+  else if (latestRSI < 30)  alertsHTML += `<div class="alert-card signal"><div class="alert-label" style="color:var(--green);">↑ Signal — Oversold</div>RSI ${latestRSI.toFixed(1)} — Potential bounce area. Monitor for confirmation.</div>`;
+
+  if (latestPrice >= latestUpperBand) alertsHTML += `<div class="alert-card warning"><div class="alert-label" style="color:var(--gold);">⚡ Warning — Upper Band Pierce</div>Price touching upper Bollinger Band. Mean-reversion risk active.</div>`;
+  if (latestPrice <= latestLowerBand) alertsHTML += `<div class="alert-card signal"><div class="alert-label" style="color:var(--green);">↑ Signal — Lower Band Support</div>Price at lower Bollinger Band. Potential support zone.</div>`;
+
+  if (latestVix > 30) alertsHTML += `<div class="alert-card critical"><div class="alert-label" style="color:var(--red);">⚠ Alert — VIX Spike ${latestVix.toFixed(1)}</div>Implied volatility is elevated. Market pricing in uncertainty.</div>`;
+  if (bandWidth !== null && bandWidth < 3) alertsHTML += `<div class="alert-card info"><div class="alert-label" style="color:var(--blue);">◆ Watch — Bollinger Squeeze</div>Band width ${bandWidth.toFixed(2)}% — Volatility compression. Breakout likely imminent.</div>`;
+  if (latestVix < 13) alertsHTML += `<div class="alert-card warning"><div class="alert-label" style="color:var(--gold);">◆ Note — VIX Complacency</div>VIX ${latestVix.toFixed(1)} signals low fear. Tail risk often underpriced here.</div>`;
+
+  if (!alertsHTML) alertsHTML = `<div style="padding: 12px; border: 1px dashed var(--line-bold); font-size: 0.52rem; color: var(--ink-dim); text-align: center; text-transform: uppercase; letter-spacing: 0.1em;">No extreme signals detected</div>`;
+  document.getElementById('screener-results').innerHTML = alertsHTML;
+
+  // Signal checklist
+  const checks = [
+    { label: 'RSI in Neutral Zone (30–70)', pass: latestRSI >= 30 && latestRSI <= 70 },
+    { label: 'Price Above 20D SMA', pass: latestPrice > latestSMA },
+    { label: 'VIX Below 25', pass: latestVix < 25 },
+    { label: 'VIX Contracting', pass: latestVix <= latestVixSMA },
+    { label: 'Price in BB Mid-Range', pass: bandPct >= 20 && bandPct <= 80 },
+    { label: 'Health Score ≥ 50', pass: score >= 50 },
+  ];
+  const checklistEl = document.getElementById('signal-checklist');
+  if (checklistEl) {
+    checklistEl.innerHTML = checks.map(c => `
+      <div style="display:flex; align-items:center; gap:10px; padding:7px 10px; border-bottom:1px solid var(--line); font-size:0.5rem; text-transform:uppercase; letter-spacing:0.12em;">
+        <span style="color:${c.pass ? 'var(--green)' : 'var(--red)'}; font-size:0.7rem; line-height:1; flex-shrink:0;">${c.pass ? '✓' : '✗'}</span>
+        <span style="color:${c.pass ? 'var(--ink)' : 'var(--ink-dim)'};">${c.label}</span>
+      </div>`).join('');
+  }
+
+  // Timestamp
+  const syncEl = document.getElementById('nav-last-sync');
+  if (syncEl) syncEl.textContent = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+}
+
+// ── Enhanced Position Table ──
+function renderEnhancedPositionRow(ticker, shares, avgCost, livePrice) {
+  const numCost  = parseFloat(avgCost)  || 0;
+  const numPrice = parseFloat(livePrice) || 0;
+  const roi = numCost > 0 && numPrice > 0 ? (numPrice - numCost) / numCost : 0;
+  const pnl = (numPrice - numCost) * shares;
+  const mktValue = numPrice * shares;
+  const roiColor = roi >= 0 ? 'var(--green)' : 'var(--red)';
+
+  return `
+    <tr>
+      <td style="font-weight:700; border-right:1px solid var(--line);">${ticker}</td>
+      <td style="border-right:1px solid var(--line);">${shares}</td>
+      <td style="border-right:1px solid var(--line);">$${numCost.toFixed(2)}</td>
+      <td style="border-right:1px solid var(--line);">$${numPrice.toFixed(2)}</td>
+      <td style="border-right:1px solid var(--line);">$${mktValue.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
+      <td style="font-weight:600; color:${roiColor}; border-right:1px solid var(--line);">${(roi*100).toFixed(2)}%</td>
+      <td style="font-weight:600; color:${pnl>=0?'var(--green)':'var(--red)'};">${pnl>=0?'+':''}$${Math.abs(pnl).toFixed(2)}</td>
+    </tr>`;
+}
+
+// ── Hook into the chart render to call enhanced diagnostics ──
+const _origRenderCharts = renderTerminalCharts;
+renderTerminalCharts = async function() {
+  // Call base implementation
+  await _origRenderCharts();
+
+  // Re-read computed values from existing chart data
+  // (base function already set diag-rsi etc. — we enhance from there)
+  // We must re-fetch chart data to drive our new panels
+  try {
+    const res = await apiFetch('/api/finance/charts');
+    const data = await res.json();
+    if (!data.vix?.chart?.result?.[0] || !data.spy?.chart?.result?.[0]) return;
+
+    const vixPrices = data.vix.chart.result[0].indicators.quote[0].close;
+    const spyPrices = data.spy.chart.result[0].indicators.quote[0].close;
+
+    const vixSMA30 = calculateSMA(vixPrices, 30);
+    const { sma: spySMA20, upper: spyUpper, lower: spyLower } = calculateBollingerBands(spyPrices, 20, 2);
+    const spyRSI = calculateRSI(spyPrices, 14);
+
+    const latestRSI       = spyRSI[spyRSI.length - 1];
+    const latestPrice     = spyPrices[spyPrices.length - 1];
+    const latestSMA       = spySMA20[spySMA20.length - 1];
+    const latestUpperBand = spyUpper[spyUpper.length - 1];
+    const latestLowerBand = spyLower[spyLower.length - 1];
+    const latestVix       = vixPrices[vixPrices.length - 1];
+    const latestVixSMA    = vixSMA30[vixSMA30.length - 1];
+
+    renderEnhancedDiagnostics(
+      latestRSI, latestPrice, latestSMA,
+      latestUpperBand, latestLowerBand,
+      latestVix, latestVixSMA
+    );
+  } catch(e) { console.warn('Enhanced diagnostics failed', e); }
+};
+
+// ── Hook into fetchFinanceData to enhance position table ──
+const _origFetchFinance = fetchFinanceData;
+fetchFinanceData = async function() {
+  await _origFetchFinance();
+
+  // Re-render table with extra columns if we have data
+  try {
+    const res2 = await apiFetch('/api/finance/dashboard');
+    const data2 = await res2.json();
+    const tableBody = document.getElementById('dash-positions-table');
+    if (!tableBody || !data2.portfolioTable) return;
+    tableBody.innerHTML = '';
+    if (data2.portfolioTable.length > 1) {
+      data2.portfolioTable.slice(1).forEach(row => {
+        const ticker = row[0]; if (!ticker) return;
+        const shares   = row[2] || 0;
+        const avgCost  = row[3] || 0;
+        let   price    = row[4] || 0;
+        if (data2.liveMarket && data2.liveMarket[ticker]?.latestTrade) {
+          price = data2.liveMarket[ticker].latestTrade.p;
+        }
+        tableBody.innerHTML += renderEnhancedPositionRow(ticker, shares, avgCost, price);
+      });
+    }
+  } catch(e) { /* silent — base already rendered */ }
+};
+</script>
 </body>
 </html>
