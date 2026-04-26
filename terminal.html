@@ -97,14 +97,21 @@
         </div>
 
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 24px;">
-          <div style="border: 1px solid var(--line-bold); background: var(--paper); padding: 16px; position: relative;">
+          
+          <div style="border: 1px solid var(--line-bold); background: var(--paper); padding: 16px; height: 350px; position: relative;">
             <p style="font-size: 0.55rem; text-transform: uppercase; letter-spacing: 0.15em; color: var(--ink-dim); margin-bottom: 8px;">VIX & 30D SMA</p>
-            <canvas id="chartVix" height="150"></canvas>
+            <div style="height: 280px; position: relative;"> 
+                <canvas id="chartVix"></canvas>
+            </div>
           </div>
-          <div style="border: 1px solid var(--line-bold); background: var(--paper); padding: 16px; position: relative;">
+
+          <div style="border: 1px solid var(--line-bold); background: var(--paper); padding: 16px; height: 350px; position: relative;">
             <p style="font-size: 0.55rem; text-transform: uppercase; letter-spacing: 0.15em; color: var(--ink-dim); margin-bottom: 8px;">Market Proxy (Bollinger Bands)</p>
-            <canvas id="chartS5FI" height="150"></canvas>
+            <div style="height: 280px; position: relative;">
+                <canvas id="chartS5FI"></canvas>
+            </div>
           </div>
+
         </div>
 
         <div style="margin-top: 32px; padding: 24px; border: 1px solid var(--line-bold); background: var(--paper);">
@@ -159,7 +166,6 @@
             </table>
           </div>
         </div>
-
       </div>
     </div> 
   </div>
@@ -180,15 +186,14 @@
 <script src="app.js"></script>
 
 <script>
-// Override the showApp function so it immediately fetches the financial data
 const originalShowApp = showApp;
 showApp = function() {
     originalShowApp();
-    document.getElementById('nav-access-val').textContent = '● Authenticated';
+    const access = document.getElementById('nav-access-val');
+    if (access) access.textContent = '● Authenticated';
     fetchFinanceData();
 };
 
-// If already logged in, fetch the data automatically
 if (sessionStorage.getItem('wz_drop_jwt')) {
     fetchFinanceData();
 }

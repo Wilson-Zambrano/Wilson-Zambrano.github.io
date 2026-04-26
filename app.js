@@ -74,10 +74,8 @@ async function doLogin() {
     sessionStorage.setItem('wz_drop_jwt', jwt);
     showApp();
     triggerPageData();
-    // If on terminal, trigger fetches manually after login
     if (document.getElementById('dash-positions-table')) {
         fetchFinanceData();
-        renderTerminalCharts();
     }
   } catch (err) {
     errEl.textContent = err.message || 'Authentication failed.'; errEl.style.display = 'block';
@@ -96,7 +94,8 @@ function doLogout() {
 }
 
 function showLogin() {
-  document.getElementById('login-screen').style.display = 'flex';
+  const login = document.getElementById('login-screen');
+  if (login) login.style.display = 'flex';
   const appScreen = document.getElementById('app-screen');
   if (appScreen) appScreen.style.display = 'none';
   
@@ -107,7 +106,8 @@ function showLogin() {
 }
 
 function showApp() {
-  document.getElementById('login-screen').style.display = 'none';
+  const login = document.getElementById('login-screen');
+  if (login) login.style.display = 'none';
   const appScreen = document.getElementById('app-screen');
   if (appScreen) appScreen.style.display = 'block';
   
@@ -124,69 +124,66 @@ async function apiFetch(path, options = {}) {
 }
 
 // ═══════════════════════════════════════════════
-//  FINANCE TERMINAL LOGIC (Decoupled execution)
+//  FINANCE TERMINAL LOGIC
 // ═══════════════════════════════════════════════
 async function fetchFinanceData() {
   if (!document.getElementById('dash-positions-table')) return;
 
   try {
     const res = await apiFetch('/api/finance/dashboard');
-    
-    // Safety check to ensure we got JSON and not an HTML error page
-    const textData = await res.text();
-    let data;
-    try {
-        data = JSON.parse(textData);
-    } catch(e) {
-        throw new Error("API returned non-JSON. Check Google Script permissions.");
-    }
-
+    const data = await res.json();
     if (data.error) throw new Error(data.error);
 
-    // Populate Top Cards safely
-    const margin = Number(data.availableMargin);
+    // Populate Top Cards
     const availEl = document.getElementById('dash-margin-avail');
-    if (availEl) availEl.textContent = !isNaN(margin) ? '$' + margin.toLocaleString(undefined, {minimumFractionDigits: 2}) : 'ERR';
+    if (availEl) {
+        const rawMargin = data.availableMargin;
+        availEl.textContent = (typeof rawMargin === 'number') 
+            ? '$' + rawMargin.toLocaleString(undefined, {minimumFractionDigits: 2}) 
+            : rawMargin || '—';
+    }
     
     const vixEl = document.getElementById('dash-vix');
     if (vixEl) vixEl.textContent = data.vix || '—';
     
-    const net = Number(data.netEarnings);
     const netEl = document.getElementById('dash-net');
     if (netEl) {
-        netEl.textContent = !isNaN(net) ? '$' + net.toLocaleString(undefined, {minimumFractionDigits: 2}) : 'ERR';
-        netEl.style.color = net >= 0 ? 'var(--green)' : 'var(--red)';
+        const rawNet = data.netEarnings;
+        netEl.textContent = (typeof rawNet === 'number') 
+            ? '$' + rawNet.toLocaleString(undefined, {minimumFractionDigits: 2}) 
+            : rawNet || '—';
+        const numericNet = parseFloat(String(rawNet).replace(/[^0-9.-]+/g,""));
+        if (!isNaN(numericNet)) netEl.style.color = numericNet >= 0 ? 'var(--green)' : 'var(--red)';
     }
 
+    // Ledger Table
     const tableBody = document.getElementById('dash-positions-table');
     if (tableBody) {
         tableBody.innerHTML = ''; 
         if (data.portfolioTable && data.portfolioTable.length > 1) {
             data.portfolioTable.slice(1).forEach(row => {
-                const ticker = row[0]; 
-                if (!ticker || typeof ticker !== 'string') return; 
-
+                const ticker = row[0]; if (!ticker) return; 
                 const shares = row[2] || 0;     
                 const avgCost = row[3] || 0;    
                 let price = row[4] || 0;    
                 
-                if (data.liveMarket && data.liveMarket[ticker] && data.liveMarket[ticker].latestTrade) {
+                if (data.liveMarket && data.liveMarket[ticker]?.latestTrade) {
                     price = data.liveMarket[ticker].latestTrade.p;
                 }
 
                 let roi = row[18] || 0; 
-                if (avgCost > 0 && price > 0) roi = (price - avgCost) / avgCost;
+                const numCost = parseFloat(avgCost);
+                const numPrice = parseFloat(price);
+                if (numCost > 0 && numPrice > 0) roi = (numPrice - numCost) / numCost;
 
                 const tr = document.createElement('tr');
                 tr.style.borderBottom = '1px solid var(--line)';
-                const roiColor = roi >= 0 ? 'var(--green)' : 'var(--red)';
-
                 tr.innerHTML = `
                   <td style="padding: 8px 10px; font-weight: 700; border-right: 1px solid var(--line);">${ticker}</td>
                   <td style="padding: 8px 10px; border-right: 1px solid var(--line);">${shares}</td>
-                  <td style="padding: 8px 10px; border-right: 1px solid var(--line);">$${Number(avgCost).toFixed(2)}</td>
-                  <td style="padding: 8px 10px; border-right: 1px solid var(--line);">$${Number(price).toFixed(2)}</td>
-                  <td style="padding: 8px 10px; font-weight: 600; color: ${roiColor};">${(roi * 100).toFixed(2)}%</td>
+                  <td style="padding: 8px 10px; border-right: 1px solid var(--line);">$${Number(numCost).toFixed(2)}</td>
+                  <td style="padding: 8px 10px; border-right: 1px solid var(--line);">$${Number(numPrice).toFixed(2)}</td>
+                  <td style="padding: 8px 10px; font-weight: 600; color: ${roi >= 0 ? 'var(--green)' : 'var(--red)'};">${(roi * 100).toFixed(2)}%</td>
                 `;
                 tableBody.appendChild(tr);
             });
@@ -199,6 +196,8 @@ async function fetchFinanceData() {
         statusBox.innerHTML = '<p style="font-size: 0.6rem; color: var(--green); text-transform: uppercase; letter-spacing: 0.1em;">Secure Alpaca/Sheets Bridge Connected.</p>';
     }
 
+    renderTerminalCharts();
+
   } catch (err) {
     console.error(err);
     ['dash-margin-avail', 'dash-vix', 'dash-net'].forEach(id => {
@@ -207,108 +206,6 @@ async function fetchFinanceData() {
     });
     showToast('Ledger Sync Error: ' + err.message, true);
   }
-}
-
-// ── Math Helpers for Charts ──
-function calculateSMA(data, period) {
-    return data.map((val, i, arr) => {
-        if (i < period - 1) return null;
-        let sum = 0;
-        for (let j = 0; j < period; j++) sum += arr[i - j];
-        return sum / period;
-    });
-}
-
-function calculateBollingerBands(data, period, multiplier) {
-    const sma = calculateSMA(data, period);
-    const upper = []; const lower = [];
-    
-    for (let i = 0; i < data.length; i++) {
-        if (i < period - 1) { upper.push(null); lower.push(null); } 
-        else {
-            let sumSq = 0;
-            for (let j = 0; j < period; j++) sumSq += Math.pow(data[i - j] - sma[i], 2);
-            let sd = Math.sqrt(sumSq / period);
-            upper.push(sma[i] + (multiplier * sd));
-            lower.push(sma[i] - (multiplier * sd));
-        }
-    }
-    return { sma, upper, lower };
-}
-
-let chartVixInstance = null;
-let chartS5FIInstance = null;
-
-async function renderTerminalCharts() {
-  if (!document.getElementById('chartVix')) return;
-
-  try {
-    const res = await apiFetch('/api/finance/charts');
-    const data = await res.json();
-    
-    if(data.error) throw new Error(data.error);
-    if(!data.vix || !data.spy) throw new Error("Chart data missing");
-
-    const vixResult = data.vix.chart.result[0];
-    const spyResult = data.spy.chart.result[0];
-
-    const timestamps = vixResult.timestamp.map(t => new Date(t * 1000).toLocaleDateString(undefined, {month:'short', day:'numeric'}));
-    const vixPrices = vixResult.indicators.quote[0].close;
-    const spyPrices = spyResult.indicators.quote[0].close;
-
-    const vixSMA30 = calculateSMA(vixPrices, 30);
-    const { sma: spySMA20, upper: spyUpper, lower: spyLower } = calculateBollingerBands(spyPrices, 20, 2);
-
-    Chart.defaults.font.family = "'IBM Plex Mono', monospace";
-    Chart.defaults.color = "#2a4060";
-    const gridColor = "rgba(10,22,40,0.1)";
-
-    const ctxVix = document.getElementById('chartVix');
-    if (ctxVix) {
-        if (chartVixInstance) chartVixInstance.destroy();
-        chartVixInstance = new Chart(ctxVix, {
-            type: 'line',
-            data: {
-                labels: timestamps,
-                datasets: [
-                    { label: 'VIX', data: vixPrices, borderColor: '#0a1628', borderWidth: 1.5, pointRadius: 0, tension: 0.1 },
-                    { label: '30D SMA', data: vixSMA30, borderColor: '#b01020', borderWidth: 1, borderDash: [5, 5], pointRadius: 0, tension: 0.1 }
-                ]
-            },
-            options: { responsive: true, maintainAspectRatio: false, scales: { x: { grid: { color: gridColor } }, y: { grid: { color: gridColor } } } }
-        });
-    }
-
-    const ctxS5 = document.getElementById('chartS5FI');
-    if (ctxS5) {
-        if (chartS5FIInstance) chartS5FIInstance.destroy();
-        chartS5FIInstance = new Chart(ctxS5, {
-            type: 'line',
-            data: {
-                labels: timestamps,
-                datasets: [
-                    { label: 'Price', data: spyPrices, borderColor: '#0a1628', borderWidth: 1.5, pointRadius: 0, tension: 0.1 },
-                    { label: 'Upper', data: spyUpper, borderColor: 'rgba(42,122,42,0.5)', backgroundColor: 'rgba(42,122,42,0.05)', borderWidth: 1, pointRadius: 0, fill: '+1' },
-                    { label: 'Lower', data: spyLower, borderColor: 'rgba(176,16,32,0.5)', borderWidth: 1, pointRadius: 0, fill: false },
-                    { label: '20D SMA', data: spySMA20, borderColor: '#2a4060', borderWidth: 1, borderDash: [3, 3], pointRadius: 0 }
-                ]
-            },
-            options: { responsive: true, maintainAspectRatio: false, scales: { x: { grid: { color: gridColor } }, y: { grid: { color: gridColor } } } }
-        });
-    }
-  } catch (err) {
-      console.error("Failed to render charts", err);
-      showToast('Chart Error: ' + err.message, true);
-  }
-}
-
-// ─────────────────────────────────────────────
-// Ensure Charts trigger on terminal load
-// ─────────────────────────────────────────────
-if (sessionStorage.getItem('wz_drop_jwt') && document.getElementById('dash-positions-table')) {
-    // Run them completely independently so if one crashes, the other survives
-    fetchFinanceData();
-    renderTerminalCharts();
 }
 
 async function submitTrade() {
@@ -348,6 +245,100 @@ async function submitTrade() {
   } finally {
     btn.disabled = false;
     btn.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 6px;"><polyline points="20 6 9 17 4 12"/></svg> Log Trade';
+  }
+}
+
+// ── Math Helpers for Charts ──
+function calculateSMA(data, period) {
+    return data.map((val, i, arr) => {
+        if (i < period - 1) return null;
+        let sum = 0;
+        for (let j = 0; j < period; j++) sum += arr[i - j];
+        return sum / period;
+    });
+}
+
+function calculateBollingerBands(data, period, multiplier) {
+    const sma = calculateSMA(data, period);
+    const upper = []; const lower = [];
+    for (let i = 0; i < data.length; i++) {
+        if (i < period - 1) { upper.push(null); lower.push(null); } 
+        else {
+            let sumSq = 0;
+            for (let j = 0; j < period; j++) sumSq += Math.pow(data[i - j] - sma[i], 2);
+            let sd = Math.sqrt(sumSq / period);
+            upper.push(sma[i] + (multiplier * sd));
+            lower.push(sma[i] - (multiplier * sd));
+        }
+    }
+    return { sma, upper, lower };
+}
+
+let chartVixInstance = null;
+let chartS5FIInstance = null;
+
+async function renderTerminalCharts() {
+  if (!document.getElementById('chartVix')) return;
+
+  try {
+    const res = await apiFetch('/api/finance/charts');
+    const data = await res.json();
+    
+    if(!data.vix?.chart?.result?.[0] || !data.spy?.chart?.result?.[0]) return;
+
+    const vixResult = data.vix.chart.result[0];
+    const spyResult = data.spy.chart.result[0];
+
+    const timestamps = vixResult.timestamp.map(t => new Date(t * 1000).toLocaleDateString(undefined, {month:'short', day:'numeric'}));
+    const vixPrices = vixResult.indicators.quote[0].close;
+    const spyPrices = spyResult.indicators.quote[0].close;
+
+    const vixSMA30 = calculateSMA(vixPrices, 30);
+    const { sma: spySMA20, upper: spyUpper, lower: spyLower } = calculateBollingerBands(spyPrices, 20, 2);
+
+    const gridColor = "rgba(10,22,40,0.1)";
+    const commonOptions = {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: true, labels: { boxWidth: 10, font: { size: 9, family: "'IBM Plex Mono', monospace" } } } },
+        scales: { 
+            x: { grid: { color: gridColor }, ticks: { font: { size: 8, family: "'IBM Plex Mono', monospace" }, maxRotation: 0 } }, 
+            y: { grid: { color: gridColor }, ticks: { font: { size: 8, family: "'IBM Plex Mono', monospace" } } } 
+        }
+    };
+
+    const ctxVix = document.getElementById('chartVix');
+    if (chartVixInstance) chartVixInstance.destroy();
+    chartVixInstance = new Chart(ctxVix, {
+        type: 'line',
+        data: {
+            labels: timestamps,
+            datasets: [
+                { label: 'VIX', data: vixPrices, borderColor: '#0a1628', borderWidth: 1.5, pointRadius: 0, tension: 0.1 },
+                { label: '30D SMA', data: vixSMA30, borderColor: '#b01020', borderWidth: 1, borderDash: [5, 5], pointRadius: 0, tension: 0.1 }
+            ]
+        },
+        options: commonOptions
+    });
+
+    const ctxS5 = document.getElementById('chartS5FI');
+    if (chartS5FIInstance) chartS5FIInstance.destroy();
+    chartS5FIInstance = new Chart(ctxS5, {
+        type: 'line',
+        data: {
+            labels: timestamps,
+            datasets: [
+                { label: 'Price', data: spyPrices, borderColor: '#0a1628', borderWidth: 1.5, pointRadius: 0, tension: 0.1 },
+                { label: 'Upper', data: spyUpper, borderColor: 'rgba(42,122,42,0.5)', backgroundColor: 'rgba(42,122,42,0.05)', borderWidth: 1, pointRadius: 0, fill: '+1' },
+                { label: 'Lower', data: spyLower, borderColor: 'rgba(176,16,32,0.5)', borderWidth: 1, pointRadius: 0, fill: false },
+                { label: '20D SMA', data: spySMA20, borderColor: '#2a4060', borderWidth: 1, borderDash: [3, 3], pointRadius: 0 }
+            ]
+        },
+        options: commonOptions
+    });
+
+  } catch (err) {
+      console.error("Failed to render charts", err);
   }
 }
 
@@ -447,7 +438,6 @@ function setFiles(files) {
 async function handleSubmit() {
   const btn = document.getElementById('submit-btn');
   if(!btn) return;
-  
   const note = document.getElementById('drop-note').value.trim();
   const ttl = document.getElementById('drop-ttl').value;
   btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>&nbsp; Uploading...';
@@ -524,9 +514,6 @@ function renderLog() {
   });
 }
 
-// ═══════════════════════════════════════════════
-//  ITEM ACTIONS, PREVIEW & UTILS
-// ═══════════════════════════════════════════════
 async function previewItem(id, type, name) {
   const item = drops.find(d => d.id == id); if (!item) return;
   document.getElementById('preview-title').textContent = name;
@@ -541,7 +528,6 @@ async function previewItem(id, type, name) {
       else if (lowerName.endsWith('.dxf')) { content.innerHTML = '<div class="preview-center"><span class="spinner"></span>&nbsp; Fetching Vector Engine...</div>'; await loadScript('https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js'); await loadScript('https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js'); await loadScript('https://cdn.jsdelivr.net/npm/dxf-parser@1.1.2/dist/dxf-parser.js'); renderDXFViewer(url, name, content); }
       else if (lowerName.endsWith('.pdf')) { renderPDFViewer(url, name, content); }
       else if (lowerName.endsWith('.docx')) { renderDOCXViewer(blob, name, content); }
-      else if (lowerName.endsWith('.sldprt') || lowerName.endsWith('.slprt')) { content.innerHTML = `<div class="preview-center"><span class="log-type-badge file-type" style="font-size: 1rem; padding: 4px 12px; margin-bottom: 12px; display: inline-block;">PROPRIETARY CAD DATA</span><br><br><strong style="font-size: 1.2rem; color: var(--ink);">${escapeHTML(name)}</strong><br><br><span style="color:var(--red);">Client-side web preview is unavailable for native SolidWorks part files.</span><br><span style="color:var(--ink-dim);">Please download the file to view it in SolidWorks, eDrawings, or export as .STL / .STEP prior to upload.</span><br><br><a href="${url}" download="${escapeHTML(name)}" class="btn btn-solid" style="display:inline-flex;margin-top:16px;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:8px;"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Download Part File</a></div>`; }
       else if (blob.type.startsWith('image/')) { const img = document.createElement('img'); img.src = url; img.className = 'preview-img'; content.innerHTML = ''; content.appendChild(img); }
       else { content.innerHTML = `<div class="preview-center">${blob.type === 'application/pdf' ? 'PDF' : 'File'}: <strong>${escapeHTML(name)}</strong><br><br><a href="${url}" download="${escapeHTML(name)}" class="btn btn-outline" style="display:inline-flex;margin-top:8px;">Download →</a></div>`; }
     } else {
