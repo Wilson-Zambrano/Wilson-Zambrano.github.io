@@ -330,6 +330,17 @@ async function renderTerminalCharts() {
     const vixPrices = vixRes.indicators.quote[0].close;
     const spyPrices = spyRes.indicators.quote[0].close;
 
+    // Calculate a dynamic width based on the number of data points
+    // 18 pixels per day ensures the data is never squished
+    const dataPointWidth = 18; 
+    const baseWidth = document.getElementById('scroll-vix').clientWidth;
+    const dynamicWidth = Math.max(baseWidth, timestamps.length * dataPointWidth);
+
+    // Apply the dynamic width to all chart wrappers
+    document.querySelectorAll('.chart-canvas-wrapper').forEach(wrapper => {
+        wrapper.style.width = `${dynamicWidth}px`;
+    });
+
     const vixSMA30 = calculateSMA(vixPrices, 30);
     const { sma: spySMA20, upper: spyUpper, lower: spyLower } = calculateBollingerBands(spyPrices, 20, 2);
     const spyRSI = calculateRSI(spyPrices, 14);
@@ -435,16 +446,19 @@ async function renderTerminalCharts() {
         }
     });
 
-    // Initialize drag interactions
+// Initialize drag interactions
     enableChartDrag('scroll-vix');
     enableChartDrag('scroll-spy');
     enableChartDrag('scroll-rsi');
 
-    // Auto-scroll to the end (latest data)
-    document.getElementById('scroll-vix').scrollLeft = 2400;
-    document.getElementById('scroll-spy').scrollLeft = 2400;
-    document.getElementById('scroll-rsi').scrollLeft = 2400;
-
+    // Auto-scroll to the absolute right edge (latest data)
+    // Using a slight timeout ensures the DOM has finished resizing the canvas
+    setTimeout(() => {
+        ['scroll-vix', 'scroll-spy', 'scroll-rsi'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.scrollLeft = el.scrollWidth;
+        });
+    }, 150);
   } catch (err) {
       console.error("Failed to render charts", err);
   }

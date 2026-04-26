@@ -44,7 +44,7 @@
   .analysis-sidebar::-webkit-scrollbar-track { background: var(--paper-dark); }
   .analysis-sidebar::-webkit-scrollbar-thumb { background: var(--ink-dim); }
 
-  /* ── Chart Viewport Styling ── */
+ /* ── Chart Viewport Styling ── */
   .chart-viewport {
     overflow-x: auto; 
     overflow-y: hidden;
@@ -53,10 +53,11 @@
     background: var(--paper);
     padding: 16px;
     height: 380px;
+    width: 100%; /* Force it to respect the grid column */
     scrollbar-width: thin;
     scrollbar-color: var(--ink-dim) var(--paper-dark);
   }
-  .chart-viewport.small-chart { height: 260px; } /* For RSI */
+  .chart-viewport.small-chart { height: 260px; }
   
   .chart-viewport::-webkit-scrollbar { height: 6px; }
   .chart-viewport::-webkit-scrollbar-track { background: var(--paper-dark); }
@@ -65,7 +66,8 @@
   
   .chart-canvas-wrapper {
     height: 100%;
-    width: 2400px;
+    /* Removed the fixed 2400px width. We will set this dynamically in JS */
+    min-width: 100%; 
     position: relative;
   }
 
