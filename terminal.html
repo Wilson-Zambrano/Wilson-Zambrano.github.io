@@ -7,6 +7,33 @@
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:ital,wght@0,300;0,400;0,600;0,700;1,400&family=Crimson+Pro:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
 <link href="blueprint.css" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+  /* ── Chart Viewport Styling ── */
+  .chart-viewport {
+    overflow-x: auto; 
+    overflow-y: hidden;
+    cursor: grab;
+    border: 1px solid var(--line-bold);
+    background: var(--paper);
+    padding: 16px;
+    height: 380px;
+    /* Custom scrollbar to match blueprint aesthetic */
+    scrollbar-width: thin;
+    scrollbar-color: var(--ink-dim) var(--paper-dark);
+  }
+  .chart-viewport::-webkit-scrollbar { height: 6px; }
+  .chart-viewport::-webkit-scrollbar-track { background: var(--paper-dark); }
+  .chart-viewport::-webkit-scrollbar-thumb { background: var(--ink-dim); border-radius: 3px; }
+  
+  .chart-viewport:active { cursor: grabbing; }
+  
+  .chart-canvas-wrapper {
+    height: 320px;
+    width: 2400px; /* Expands the timeline to prevent spiky distortion */
+    position: relative;
+  }
+</style>
 </head>
 <body>
 
@@ -39,7 +66,7 @@
 <main>
   <div id="login-screen">
     <div style="margin-bottom:28px; width: 100%; max-width: 480px;">
-      <p class="dwg-section-label">Document WZ-TERM-002 Rev A — Financial Telemetry</p>
+      <p class="dwg-section-label">Document WZ-TERM-002 Rev B — Financial Telemetry</p>
       <h1 class="dwg-title">Portfolio Terminal</h1>
     </div>
 
@@ -96,19 +123,23 @@
           <p style="font-size: 0.6rem; color: var(--ink-dim); text-transform: uppercase; letter-spacing: 0.1em;">Initializing Secure Bridge...</p>
         </div>
 
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 24px;">
+        <div style="display: grid; grid-template-columns: 1fr; gap: 32px; margin-top: 24px;">
           
-          <div style="border: 1px solid var(--line-bold); background: var(--paper); padding: 16px; height: 350px; position: relative;">
-            <p style="font-size: 0.55rem; text-transform: uppercase; letter-spacing: 0.15em; color: var(--ink-dim); margin-bottom: 8px;">VIX & 30D SMA</p>
-            <div style="height: 280px; position: relative;"> 
+          <div>
+            <p class="dwg-section-label" style="margin-bottom: 8px;">Telemetry 01 — VIX Volatility (30D SMA Overlay)</p>
+            <div class="chart-viewport" id="scroll-vix">
+              <div class="chart-canvas-wrapper">
                 <canvas id="chartVix"></canvas>
+              </div>
             </div>
           </div>
 
-          <div style="border: 1px solid var(--line-bold); background: var(--paper); padding: 16px; height: 350px; position: relative;">
-            <p style="font-size: 0.55rem; text-transform: uppercase; letter-spacing: 0.15em; color: var(--ink-dim); margin-bottom: 8px;">Market Proxy (Bollinger Bands)</p>
-            <div style="height: 280px; position: relative;">
+          <div>
+            <p class="dwg-section-label" style="margin-bottom: 8px;">Telemetry 02 — Market Proxy (Bollinger Band Analysis)</p>
+            <div class="chart-viewport" id="scroll-spy">
+              <div class="chart-canvas-wrapper">
                 <canvas id="chartS5FI"></canvas>
+              </div>
             </div>
           </div>
 
@@ -166,6 +197,7 @@
             </table>
           </div>
         </div>
+
       </div>
     </div> 
   </div>
@@ -173,10 +205,10 @@
 
 <footer>
   <div class="title-block">
-    <div class="tb-cell"><span class="tb-key">Drawing No.</span><span class="tb-val">WZ-TERM-002-A</span></div>
+    <div class="tb-cell"><span class="tb-key">Drawing No.</span><span class="tb-val">WZ-TERM-002-B</span></div>
     <div class="tb-cell"><span class="tb-key">Title</span><span class="tb-val">Portfolio Terminal</span></div>
     <div class="tb-cell"><span class="tb-key">Drawn By</span><span class="tb-val">Wilson A. Zambrano</span></div>
-    <div class="tb-cell"><span class="tb-key">Status</span><span class="tb-val">Active Data Feed</span></div>
+    <div class="tb-cell"><span class="tb-key">Status</span><span class="tb-val">Live Sync Active</span></div>
     <div class="tb-cell"><span class="tb-key">Year</span><span class="tb-val" id="footer-year"></span></div>
   </div>
 </footer>
