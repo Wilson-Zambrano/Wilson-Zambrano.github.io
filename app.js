@@ -272,6 +272,31 @@ function calculateBollingerBands(data, period, multiplier) {
     return { sma, upper, lower };
 }
 
+// ── New: RSI Math Helper ──
+function calculateRSI(data, period = 14) {
+    if (data.length < period) return [];
+    
+    let gains = 0, losses = 0;
+    for (let i = 1; i <= period; i++) {
+        const diff = data[i] - data[i - 1];
+        if (diff >= 0) gains += diff;
+        else losses -= diff;
+    }
+    
+    let avgGain = gains / period;
+    let avgLoss = losses / period;
+    const rsiArray = Array(period).fill(null);
+    rsiArray.push(100 - (100 / (1 + (avgGain / (avgLoss || 1)))));
+
+    for (let i = period + 1; i < data.length; i++) {
+        const diff = data[i] - data[i - 1];
+        avgGain = ((avgGain * (period - 1)) + (diff > 0 ? diff : 0)) / period;
+        avgLoss = ((avgLoss * (period - 1)) + (diff < 0 ? -diff : 0)) / period;
+        rsiArray.push(100 - (100 / (1 + (avgGain / (avgLoss || 1)))));
+    }
+    return rsiArray;
+}
+
 // ── Drag-to-Scroll Logic ──
 function enableChartDrag(id) {
     const slider = document.getElementById(id);
@@ -319,6 +344,62 @@ async function renderTerminalCharts() {
     const vixSMA30 = calculateSMA(vixPrices, 30);
     const { sma: spySMA20, upper: spyUpper, lower: spyLower } = calculateBollingerBands(spyPrices, 20, 2);
 
+    // ── NEW: Calculate RSI & Evaluate Market Health ──
+    const spyRSI = calculateRSI(spyPrices, 14);
+    const latestRSI = spyRSI[spyRSI.length - 1];
+    const latestPrice = spyPrices[spyPrices.length - 1];
+    const latestUpperBand = spyUpper[spyUpper.length - 1];
+    const latestSMA = spySMA20[spySMA20.length - 1];
+
+    // Evaluate Risk & Upside
+    let climaxRisk = "LOW";
+    let climaxColor = "var(--green)";
+    let trendStatus = "NEUTRAL";
+
+    if (latestRSI > 70 && latestPrice >= latestUpperBand) {
+        climaxRisk = "CRITICAL (BLOW-OFF TOP)";
+        climaxColor = "var(--red)";
+    } else if (latestRSI > 60) {
+        climaxRisk = "ELEVATED";
+        climaxColor = "var(--gold)";
+    }
+
+    if (latestPrice > latestSMA && latestRSI > 40 && latestRSI < 70) {
+        trendStatus = "BULLISH (ROOM TO RUN)";
+    } else if (latestPrice < latestSMA) {
+        trendStatus = "BEARISH";
+    }
+
+    // Update the DOM Sidebar
+    const rsiEl = document.getElementById('risk-rsi');
+    if (rsiEl) {
+        rsiEl.textContent = latestRSI ? latestRSI.toFixed(2) : '--';
+        rsiEl.style.color = latestRSI > 70 ? 'var(--red)' : (latestRSI < 30 ? 'var(--green)' : 'var(--ink)');
+    }
+    
+    const climaxEl = document.getElementById('risk-climax');
+    if (climaxEl) {
+        climaxEl.textContent = climaxRisk;
+        climaxEl.style.color = climaxColor;
+    }
+
+    const trendEl = document.getElementById('risk-trend');
+    if (trendEl) {
+        trendEl.textContent = trendStatus;
+        trendEl.style.color = trendStatus.includes('BULLISH') ? 'var(--green)' : (trendStatus === 'BEARISH' ? 'var(--red)' : 'var(--ink)');
+    }
+
+    const screenerRes = document.getElementById('screener-results');
+    if (screenerRes) {
+        screenerRes.innerHTML = `
+            <div class="screener-card">
+                <span style="font-size: 0.8rem; font-weight: 700;">Market Proxy (SPY)</span>
+                <p style="margin-top: 4px; color: ${trendStatus.includes('BULLISH') ? 'var(--green)' : 'var(--ink-dim)'};">${trendStatus}</p>
+            </div>
+        `;
+    }
+
+    // ── Render Charts ──
     const gridColor = "rgba(10,22,40,0.1)";
     const commonOptions = {
         responsive: true,
