@@ -775,6 +775,22 @@
           </div>
         </div>
 
+        <!-- ── Chart 04 — SPY/VIX Divergence ── -->
+        <div class="chart-section">
+          <div class="chart-section-header">
+            <p class="dwg-section-label" style="margin-bottom:0;">Telemetry 04 — SPY / VIX Divergence (Dual-Axis)</p>
+            <span style="font-size:0.44rem; text-transform:uppercase; letter-spacing:0.15em; color:var(--ink-dim);">Inverse correlation breakdown = regime shift signal</span>
+          </div>
+          <div class="chart-viewport small-chart" id="scroll-div">
+            <div class="chart-canvas-wrapper" style="height: 190px;"><canvas id="chartDivergence"></canvas></div>
+          </div>
+          <div style="display:flex; gap:16px; margin-top:8px; padding:8px 10px; border:1px solid var(--line-bold); border-top:none; background:rgba(10,22,40,0.02);">
+            <div style="font-size:0.48rem; text-transform:uppercase; letter-spacing:0.12em; color:var(--ink-dim);">Divergence Index: <strong id="div-score" style="color:var(--ink);">—</strong></div>
+            <div style="font-size:0.48rem; text-transform:uppercase; letter-spacing:0.12em; color:var(--ink-dim);">Signal: <strong id="div-signal" style="color:var(--ink);">—</strong></div>
+            <div style="font-size:0.48rem; text-transform:uppercase; letter-spacing:0.12em; color:var(--ink-dim);">30D Corr: <strong id="div-corr" style="color:var(--ink);">—</strong></div>
+          </div>
+        </div>
+
         <!-- ── Trade Log Input ── -->
         <div class="trade-panel">
           <div class="trade-panel-header">
@@ -847,7 +863,15 @@
         <!-- Composite Health Score -->
         <div>
           <div class="sidebar-section-title">Health Score</div>
-          <div class="score-ring-wrap">
+          <!-- Sparkline -->
+          <div style="border:1px solid var(--line-bold); border-bottom:none; padding:8px 10px 6px; background:var(--paper);">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+              <span style="font-size:0.44rem; text-transform:uppercase; letter-spacing:0.18em; color:var(--ink-dim);">Session History</span>
+              <span style="font-size:0.44rem; text-transform:uppercase; letter-spacing:0.12em; color:var(--ink-dim);" id="sparkline-range">—</span>
+            </div>
+            <canvas id="healthSparkline" height="36" style="width:100%; display:block;"></canvas>
+          </div>
+          <div class="score-ring-wrap" style="border-top: none; border:1px solid var(--line-bold);">
             <svg width="56" height="56" viewBox="0 0 56 56">
               <circle cx="28" cy="28" r="22" fill="none" stroke="rgba(10,22,40,0.12)" stroke-width="5"/>
               <circle cx="28" cy="28" r="22" fill="none" stroke="var(--ink)" stroke-width="5"
@@ -923,6 +947,28 @@
           <div class="sidebar-section-title">Signal Checklist</div>
           <div id="signal-checklist" style="display: flex; flex-direction: column; gap: 0; border: 1px solid var(--line-bold);">
             <div style="padding: 10px; font-size: 0.52rem; color: var(--ink-dim); text-transform: uppercase; letter-spacing: 0.1em;">Loading signals...</div>
+          </div>
+        </div>
+
+        <!-- Position Weight Donut -->
+        <div>
+          <div class="sidebar-section-title">Portfolio Weights</div>
+          <div style="border:1px solid var(--line-bold); background:var(--paper); padding:14px 12px;">
+            <div style="display:flex; align-items:center; gap:14px;">
+              <div style="flex-shrink:0; position:relative;">
+                <svg id="donut-svg" width="80" height="80" viewBox="0 0 80 80">
+                  <circle cx="40" cy="40" r="28" fill="none" stroke="rgba(10,22,40,0.08)" stroke-width="14"/>
+                  <!-- segments injected by JS -->
+                </svg>
+                <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:0.42rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--ink-dim);text-align:center;line-height:1.3;" id="donut-center">—</div>
+              </div>
+              <div id="donut-legend" style="flex:1; display:flex; flex-direction:column; gap:4px; font-size:0.48rem;">
+                <span style="color:var(--ink-dim); text-transform:uppercase; letter-spacing:0.12em;">Awaiting data...</span>
+              </div>
+            </div>
+            <div style="margin-top:10px; padding-top:8px; border-top:1px solid var(--line); font-size:0.46rem; text-transform:uppercase; letter-spacing:0.12em; color:var(--ink-dim);">
+              Total Mkt Value: <strong id="donut-total" style="color:var(--ink);">—</strong>
+            </div>
           </div>
         </div>
 
@@ -1296,13 +1342,12 @@ function renderEnhancedPositionRow(ticker, shares, avgCost, livePrice) {
 
 // ── Hook into the chart render to call enhanced diagnostics ──
 const _origRenderCharts = renderTerminalCharts;
+let chartDivInstance = null;
+let healthSparklineInstance = null;
+
 renderTerminalCharts = async function() {
-  // Call base implementation
   await _origRenderCharts();
 
-  // Re-read computed values from existing chart data
-  // (base function already set diag-rsi etc. — we enhance from there)
-  // We must re-fetch chart data to drive our new panels
   try {
     const res = await apiFetch('/api/finance/charts');
     const data = await res.json();
@@ -1310,6 +1355,9 @@ renderTerminalCharts = async function() {
 
     const vixPrices = data.vix.chart.result[0].indicators.quote[0].close;
     const spyPrices = data.spy.chart.result[0].indicators.quote[0].close;
+    const timestamps = data.vix.chart.result[0].timestamp.map(
+      t => new Date(t * 1000).toLocaleDateString(undefined, {month:'short', day:'numeric'})
+    );
 
     const vixSMA30 = calculateSMA(vixPrices, 30);
     const { sma: spySMA20, upper: spyUpper, lower: spyLower } = calculateBollingerBands(spyPrices, 20, 2);
@@ -1328,35 +1376,327 @@ renderTerminalCharts = async function() {
       latestUpperBand, latestLowerBand,
       latestVix, latestVixSMA
     );
+
+    // ════════════════════════════════════════════
+    //  TELEMETRY 04 — SPY / VIX DIVERGENCE CHART
+    // ════════════════════════════════════════════
+    // Normalise both series to 0-100 range for visual comparison
+    const normalise = arr => {
+      const valid = arr.filter(v => v != null);
+      const mn = Math.min(...valid), mx = Math.max(...valid);
+      return arr.map(v => v == null ? null : ((v - mn) / (mx - mn)) * 100);
+    };
+
+    const spyNorm = normalise(spyPrices);
+    const vixNorm = normalise(vixPrices);
+
+    // Divergence index: rolling 5-day difference of normalised scores
+    // Positive = SPY rising while VIX also rising (unusual) → regime stress
+    // Negative = normal inverse — SPY up, VIX down
+    const divIndex = spyNorm.map((s, i) => {
+      if (s == null || vixNorm[i] == null) return null;
+      return parseFloat((s - (100 - vixNorm[i])).toFixed(2)); // expected: SPY + (100-VIX) = 100
+    });
+
+    // 30-day rolling correlation
+    const rollingCorr = (a, b, period) => a.map((_, i) => {
+      if (i < period - 1) return null;
+      const sa = a.slice(i - period + 1, i + 1).filter(v => v != null);
+      const sb = b.slice(i - period + 1, i + 1).filter(v => v != null);
+      if (sa.length < period) return null;
+      const ma = sa.reduce((s,v) => s+v,0)/sa.length;
+      const mb = sb.reduce((s,v) => s+v,0)/sb.length;
+      const num = sa.reduce((s,v,j) => s + (v-ma)*(sb[j]-mb), 0);
+      const den = Math.sqrt(sa.reduce((s,v)=>s+(v-ma)**2,0) * sb.reduce((s,v)=>s+(v-mb)**2,0));
+      return den === 0 ? 0 : parseFloat((num/den).toFixed(3));
+    });
+
+    const corrSeries = rollingCorr(spyNorm, vixNorm, 30);
+    const latestCorr = corrSeries.filter(v => v != null).at(-1);
+    const latestDiv  = divIndex.filter(v => v != null).at(-1);
+
+    // Divergence signal
+    let divSignal = 'NORMAL INVERSE', divColor = 'var(--green)';
+    if (latestDiv > 15)       { divSignal = 'STRONG DIVERGENCE';  divColor = 'var(--red)'; }
+    else if (latestDiv > 8)   { divSignal = 'MILD DIVERGENCE';    divColor = 'var(--gold)'; }
+    else if (latestDiv < -15) { divSignal = 'OVERSOLD FLUSH';     divColor = 'var(--gold)'; }
+
+    const divScoreEl  = document.getElementById('div-score');
+    const divSignalEl = document.getElementById('div-signal');
+    const divCorrEl   = document.getElementById('div-corr');
+    if (divScoreEl)  { divScoreEl.textContent  = latestDiv  != null ? latestDiv.toFixed(2) : '—';  divScoreEl.style.color  = divColor; }
+    if (divSignalEl) { divSignalEl.textContent = divSignal; divSignalEl.style.color = divColor; }
+    if (divCorrEl)   { divCorrEl.textContent   = latestCorr != null ? latestCorr.toFixed(3) : '—'; divCorrEl.style.color   = latestCorr < -0.3 ? 'var(--green)' : 'var(--red)'; }
+
+    const baseWidth = document.getElementById('scroll-div')?.clientWidth || 600;
+    const dynW = Math.max(baseWidth, timestamps.length * 18);
+    document.getElementById('scroll-div').querySelector('.chart-canvas-wrapper').style.width = dynW + 'px';
+
+    const ctxDiv = document.getElementById('chartDivergence');
+    if (chartDivInstance) chartDivInstance.destroy();
+    chartDivInstance = new Chart(ctxDiv, {
+      type: 'line',
+      data: {
+        labels: timestamps,
+        datasets: [
+          {
+            label: 'SPY (Normalised)',
+            data: spyNorm,
+            borderColor: '#0a1628',
+            borderWidth: 1.5,
+            pointRadius: 0,
+            tension: 0.1,
+            yAxisID: 'yLeft'
+          },
+          {
+            label: 'VIX (Normalised)',
+            data: vixNorm,
+            borderColor: '#b01020',
+            borderWidth: 1.5,
+            pointRadius: 0,
+            tension: 0.1,
+            borderDash: [4, 3],
+            yAxisID: 'yLeft'
+          },
+          {
+            label: 'Divergence Index',
+            data: divIndex,
+            borderColor: '#8a6a00',
+            backgroundColor: 'rgba(138,106,0,0.08)',
+            borderWidth: 1,
+            pointRadius: 0,
+            tension: 0.2,
+            fill: true,
+            yAxisID: 'yRight'
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: { mode: 'index', intersect: false },
+        plugins: {
+          legend: { display: true, labels: { boxWidth: 10, font: { size: 9, family: "'IBM Plex Mono', monospace" } } },
+          tooltip: { bodyFont: { family: "'IBM Plex Mono', monospace", size: 10 } }
+        },
+        scales: {
+          x: {
+            grid: { color: 'rgba(10,22,40,0.1)' },
+            ticks: { font: { size: 8, family: "'IBM Plex Mono', monospace" }, maxRotation: 0 }
+          },
+          yLeft: {
+            position: 'left',
+            grid: { color: 'rgba(10,22,40,0.1)' },
+            ticks: { font: { size: 8, family: "'IBM Plex Mono', monospace" } },
+            title: { display: true, text: 'Norm. Level (0–100)', font: { size: 8, family: "'IBM Plex Mono', monospace" } }
+          },
+          yRight: {
+            position: 'right',
+            grid: { drawOnChartArea: false },
+            ticks: { font: { size: 8, family: "'IBM Plex Mono', monospace" } },
+            title: { display: true, text: 'Divergence', font: { size: 8, family: "'IBM Plex Mono', monospace" } }
+          }
+        }
+      }
+    });
+
+    enableChartDrag('scroll-div');
+    setTimeout(() => {
+      const el = document.getElementById('scroll-div');
+      if (el) el.scrollLeft = el.scrollWidth;
+    }, 150);
+
+    // ════════════════════════════════════════════
+    //  HEALTH SCORE SPARKLINE (sessionStorage ring buffer)
+    // ════════════════════════════════════════════
+    // Compute current score (same formula as renderEnhancedDiagnostics)
+    let sc = 50;
+    if (latestRSI) sc = clamp(100 - Math.abs(latestRSI - 55) * 2.5, 0, 100);
+    if (latestVix) { const vs = clamp(100 - (latestVix - 12) * 3, 0, 100); sc = (sc + vs) / 2; }
+    if (latestPrice && latestSMA) sc += latestPrice > latestSMA ? 8 : -8;
+    const bp = (latestPrice && latestUpperBand && latestLowerBand)
+      ? clamp(((latestPrice - latestLowerBand) / (latestUpperBand - latestLowerBand)) * 100, 0, 100)
+      : null;
+    if (bp !== null && (bp > 90 || bp < 10)) sc -= 10;
+    sc = clamp(Math.round(sc), 0, 100);
+
+    // Ring buffer — max 30 entries stored in sessionStorage
+    const SPARK_KEY = 'wz_health_history';
+    let history = [];
+    try { history = JSON.parse(sessionStorage.getItem(SPARK_KEY) || '[]'); } catch(e) {}
+    history.push({ score: sc, time: new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) });
+    if (history.length > 30) history = history.slice(-30);
+    sessionStorage.setItem(SPARK_KEY, JSON.stringify(history));
+
+    const sparkScores = history.map(h => h.score);
+    const sparkMin = Math.min(...sparkScores), sparkMax = Math.max(...sparkScores);
+    const sparkRangeEl = document.getElementById('sparkline-range');
+    if (sparkRangeEl) sparkRangeEl.textContent = `${sparkMin}–${sparkMax}`;
+
+    const sparkCanvas = document.getElementById('healthSparkline');
+    if (sparkCanvas) {
+      sparkCanvas.width = sparkCanvas.offsetWidth || 240;
+      if (healthSparklineInstance) healthSparklineInstance.destroy();
+      healthSparklineInstance = new Chart(sparkCanvas, {
+        type: 'line',
+        data: {
+          labels: history.map(h => h.time),
+          datasets: [{
+            data: sparkScores,
+            borderColor: sc >= 65 ? '#2a7a2a' : sc >= 50 ? '#8a6a00' : '#b01020',
+            borderWidth: 1.5,
+            pointRadius: history.length === 1 ? 3 : 0,
+            pointBackgroundColor: '#0a1628',
+            tension: 0.3,
+            fill: true,
+            backgroundColor: sc >= 65 ? 'rgba(42,122,42,0.07)' : sc >= 50 ? 'rgba(138,106,0,0.07)' : 'rgba(176,16,32,0.07)'
+          }]
+        },
+        options: {
+          responsive: false,
+          maintainAspectRatio: false,
+          animation: false,
+          plugins: { legend: { display: false }, tooltip: {
+            callbacks: { label: ctx => ` Score: ${ctx.parsed.y}` },
+            bodyFont: { family: "'IBM Plex Mono', monospace", size: 9 }
+          }},
+          scales: {
+            x: { display: false },
+            y: { display: false, min: 0, max: 100 }
+          }
+        }
+      });
+    }
+
   } catch(e) { console.warn('Enhanced diagnostics failed', e); }
 };
 
-// ── Hook into fetchFinanceData to enhance position table ──
+// ── Hook into fetchFinanceData for enhanced table + donut ──
 const _origFetchFinance = fetchFinanceData;
 fetchFinanceData = async function() {
   await _origFetchFinance();
 
-  // Re-render table with extra columns if we have data
   try {
     const res2 = await apiFetch('/api/finance/dashboard');
     const data2 = await res2.json();
     const tableBody = document.getElementById('dash-positions-table');
-    if (!tableBody || !data2.portfolioTable) return;
-    tableBody.innerHTML = '';
-    if (data2.portfolioTable.length > 1) {
+
+    // ── Enhanced position table ──
+    if (tableBody && data2.portfolioTable && data2.portfolioTable.length > 1) {
+      tableBody.innerHTML = '';
+      const positions = [];
       data2.portfolioTable.slice(1).forEach(row => {
         const ticker = row[0]; if (!ticker) return;
-        const shares   = row[2] || 0;
-        const avgCost  = row[3] || 0;
-        let   price    = row[4] || 0;
+        const shares  = parseFloat(row[2]) || 0;
+        const avgCost = parseFloat(row[3]) || 0;
+        let price     = parseFloat(row[4]) || 0;
         if (data2.liveMarket && data2.liveMarket[ticker]?.latestTrade) {
           price = data2.liveMarket[ticker].latestTrade.p;
         }
+        positions.push({ ticker, shares, avgCost, price });
         tableBody.innerHTML += renderEnhancedPositionRow(ticker, shares, avgCost, price);
       });
+
+      // Summary row
+      const totVal = positions.reduce((s, p) => s + p.price * p.shares, 0);
+      const totPnl = positions.reduce((s, p) => s + (p.price - p.avgCost) * p.shares, 0);
+      const totCost = positions.reduce((s, p) => s + p.avgCost * p.shares, 0);
+      const totRoi  = totCost > 0 ? (totPnl / totCost) * 100 : 0;
+      tableBody.innerHTML += `
+        <tr style="background:rgba(10,22,40,0.04); border-top:2px solid var(--line-bold);">
+          <td colspan="4" style="padding:8px 10px; font-size:0.48rem; text-transform:uppercase; letter-spacing:0.15em; color:var(--ink-dim);">Portfolio Total</td>
+          <td style="padding:8px 10px; font-weight:700; border-right:1px solid var(--line);">$${totVal.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}</td>
+          <td style="padding:8px 10px; font-weight:700; color:${totRoi>=0?'var(--green)':'var(--red)'}; border-right:1px solid var(--line);">${totRoi.toFixed(2)}%</td>
+          <td style="padding:8px 10px; font-weight:700; color:${totPnl>=0?'var(--green)':'var(--red)'};">${totPnl>=0?'+':''}$${Math.abs(totPnl).toFixed(2)}</td>
+        </tr>`;
+
+      // ════════════════════════════════════════════
+      //  POSITION WEIGHT DONUT
+      // ════════════════════════════════════════════
+      renderDonut(positions, totVal);
     }
-  } catch(e) { /* silent — base already rendered */ }
+  } catch(e) { /* silent */ }
 };
+
+// Donut palette — blueprint-compatible
+const DONUT_PALETTE = ['#0a1628','#1a3a5c','#2a6090','#3d7ab5','#5a9fd4','#8ab8d8','#b01020','#8a6a00'];
+
+function renderDonut(positions, totalValue) {
+  const svg     = document.getElementById('donut-svg');
+  const legend  = document.getElementById('donut-legend');
+  const center  = document.getElementById('donut-center');
+  const totalEl = document.getElementById('donut-total');
+  if (!svg || !positions.length) return;
+
+  const R = 28, CX = 40, CY = 40, stroke = 14;
+  const circ = 2 * Math.PI * R;
+
+  // Remove old segments (keep the background circle — first child)
+  while (svg.children.length > 1) svg.removeChild(svg.lastChild);
+
+  const weights = positions.map(p => ({
+    ticker: p.ticker,
+    value: p.price * p.shares,
+    pct: totalValue > 0 ? (p.price * p.shares / totalValue) * 100 : 0
+  })).sort((a, b) => b.value - a.value);
+
+  let offset = 0; // stroke-dashoffset starts at top (already rotated via transform)
+  const gap = circ * 0.012; // tiny gap between segments
+
+  weights.forEach((w, i) => {
+    const segLen = (w.pct / 100) * circ - gap;
+    if (segLen <= 0) return;
+    const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    circle.setAttribute('cx', CX);
+    circle.setAttribute('cy', CY);
+    circle.setAttribute('r', R);
+    circle.setAttribute('fill', 'none');
+    circle.setAttribute('stroke', DONUT_PALETTE[i % DONUT_PALETTE.length]);
+    circle.setAttribute('stroke-width', stroke);
+    circle.setAttribute('stroke-dasharray', `${segLen} ${circ - segLen}`);
+    circle.setAttribute('stroke-dashoffset', circ - offset);
+    circle.setAttribute('transform', `rotate(-90 ${CX} ${CY})`);
+    circle.style.transition = 'stroke-dasharray 0.6s ease';
+    svg.appendChild(circle);
+    offset += segLen + gap;
+  });
+
+  // Center label — largest holding
+  if (center && weights.length) {
+    center.innerHTML = `<span style="font-size:0.52rem;font-weight:700;color:var(--ink);display:block;">${weights[0].ticker}</span><span style="font-size:0.42rem;color:var(--ink-dim);">${weights[0].pct.toFixed(1)}%</span>`;
+  }
+
+  // Legend
+  if (legend) {
+    legend.innerHTML = weights.map((w, i) => `
+      <div style="display:flex; align-items:center; gap:6px;">
+        <span style="display:inline-block; width:8px; height:8px; background:${DONUT_PALETTE[i % DONUT_PALETTE.length]}; flex-shrink:0;"></span>
+        <span style="flex:1; color:var(--ink); font-weight:600;">${w.ticker}</span>
+        <span style="color:var(--ink-dim);">${w.pct.toFixed(1)}%</span>
+      </div>`).join('');
+  }
+
+  if (totalEl) totalEl.textContent = '$' + totalValue.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2});
+}
+
+// ════════════════════════════════════════════
+//  KEYBOARD SHORTCUTS
+// ════════════════════════════════════════════
+document.addEventListener('keydown', e => {
+  // Shift+R — manual sync (ignore when typing in an input)
+  if (e.shiftKey && e.key === 'R' && !['INPUT','TEXTAREA','SELECT'].includes(document.activeElement.tagName)) {
+    e.preventDefault();
+    const btn = document.getElementById('sync-btn');
+    if (btn && !btn.disabled && btn.style.display !== 'none') {
+      doManualSync();
+      showToast('Shift+R — Sync triggered');
+    }
+  }
+});
+
+// Tooltip hint in nav
+const syncBtn = document.getElementById('sync-btn');
+if (syncBtn) syncBtn.title = 'Refresh all data  [Shift+R]';
 </script>
 </body>
 </html>
