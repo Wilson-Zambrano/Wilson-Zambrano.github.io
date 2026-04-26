@@ -94,7 +94,9 @@ function doLogout() {
 
 function showLogin() {
   document.getElementById('login-screen').style.display = 'flex';
-  document.getElementById('app-screen').style.display = 'none';
+  const appScreen = document.getElementById('app-screen');
+  if (appScreen) appScreen.style.display = 'none';
+  
   const accessVal = document.getElementById('nav-access-val');
   if (accessVal) { accessVal.textContent = '● Locked'; accessVal.style.color = 'var(--red)'; }
   const topLogout = document.getElementById('top-logout-btn');
@@ -105,7 +107,9 @@ function showLogin() {
 
 function showApp() {
   document.getElementById('login-screen').style.display = 'none';
-  document.getElementById('app-screen').style.display = 'block';
+  const appScreen = document.getElementById('app-screen');
+  if (appScreen) appScreen.style.display = 'block';
+  
   const accessVal = document.getElementById('nav-access-val');
   if (accessVal) { accessVal.textContent = '● Authenticated'; accessVal.style.color = 'var(--green)'; }
   const topLogout = document.getElementById('top-logout-btn');
@@ -134,6 +138,8 @@ async function fetchFinanceData() {
 
     // Populate Table
     const tableBody = document.getElementById('dash-positions-table');
+    if (!tableBody) return; // Only run if table exists
+    
     tableBody.innerHTML = ''; 
 
     if (data.portfolioTable && data.portfolioTable.length > 1) {
@@ -180,10 +186,12 @@ async function fetchFinanceData() {
     }
 
   } catch (err) {
-    document.getElementById('dash-margin-avail').textContent = "ERR";
-    document.getElementById('dash-margin-safe').textContent = "ERR";
-    document.getElementById('dash-interest').textContent = "ERR";
-    showToast('Failed to sync financial data', true);
+    if (document.getElementById('dash-margin-avail')) {
+      document.getElementById('dash-margin-avail').textContent = "ERR";
+      document.getElementById('dash-margin-safe').textContent = "ERR";
+      document.getElementById('dash-interest').textContent = "ERR";
+      showToast('Failed to sync financial data', true);
+    }
   }
 }
 
@@ -229,18 +237,21 @@ async function submitTrade() {
     btn.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 6px;"><polyline points="20 6 9 17 4 12"/></svg> Log Trade';
   }
 }
+
 // ═══════════════════════════════════════════════
 //  DROP ZONE LOGIC
 // ═══════════════════════════════════════════════
 async function loadDrops() {
   const list = document.getElementById('log-list');
+  if(!list) return;
   list.innerHTML = '<div class="log-loading"><span class="spinner"></span>&nbsp; Loading...</div>';
   try {
     const res = await apiFetch('/api/drop/list');
     const data = await res.json();
     drops = data.items || [];
     renderLog();
-    document.getElementById('status-count').textContent = drops.length;
+    const countEl = document.getElementById('status-count');
+    if (countEl) countEl.textContent = drops.length;
     calculateStorage();
   } catch (err) {
     list.innerHTML = `<div class="log-loading" style="color:var(--red);">Error: ${escapeHTML(err.message)}</div>`;
@@ -249,6 +260,7 @@ async function loadDrops() {
 
 async function loadPublicDrops() {
   const list = document.getElementById('public-log-list');
+  if(!list) return;
   list.innerHTML = '<div class="log-loading" style="padding: 20px;"><span class="spinner"></span>&nbsp; Loading...</div>';
   try {
     const res = await fetch(`${API_BASE}/api/drop/public/list`);
@@ -277,8 +289,12 @@ function switchMode(mode) {
   document.getElementById('file-mode-panel').style.display = mode === 'file' ? 'block' : 'none';
   document.getElementById('text-mode-panel').style.display = mode === 'text' ? 'block' : 'none';
   document.getElementById('url-mode-panel').style.display  = mode === 'url'  ? 'block' : 'none';
-  document.getElementById('status-mode').textContent = mode === 'file' ? 'File' : mode === 'text' ? 'Text/Code' : 'URL';
-  document.getElementById('public-toggle-container').style.display = mode === 'file' ? 'flex' : 'none';
+  
+  const statusMode = document.getElementById('status-mode');
+  if (statusMode) statusMode.textContent = mode === 'file' ? 'File' : mode === 'text' ? 'Text/Code' : 'URL';
+  
+  const publicToggle = document.getElementById('public-toggle-container');
+  if (publicToggle) publicToggle.style.display = mode === 'file' ? 'flex' : 'none';
 }
 
 function setupDragDrop() {
@@ -298,7 +314,10 @@ function setupFileInput() {
 
 function setFiles(files) {
   selectedFiles = Array.from(files);
-  document.getElementById('drop-zone').classList.add('has-file');
+  const zone = document.getElementById('drop-zone');
+  if(!zone) return;
+  
+  zone.classList.add('has-file');
   document.getElementById('file-selected-info').style.display = 'block';
   if (selectedFiles.length === 1) {
     document.getElementById('file-name-display').textContent = selectedFiles[0].name;
@@ -314,6 +333,8 @@ function setFiles(files) {
 
 async function handleSubmit() {
   const btn = document.getElementById('submit-btn');
+  if(!btn) return;
+  
   const note = document.getElementById('drop-note').value.trim();
   const ttl = document.getElementById('drop-ttl').value;
   btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>&nbsp; Uploading...';
@@ -353,7 +374,9 @@ async function handleSubmit() {
       document.getElementById('url-label').value = ''; document.getElementById('url-input').value = '';
     }
     document.getElementById('drop-note').value = '';
-    renderLog(); document.getElementById('status-count').textContent = drops.length;
+    renderLog(); 
+    const countEl = document.getElementById('status-count');
+    if (countEl) countEl.textContent = drops.length;
     updateSpec(itemToSpec); calculateStorage();
     showToast('Received — ' + successMessage);
   } catch (err) { showToast(err.message || 'Error', true); } finally {
@@ -463,7 +486,7 @@ async function renderDOCXViewer(blob, name, container) {
 }
 async function copyItem(id, type) { if (type === 'file') { showToast('Cannot copy binary file', true); return; } try { const res = await apiFetch(`/api/drop/item/${id}`); const data = await res.json(); await navigator.clipboard.writeText(data.value || ''); showToast('Copied to clipboard'); } catch { showToast('Copy failed', true); } }
 async function downloadItem(id, name) { try { const res = await apiFetch(`/api/drop/item/${id}`); const blob = await res.blob(); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = name; a.click(); URL.revokeObjectURL(url); } catch { showToast('Download failed', true); } }
-async function deleteItem(id) { try { const res = await apiFetch(`/api/drop/item/${id}`, { method: 'DELETE' }); if (!res.ok) throw new Error(); drops = drops.filter(i => i.id !== id); renderLog(); document.getElementById('status-count').textContent = drops.length; calculateStorage(); showToast('Item deleted'); } catch { showToast('Delete failed', true); } }
+async function deleteItem(id) { try { const res = await apiFetch(`/api/drop/item/${id}`, { method: 'DELETE' }); if (!res.ok) throw new Error(); drops = drops.filter(i => i.id !== id); renderLog(); const countEl=document.getElementById('status-count'); if(countEl) countEl.textContent = drops.length; calculateStorage(); showToast('Item deleted'); } catch { showToast('Delete failed', true); } }
 function closePreview() { const ov = document.getElementById('preview-overlay'); if(ov) ov.classList.remove('open'); }
 const overlay = document.getElementById('preview-overlay'); if(overlay) overlay.addEventListener('click', function(e) { if (e.target === this) closePreview(); });
 
@@ -482,7 +505,7 @@ async function calculateStorage() {
     const bar = document.getElementById('storage-bar'); if(bar) { bar.style.width = percent + '%'; bar.style.background = percent > 90 ? 'var(--red)' : (percent > 75 ? 'var(--gold)' : 'var(--blue)'); }
   } catch (err) { console.error("Storage calc failed", err); }
 }
-function resetFileZone() { selectedFiles = []; document.getElementById('drop-zone').classList.remove('has-file'); document.getElementById('file-selected-info').style.display = 'none'; document.getElementById('file-input').value = ''; }
+function resetFileZone() { selectedFiles = []; const dz=document.getElementById('drop-zone'); if(dz) dz.classList.remove('has-file'); const fsi=document.getElementById('file-selected-info'); if(fsi) fsi.style.display = 'none'; const fi=document.getElementById('file-input'); if(fi) fi.value = ''; }
 function formatBytes(b) { if (b<1024) return b+' B'; if (b<1048576) return (b/1024).toFixed(1)+' KB'; return (b/1048576).toFixed(1)+' MB'; }
 function escapeHTML(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 let toastTimer; function showToast(msg, isError=false) { const t = document.getElementById('toast'); if(!t) return; t.textContent = msg; t.className = 'show' + (isError ? ' error' : ''); clearTimeout(toastTimer); toastTimer = setTimeout(() => { t.className = ''; }, 2600); }
