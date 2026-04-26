@@ -96,6 +96,18 @@
       min-width: 100%;
     }
   }
+  /* ── Desktop/Mobile Grid Architecture ── */
+  .terminal-layout {
+    display: grid;
+    grid-template-columns: 1fr 320px;
+    gap: 24px;
+    align-items: start;
+  }
+
+  /* CRITICAL FIX: Prevents the 2400px charts from blowing out the grid */
+  #view-finance {
+    min-width: 0; 
+  }
 </style>
 </head>
 <body>
