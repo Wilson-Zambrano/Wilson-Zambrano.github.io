@@ -64,9 +64,8 @@ body::before {
 .nav-brand { font-family: 'Bebas Neue', sans-serif; font-size: 1.4rem; letter-spacing: 0.12em; color: var(--ink); text-decoration: none; padding: 12px 24px; border-right: 1px solid var(--line-bold); display: flex; align-items: center; gap: 10px; transition: background 0.15s; }
 .nav-brand:hover { background: rgba(10,22,40,0.05); }
 .nav-brand span { color: var(--red); }
-.nav-doc-ref { display: flex; align-items: center; margin-left: auto; border-left: 1px solid var(--line-bold); }
+.nav-doc-ref { display: flex; align-items: center; }
 .nav-doc-cell { padding: 6px 18px; border-left: 1px solid var(--line); display: flex; flex-direction: column; justify-content: center; }
-.nav-doc-cell:first-child { border-left: none; }
 .nav-doc-key { font-size: 0.45rem; text-transform: uppercase; letter-spacing: 0.2em; color: var(--ink-dim); }
 .nav-doc-val { font-size: 0.6rem; font-weight: 700; color: var(--ink); letter-spacing: 0.06em; }
 
@@ -237,7 +236,7 @@ footer { position: relative; z-index: 1; border-top: 3px solid var(--ink); backg
       <a href="index.html" class="nav-brand" title="Return to Portfolio">W<span>.</span>Zambrano</a>
     </div>
     
-    <div style="display: flex; align-items: center; gap: 12px;">
+    <div style="display: flex; align-items: center; gap: 12px; margin-left: auto; padding-right: 16px; border-right: 1px solid var(--line-bold);">
       
       <button id="nav-app-toggle" onclick="toggleAppView()" class="btn btn-outline" style="display:none; padding: 6px 12px; font-size: 0.5rem; border-color: var(--ink); color: var(--ink);">
         <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:inline;vertical-align:middle;margin-right:4px;"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
@@ -248,18 +247,18 @@ footer { position: relative; z-index: 1; border-top: 3px solid var(--ink); backg
         <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:inline;vertical-align:middle;margin-right:4px;"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
         Logout
       </button>
+    </div>
 
-      <div class="nav-doc-ref">
-        <div class="nav-doc-cell"><span class="nav-doc-key">Document</span><span class="nav-doc-val">WZ-DROP-001</span></div>
-        <div class="nav-doc-cell"><span class="nav-doc-key">Access</span><span class="nav-doc-val" id="nav-access-val" style="color:var(--red);">● Locked</span></div>
-      </div>
+    <div class="nav-doc-ref" style="margin-left: 0;">
+      <div class="nav-doc-cell" style="border-left: none;"><span class="nav-doc-key">Document</span><span class="nav-doc-val">WZ-DROP-001</span></div>
+      <div class="nav-doc-cell"><span class="nav-doc-key">Access</span><span class="nav-doc-val" id="nav-access-val" style="color:var(--red);">● Locked</span></div>
     </div>
   </nav>
 </header>
 
 <main>
   <div id="login-screen">
-    <div style="margin-bottom:28px;">
+    <div style="margin-bottom:28px; width: 100%; max-width: 480px;">
       <p class="dwg-section-label">Document WZ-DROP-001 Rev C — Intake Station</p>
       <h1 class="dwg-title">Drop Zone</h1>
     </div>
@@ -617,7 +616,7 @@ function doLogout() {
   jwt = null;
   sessionStorage.removeItem('wz_drop_jwt');
   drops = [];
-  
+
   // Reset view back to drop zone if they log out from the terminal
   if (currentAppView === 'finance') {
     toggleAppView();
@@ -811,14 +810,24 @@ async function fetchFinanceData() {
 // ═══════════════════════════════════════════════
 function setupDragDrop() {
   const zone = document.getElementById('drop-zone');
-  ['dragenter','dragover'].forEach(e => zone.addEventListener(e, ev => { ev.preventDefault(); zone.classList.add('drag-over'); }));
-  ['dragleave','dragend'].forEach(e => zone.addEventListener(e, () => zone.classList.remove('drag-over'); }));
+  
+  ['dragenter', 'dragover'].forEach(e => zone.addEventListener(e, ev => { 
+    ev.preventDefault(); 
+    zone.classList.add('drag-over'); 
+  }));
+  
+  ['dragleave', 'dragend'].forEach(e => zone.addEventListener(e, () => { 
+    zone.classList.remove('drag-over'); 
+  }));
+  
   zone.addEventListener('drop', e => { 
     e.preventDefault(); 
     zone.classList.remove('drag-over'); 
     if (e.dataTransfer.files.length) setFiles(e.dataTransfer.files); 
   });
+  
   document.body.addEventListener('dragover', e => e.preventDefault());
+  
   document.body.addEventListener('drop', e => { 
     e.preventDefault(); 
     if (currentMode !== 'file') switchMode('file'); 
