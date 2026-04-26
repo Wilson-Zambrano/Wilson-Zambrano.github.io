@@ -13,9 +13,36 @@
   .terminal-layout {
     display: grid;
     grid-template-columns: 1fr 320px;
-    gap: 24px;
-    align-items: start;
+    gap: 0; /* Removed gap to merge borders */
+    border: 2px solid var(--ink); /* Matches Drop Zone outer border */
+    background: var(--paper);
+    min-width: 0;
   }
+
+  #view-finance {
+    border-right: 2px solid var(--ink); /* Divider line */
+    padding: 32px;
+    background: rgba(10,22,40,0.02);
+    min-width: 0; /* CRITICAL FIX: Stops the 2400px chart from blowing out the grid */
+  }
+
+  /* ── Analysis Sidebar ── */
+  .analysis-sidebar {
+    padding: 28px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    position: sticky;
+    top: 72px; /* Sticks just below the header */
+    height: calc(100vh - 80px); /* Makes it a fixed scrollable panel */
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--ink-dim) var(--paper-dark);
+  }
+
+  .analysis-sidebar::-webkit-scrollbar { width: 4px; }
+  .analysis-sidebar::-webkit-scrollbar-track { background: var(--paper-dark); }
+  .analysis-sidebar::-webkit-scrollbar-thumb { background: var(--ink-dim); }
 
   /* ── Chart Viewport Styling ── */
   .chart-viewport {
@@ -26,87 +53,41 @@
     background: var(--paper);
     padding: 16px;
     height: 380px;
-    /* Custom scrollbar to match blueprint aesthetic */
     scrollbar-width: thin;
     scrollbar-color: var(--ink-dim) var(--paper-dark);
   }
+  .chart-viewport.small-chart { height: 260px; } /* For RSI */
+  
   .chart-viewport::-webkit-scrollbar { height: 6px; }
   .chart-viewport::-webkit-scrollbar-track { background: var(--paper-dark); }
   .chart-viewport::-webkit-scrollbar-thumb { background: var(--ink-dim); border-radius: 3px; }
-  
   .chart-viewport:active { cursor: grabbing; }
   
   .chart-canvas-wrapper {
-    height: 320px;
-    width: 2400px; /* Expands the timeline to prevent spiky distortion */
+    height: 100%;
+    width: 2400px;
     position: relative;
   }
 
-  /* ── Analysis Sidebar ── */
-  .analysis-sidebar {
-    position: sticky;
-    top: 80px;
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-  }
-  .analysis-box {
-    border: 1px solid var(--line-bold);
-    background: rgba(10,22,40,0.03);
-    padding: 20px;
-  }
-  .screener-card {
-    background: var(--paper);
-    border: 1px solid var(--line);
-    margin-bottom: 12px;
-    padding: 12px;
-    transition: transform 0.1s;
-  }
-  .screener-card:hover { transform: translateX(4px); border-color: var(--ink); }
+  /* ── Screener Elements ── */
+  .spec-block { border: 1px solid var(--line-bold); font-size: 0.55rem; }
+  .spec-block-header { background: rgba(10,22,40,0.06); padding: 6px 10px; border-bottom: 1px solid var(--line-bold); text-transform: uppercase; letter-spacing: 0.2em; color: var(--ink-dim); }
+  .spec-row { display: flex; border-bottom: 1px solid var(--line); }
+  .spec-row:last-child { border-bottom: none; }
+  .spec-key { flex: 1; padding: 5px 8px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink-dim); background: rgba(10,22,40,0.03); border-right: 1px solid var(--line); }
+  .spec-val { flex: 1; padding: 5px 8px; color: var(--ink); font-weight: 600; text-align: right; }
 
   /* ── Mobile Terminal Fixes ── */
   @media (max-width: 1100px) {
-    .terminal-layout { grid-template-columns: 1fr; }
-    .analysis-sidebar { position: static !important; width: 100%; }
+    .terminal-layout { grid-template-columns: 1fr; border-bottom: none; }
+    #view-finance { border-right: none; border-bottom: 2px solid var(--ink); }
+    .analysis-sidebar { position: static !important; height: auto; width: 100%; border-bottom: 2px solid var(--ink); }
   }
   @media (max-width: 768px) {
-    .terminal-layout {
-      display: flex;
-      flex-direction: column;
-      gap: 24px;
-    }
-    
-    /* Prevent table from breaking viewport */
-    #dash-positions-table {
-      display: block;
-      overflow-x: auto;
-      white-space: nowrap;
-    }
-    
-    /* Stack trade inputs vertically on small screens */
-    #trade-submit-btn {
-      width: 100%;
-      margin-top: 8px;
-    }
-    .form-group.trade-inputs {
-      flex-direction: column;
-      align-items: stretch;
-    }
-    .form-group.trade-inputs > div {
-      min-width: 100%;
-    }
-  }
-  /* ── Desktop/Mobile Grid Architecture ── */
-  .terminal-layout {
-    display: grid;
-    grid-template-columns: 1fr 320px;
-    gap: 24px;
-    align-items: start;
-  }
-
-  /* CRITICAL FIX: Prevents the 2400px charts from blowing out the grid */
-  #view-finance {
-    min-width: 0; 
+    #dash-positions-table { display: block; overflow-x: auto; white-space: nowrap; }
+    #trade-submit-btn { width: 100%; margin-top: 8px; }
+    .trade-inputs { flex-direction: column; align-items: stretch; }
+    .trade-inputs > div { min-width: 100%; }
   }
 </style>
 </head>
@@ -153,7 +134,7 @@
         </div>
         <div class="login-body">
           <p class="login-eyebrow">Secure Access — JWT Protected</p>
-          <div id="login-error">Invalid credentials. Access denied.</div>
+          <div id="login-error" style="display:none; border: 1px solid var(--red); background: rgba(176,16,32,0.04); padding: 8px 12px; font-size: 0.6rem; color: var(--red); margin-bottom: 16px;"></div>
           <div class="form-group">
             <label class="form-label">Username</label>
             <input type="text" id="login-username" class="form-input" placeholder="username" autocomplete="username">
@@ -171,137 +152,128 @@
   </div>
 
   <div id="app-screen" style="display:none;">
+    <div style="margin-bottom:28px;">
+      <p class="dwg-section-label">Module 02 — Financial Telemetry</p>
+      <h1 class="dwg-title">Margin & Portfolio Status</h1>
+    </div>
+
     <div class="terminal-layout">
       
       <div id="view-finance">
-        <div style="margin-bottom:28px;">
-          <p class="dwg-section-label">Module 02 — Financial Telemetry</p>
-          <h1 class="dwg-title">Margin & Portfolio Status</h1>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
+          <div style="border: 1px solid var(--line-bold); padding: 16px; background: var(--paper);">
+            <p style="font-size: 0.55rem; text-transform: uppercase; letter-spacing: 0.15em; color: var(--ink-dim);">Available Margin</p>
+            <p style="font-size: 1.4rem; font-weight: 700; color: var(--ink); margin-top: 8px;" id="dash-margin-avail">Loading...</p>
+          </div>
+          <div style="border: 1px solid var(--line-bold); padding: 16px; background: var(--paper);">
+            <p style="font-size: 0.55rem; text-transform: uppercase; letter-spacing: 0.15em; color: var(--ink-dim);">CBOE Volatility (VIX)</p>
+            <p style="font-size: 1.4rem; font-weight: 700; color: var(--gold); margin-top: 8px;" id="dash-vix">Loading...</p>
+          </div>
+          <div style="border: 1px solid var(--line-bold); padding: 16px; background: var(--paper);">
+            <p style="font-size: 0.55rem; text-transform: uppercase; letter-spacing: 0.15em; color: var(--ink-dim);">Net Earnings</p>
+            <p style="font-size: 1.4rem; font-weight: 700; color: var(--green); margin-top: 8px;" id="dash-net">Loading...</p>
+          </div>
         </div>
 
-        <div style="border: 2px solid var(--ink); padding: 32px; background: rgba(10,22,40,0.02);">
+        <div style="margin-top: 24px; padding: 24px; border: 1px dashed var(--line-bold); text-align: center;" id="connection-status">
+          <p style="font-size: 0.6rem; color: var(--ink-dim); text-transform: uppercase; letter-spacing: 0.1em;">Initializing Secure Bridge...</p>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr; gap: 32px; margin-top: 24px;">
+          <div>
+            <p class="dwg-section-label" style="margin-bottom: 8px;">Telemetry 01 — VIX Volatility (30D SMA Overlay)</p>
+            <div class="chart-viewport" id="scroll-vix">
+              <div class="chart-canvas-wrapper"><canvas id="chartVix"></canvas></div>
+            </div>
+          </div>
+
+          <div>
+            <p class="dwg-section-label" style="margin-bottom: 8px;">Telemetry 02 — Market Proxy (Bollinger Band Analysis)</p>
+            <div class="chart-viewport" id="scroll-spy">
+              <div class="chart-canvas-wrapper"><canvas id="chartS5FI"></canvas></div>
+            </div>
+          </div>
+
+          <div>
+            <p class="dwg-section-label" style="margin-bottom: 8px;">Telemetry 03 — Market Proxy Momentum (14-Day RSI)</p>
+            <div class="chart-viewport small-chart" id="scroll-rsi">
+              <div class="chart-canvas-wrapper" style="height: 200px;"><canvas id="chartRSI"></canvas></div>
+            </div>
+          </div>
+        </div>
+
+        <div style="margin-top: 32px; padding: 24px; border: 1px solid var(--line-bold); background: var(--paper);">
+          <p class="dwg-section-label" style="margin-bottom: 12px;">Terminal Input</p>
+          <h3 style="font-size: 0.8rem; font-family: 'Bebas Neue', sans-serif; letter-spacing: 0.1em; color: var(--ink); margin-bottom: 16px;">Log Execution</h3>
           
-          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
-            <div style="border: 1px solid var(--line-bold); padding: 16px; background: var(--paper);">
-              <p style="font-size: 0.55rem; text-transform: uppercase; letter-spacing: 0.15em; color: var(--ink-dim);">Available Margin</p>
-              <p style="font-size: 1.4rem; font-weight: 700; color: var(--ink); margin-top: 8px;" id="dash-margin-avail">Loading...</p>
+          <div class="form-group trade-inputs" style="display: flex; gap: 12px; flex-wrap: wrap; align-items: flex-end;">
+            <div style="flex: 1; min-width: 120px;">
+              <label class="form-label">Action</label>
+              <select id="trade-action" class="form-input" style="cursor:pointer; padding: 8px 12px;"><option value="Buy">Buy</option><option value="Sell">Sell</option></select>
             </div>
-            <div style="border: 1px solid var(--line-bold); padding: 16px; background: var(--paper);">
-              <p style="font-size: 0.55rem; text-transform: uppercase; letter-spacing: 0.15em; color: var(--ink-dim);">CBOE Volatility (VIX)</p>
-              <p style="font-size: 1.4rem; font-weight: 700; color: var(--gold); margin-top: 8px;" id="dash-vix">Loading...</p>
+            <div style="flex: 1; min-width: 120px;">
+              <label class="form-label">Ticker</label>
+              <input type="text" id="trade-ticker" class="form-input" placeholder="e.g. AAPL" style="text-transform: uppercase;">
             </div>
-            <div style="border: 1px solid var(--line-bold); padding: 16px; background: var(--paper);">
-              <p style="font-size: 0.55rem; text-transform: uppercase; letter-spacing: 0.15em; color: var(--ink-dim);">Net Earnings</p>
-              <p style="font-size: 1.4rem; font-weight: 700; color: var(--green); margin-top: 8px;" id="dash-net">Loading...</p>
+            <div style="flex: 1; min-width: 120px;">
+              <label class="form-label">Shares</label>
+              <input type="number" id="trade-shares" class="form-input" placeholder="0.00" step="0.01">
             </div>
-          </div>
-
-          <div style="margin-top: 24px; padding: 24px; border: 1px dashed var(--line-bold); text-align: center;" id="connection-status">
-            <p style="font-size: 0.6rem; color: var(--ink-dim); text-transform: uppercase; letter-spacing: 0.1em;">Initializing Secure Bridge...</p>
-          </div>
-
-          <div style="display: grid; grid-template-columns: 1fr; gap: 32px; margin-top: 24px;">
-            
+            <div style="flex: 1; min-width: 120px;">
+              <label class="form-label">Exec. Price ($)</label>
+              <input type="number" id="trade-price" class="form-input" placeholder="0.00" step="0.01">
+            </div>
             <div>
-              <p class="dwg-section-label" style="margin-bottom: 8px;">Telemetry 01 — VIX Volatility (30D SMA Overlay)</p>
-              <div class="chart-viewport" id="scroll-vix">
-                <div class="chart-canvas-wrapper">
-                  <canvas id="chartVix"></canvas>
-                </div>
-              </div>
-            </div>
-
-            <div>
-              <p class="dwg-section-label" style="margin-bottom: 8px;">Telemetry 02 — Market Proxy (Bollinger Band Analysis)</p>
-              <div class="chart-viewport" id="scroll-spy">
-                <div class="chart-canvas-wrapper">
-                  <canvas id="chartS5FI"></canvas>
-                </div>
-              </div>
-            </div>
-
-          </div>
-
-          <div style="margin-top: 32px; padding: 24px; border: 1px solid var(--line-bold); background: var(--paper);">
-            <p class="dwg-section-label" style="margin-bottom: 12px;">Terminal Input</p>
-            <h3 style="font-size: 0.8rem; font-family: 'Bebas Neue', sans-serif; letter-spacing: 0.1em; color: var(--ink); margin-bottom: 16px;">Log Execution</h3>
-            
-            <div class="form-group trade-inputs" style="display: flex; gap: 12px; flex-wrap: wrap; align-items: flex-end;">
-              <div style="flex: 1; min-width: 120px;">
-                <label class="form-label">Action</label>
-                <select id="trade-action" class="form-input" style="cursor:pointer; padding: 8px 12px;">
-                  <option value="Buy">Buy</option>
-                  <option value="Sell">Sell</option>
-                </select>
-              </div>
-              <div style="flex: 1; min-width: 120px;">
-                <label class="form-label">Ticker</label>
-                <input type="text" id="trade-ticker" class="form-input" placeholder="e.g. AAPL" style="text-transform: uppercase;">
-              </div>
-              <div style="flex: 1; min-width: 120px;">
-                <label class="form-label">Shares</label>
-                <input type="number" id="trade-shares" class="form-input" placeholder="0.00" step="0.01">
-              </div>
-              <div style="flex: 1; min-width: 120px;">
-                <label class="form-label">Exec. Price ($)</label>
-                <input type="number" id="trade-price" class="form-input" placeholder="0.00" step="0.01">
-              </div>
-              <div>
-                <button class="btn btn-solid" id="trade-submit-btn" onclick="submitTrade()" style="padding: 10px 24px;">
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 6px;"><polyline points="20 6 9 17 4 12"/></svg>
-                  Log Trade
-                </button>
-              </div>
+              <button class="btn btn-solid" id="trade-submit-btn" onclick="submitTrade()" style="padding: 10px 24px;">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 6px;"><polyline points="20 6 9 17 4 12"/></svg> Log Trade
+              </button>
             </div>
           </div>
+        </div>
 
-          <div style="margin-top: 32px;">
-            <h3 style="font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.2em; color: var(--ink-dim); margin-bottom: 12px; border-bottom: 1px solid var(--line-bold); padding-bottom: 8px;">Active Positions Ledger (Live)</h3>
-            <div style="overflow-x: auto; border: 1px solid var(--line-bold); background: var(--paper);">
-              <table style="width: 100%; border-collapse: collapse; font-size: 0.6rem; text-align: left;">
-                <thead>
-                  <tr style="background: rgba(10,22,40,0.04); border-bottom: 1px solid var(--line-bold);">
-                    <th style="padding: 10px; border-right: 1px solid var(--line);">Ticker</th>
-                    <th style="padding: 10px; border-right: 1px solid var(--line);">Shares</th>
-                    <th style="padding: 10px; border-right: 1px solid var(--line);">Avg Cost</th>
-                    <th style="padding: 10px; border-right: 1px solid var(--line);">Current Price</th>
-                    <th style="padding: 10px;">Live ROI (%)</th>
-                  </tr>
-                </thead>
-                <tbody id="dash-positions-table">
-                  <tr><td colspan="5" style="padding: 16px; text-align: center; color: var(--ink-dim); text-transform: uppercase; letter-spacing: 0.1em;">Awaiting data stream...</td></tr>
-                </tbody>
-              </table>
-            </div>
+        <div style="margin-top: 32px;">
+          <h3 style="font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.2em; color: var(--ink-dim); margin-bottom: 12px; border-bottom: 1px solid var(--line-bold); padding-bottom: 8px;">Active Positions Ledger (Live)</h3>
+          <div style="overflow-x: auto; border: 1px solid var(--line-bold); background: var(--paper);">
+            <table style="width: 100%; border-collapse: collapse; font-size: 0.6rem; text-align: left;">
+              <thead>
+                <tr style="background: rgba(10,22,40,0.04); border-bottom: 1px solid var(--line-bold);">
+                  <th style="padding: 10px; border-right: 1px solid var(--line);">Ticker</th>
+                  <th style="padding: 10px; border-right: 1px solid var(--line);">Shares</th>
+                  <th style="padding: 10px; border-right: 1px solid var(--line);">Avg Cost</th>
+                  <th style="padding: 10px; border-right: 1px solid var(--line);">Current Price</th>
+                  <th style="padding: 10px;">Live ROI (%)</th>
+                </tr>
+              </thead>
+              <tbody id="dash-positions-table">
+                <tr><td colspan="5" style="padding: 16px; text-align: center; color: var(--ink-dim); text-transform: uppercase; letter-spacing: 0.1em;">Awaiting data stream...</td></tr>
+              </tbody>
+            </table>
           </div>
-
         </div>
       </div> 
 
       <aside class="analysis-sidebar">
-        <div class="analysis-box">
-          <p class="dwg-section-label" style="color:var(--ink);">Stock Health Screener</p>
-          <div id="screener-results" style="margin-top: 15px; font-size: 0.65rem;">
-            <p style="color:var(--ink-dim);">Awaiting data stream...</p>
+        
+        <div>
+          <p class="dwg-section-label" style="color:var(--ink); margin-bottom: 10px;">Market Context</p>
+          <div class="spec-block">
+            <div class="spec-block-header">SPY Proxy Diagnostics</div>
+            <div class="spec-row"><span class="spec-key">14-Day RSI</span><span class="spec-val" id="diag-rsi">—</span></div>
+            <div class="spec-row"><span class="spec-key">Trend (20D SMA)</span><span class="spec-val" id="diag-trend">—</span></div>
+            <div class="spec-row"><span class="spec-key">Band Position</span><span class="spec-val" id="diag-bands">—</span></div>
+            <div class="spec-row"><span class="spec-key">VIX Condition</span><span class="spec-val" id="diag-vix">—</span></div>
           </div>
         </div>
-        <div class="analysis-box">
-          <p class="dwg-section-label" style="color:var(--ink);">Risk Assessment</p>
-          <div style="margin-top: 15px; font-size: 0.6rem; color: var(--ink-dim);">
-            <div style="display:flex; justify-content:space-between; margin-bottom: 8px; border-bottom: 1px dashed var(--line); padding-bottom: 4px;">
-              <span>Climax Peak Risk:</span>
-              <strong id="risk-climax" style="color:var(--ink);">--</strong>
-            </div>
-            <div style="display:flex; justify-content:space-between; margin-bottom: 8px; border-bottom: 1px dashed var(--line); padding-bottom: 4px;">
-              <span>14-Day RSI:</span>
-              <strong id="risk-rsi" style="color:var(--ink);">--</strong>
-            </div>
-            <div style="display:flex; justify-content:space-between;">
-              <span>Trend Status:</span>
-              <strong id="risk-trend" style="color:var(--ink);">--</strong>
+
+        <div>
+          <p class="dwg-section-label" style="color:var(--red); margin-bottom: 10px;">Automated Alerts</p>
+          <div id="screener-results" style="display: flex; flex-direction: column; gap: 8px;">
+            <div style="padding: 12px; border: 1px solid var(--line-bold); background: rgba(10,22,40,0.03); font-size: 0.6rem; color: var(--ink-dim); text-transform: uppercase; letter-spacing: 0.1em; text-align: center;">
+              Compiling telemetry...
             </div>
           </div>
         </div>
+        
       </aside>
 
     </div>
@@ -310,7 +282,7 @@
 
 <footer>
   <div class="title-block">
-    <div class="tb-cell"><span class="tb-key">Drawing No.</span><span class="tb-val">WZ-TERM-002-B</span></div>
+    <div class="tb-cell"><span class="tb-key">Drawing No.</span><span class="tb-val">WZ-TERM-002-C</span></div>
     <div class="tb-cell"><span class="tb-key">Title</span><span class="tb-val">Portfolio Terminal</span></div>
     <div class="tb-cell"><span class="tb-key">Drawn By</span><span class="tb-val">Wilson A. Zambrano</span></div>
     <div class="tb-cell"><span class="tb-key">Status</span><span class="tb-val">Live Sync Active</span></div>

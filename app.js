@@ -272,22 +272,16 @@ function calculateBollingerBands(data, period, multiplier) {
     return { sma, upper, lower };
 }
 
-// ── New: RSI Math Helper ──
 function calculateRSI(data, period = 14) {
     if (data.length < period) return [];
-    
     let gains = 0, losses = 0;
     for (let i = 1; i <= period; i++) {
         const diff = data[i] - data[i - 1];
-        if (diff >= 0) gains += diff;
-        else losses -= diff;
+        if (diff >= 0) gains += diff; else losses -= diff;
     }
-    
-    let avgGain = gains / period;
-    let avgLoss = losses / period;
+    let avgGain = gains / period; let avgLoss = losses / period;
     const rsiArray = Array(period).fill(null);
     rsiArray.push(100 - (100 / (1 + (avgGain / (avgLoss || 1)))));
-
     for (let i = period + 1; i < data.length; i++) {
         const diff = data[i] - data[i - 1];
         avgGain = ((avgGain * (period - 1)) + (diff > 0 ? diff : 0)) / period;
@@ -301,15 +295,10 @@ function calculateRSI(data, period = 14) {
 function enableChartDrag(id) {
     const slider = document.getElementById(id);
     if (!slider) return;
-    let isDown = false;
-    let startX;
-    let scrollLeft;
-
+    let isDown = false; let startX; let scrollLeft;
     slider.addEventListener('mousedown', (e) => {
-        isDown = true;
-        slider.style.cursor = 'grabbing';
-        startX = e.pageX - slider.offsetLeft;
-        scrollLeft = slider.scrollLeft;
+        isDown = true; slider.style.cursor = 'grabbing';
+        startX = e.pageX - slider.offsetLeft; scrollLeft = slider.scrollLeft;
     });
     slider.addEventListener('mouseleave', () => { isDown = false; slider.style.cursor = 'grab'; });
     slider.addEventListener('mouseup', () => { isDown = false; slider.style.cursor = 'grab'; });
@@ -317,13 +306,13 @@ function enableChartDrag(id) {
         if (!isDown) return;
         e.preventDefault();
         const x = e.pageX - slider.offsetLeft;
-        const walk = (x - startX) * 2; // Scroll speed
-        slider.scrollLeft = scrollLeft - walk;
+        const walk = (x - startX) * 2; slider.scrollLeft = scrollLeft - walk;
     });
 }
 
 let chartVixInstance = null;
 let chartS5FIInstance = null;
+let chartRSIInstance = null;
 
 async function renderTerminalCharts() {
   if (!document.getElementById('chartVix')) return;
@@ -343,67 +332,46 @@ async function renderTerminalCharts() {
 
     const vixSMA30 = calculateSMA(vixPrices, 30);
     const { sma: spySMA20, upper: spyUpper, lower: spyLower } = calculateBollingerBands(spyPrices, 20, 2);
-
-    // ── NEW: Calculate RSI & Evaluate Market Health ──
     const spyRSI = calculateRSI(spyPrices, 14);
+
+    // ── Diagnostics Math ──
     const latestRSI = spyRSI[spyRSI.length - 1];
     const latestPrice = spyPrices[spyPrices.length - 1];
     const latestUpperBand = spyUpper[spyUpper.length - 1];
+    const latestLowerBand = spyLower[spyLower.length - 1];
     const latestSMA = spySMA20[spySMA20.length - 1];
+    const latestVix = vixPrices[vixPrices.length - 1];
+    const latestVixSMA = vixSMA30[vixSMA30.length - 1];
 
-    // Evaluate Risk & Upside
-    let climaxRisk = "LOW";
-    let climaxColor = "var(--green)";
-    let trendStatus = "NEUTRAL";
-
-    if (latestRSI > 70 && latestPrice >= latestUpperBand) {
-        climaxRisk = "CRITICAL (BLOW-OFF TOP)";
-        climaxColor = "var(--red)";
-    } else if (latestRSI > 60) {
-        climaxRisk = "ELEVATED";
-        climaxColor = "var(--gold)";
-    }
-
-    if (latestPrice > latestSMA && latestRSI > 40 && latestRSI < 70) {
-        trendStatus = "BULLISH (ROOM TO RUN)";
-    } else if (latestPrice < latestSMA) {
-        trendStatus = "BEARISH";
-    }
-
-    // Update the DOM Sidebar
-    const rsiEl = document.getElementById('risk-rsi');
-    if (rsiEl) {
-        rsiEl.textContent = latestRSI ? latestRSI.toFixed(2) : '--';
-        rsiEl.style.color = latestRSI > 70 ? 'var(--red)' : (latestRSI < 30 ? 'var(--green)' : 'var(--ink)');
-    }
+    // Update Sidebar Diagnostics
+    document.getElementById('diag-rsi').textContent = latestRSI ? latestRSI.toFixed(1) : '—';
+    document.getElementById('diag-rsi').style.color = latestRSI > 70 ? 'var(--red)' : (latestRSI < 30 ? 'var(--green)' : 'var(--ink)');
     
-    const climaxEl = document.getElementById('risk-climax');
-    if (climaxEl) {
-        climaxEl.textContent = climaxRisk;
-        climaxEl.style.color = climaxColor;
-    }
+    document.getElementById('diag-trend').textContent = latestPrice > latestSMA ? 'BULLISH' : 'BEARISH';
+    document.getElementById('diag-trend').style.color = latestPrice > latestSMA ? 'var(--green)' : 'var(--red)';
+    
+    let bandPos = 'MID-RANGE';
+    if (latestPrice >= latestUpperBand) bandPos = 'UPPER BAND TOUCH';
+    else if (latestPrice <= latestLowerBand) bandPos = 'LOWER BAND TOUCH';
+    document.getElementById('diag-bands').textContent = bandPos;
 
-    const trendEl = document.getElementById('risk-trend');
-    if (trendEl) {
-        trendEl.textContent = trendStatus;
-        trendEl.style.color = trendStatus.includes('BULLISH') ? 'var(--green)' : (trendStatus === 'BEARISH' ? 'var(--red)' : 'var(--ink)');
-    }
+    document.getElementById('diag-vix').textContent = latestVix > latestVixSMA ? 'EXPANDING' : 'CONTRACTING';
 
-    const screenerRes = document.getElementById('screener-results');
-    if (screenerRes) {
-        screenerRes.innerHTML = `
-            <div class="screener-card">
-                <span style="font-size: 0.8rem; font-weight: 700;">Market Proxy (SPY)</span>
-                <p style="margin-top: 4px; color: ${trendStatus.includes('BULLISH') ? 'var(--green)' : 'var(--ink-dim)'};">${trendStatus}</p>
-            </div>
-        `;
-    }
+    // Update Automated Alerts Scanner
+    let alertsHTML = '';
+    if (latestRSI > 70) alertsHTML += `<div style="border-left: 3px solid var(--red); padding: 8px; font-size: 0.6rem; background: var(--paper); border-top: 1px solid var(--line); border-right: 1px solid var(--line); border-bottom: 1px solid var(--line);"><strong>CRITICAL:</strong> SPY Overbought (RSI > 70). Risk of pullback elevated.</div>`;
+    else if (latestRSI < 30) alertsHTML += `<div style="border-left: 3px solid var(--green); padding: 8px; font-size: 0.6rem; background: var(--paper); border-top: 1px solid var(--line); border-right: 1px solid var(--line); border-bottom: 1px solid var(--line);"><strong>SIGNAL:</strong> SPY Oversold (RSI < 30). Potential bounce forming.</div>`;
+    
+    if (latestPrice >= latestUpperBand) alertsHTML += `<div style="border-left: 3px solid var(--gold); padding: 8px; font-size: 0.6rem; background: var(--paper); border-top: 1px solid var(--line); border-right: 1px solid var(--line); border-bottom: 1px solid var(--line);"><strong>WARNING:</strong> Price piercing upper Bollinger Band.</div>`;
+
+    if (alertsHTML === '') alertsHTML = `<div style="padding: 12px; border: 1px dashed var(--line-bold); font-size: 0.55rem; color: var(--ink-dim); text-align: center; text-transform: uppercase; letter-spacing: 0.1em;">No active extreme signals</div>`;
+    document.getElementById('screener-results').innerHTML = alertsHTML;
+
 
     // ── Render Charts ──
     const gridColor = "rgba(10,22,40,0.1)";
     const commonOptions = {
-        responsive: true,
-        maintainAspectRatio: false,
+        responsive: true, maintainAspectRatio: false,
         plugins: { legend: { display: true, labels: { boxWidth: 10, font: { size: 9, family: "'IBM Plex Mono', monospace" } } } },
         scales: { 
             x: { grid: { color: gridColor }, ticks: { font: { size: 8, family: "'IBM Plex Mono', monospace" }, maxRotation: 0 } }, 
@@ -441,13 +409,41 @@ async function renderTerminalCharts() {
         options: commonOptions
     });
 
+    const ctxRSI = document.getElementById('chartRSI');
+    if (chartRSIInstance) chartRSIInstance.destroy();
+    
+    // Arrays for constant horizontal lines on RSI
+    const rsi70 = Array(timestamps.length).fill(70);
+    const rsi30 = Array(timestamps.length).fill(30);
+
+    chartRSIInstance = new Chart(ctxRSI, {
+        type: 'line',
+        data: {
+            labels: timestamps,
+            datasets: [
+                { label: '14D RSI', data: spyRSI, borderColor: '#2a4060', borderWidth: 1.5, pointRadius: 0, tension: 0.1 },
+                { label: 'Overbought (70)', data: rsi70, borderColor: '#b01020', borderWidth: 1, borderDash: [2, 2], pointRadius: 0, tension: 0 },
+                { label: 'Oversold (30)', data: rsi30, borderColor: '#2a7a2a', borderWidth: 1, borderDash: [2, 2], pointRadius: 0, tension: 0 }
+            ]
+        },
+        options: {
+            ...commonOptions,
+            scales: {
+                ...commonOptions.scales,
+                y: { ...commonOptions.scales.y, min: 10, max: 90 } // Lock RSI Y-Axis
+            }
+        }
+    });
+
     // Initialize drag interactions
     enableChartDrag('scroll-vix');
     enableChartDrag('scroll-spy');
+    enableChartDrag('scroll-rsi');
 
     // Auto-scroll to the end (latest data)
     document.getElementById('scroll-vix').scrollLeft = 2400;
     document.getElementById('scroll-spy').scrollLeft = 2400;
+    document.getElementById('scroll-rsi').scrollLeft = 2400;
 
   } catch (err) {
       console.error("Failed to render charts", err);
@@ -455,8 +451,43 @@ async function renderTerminalCharts() {
 }
 
 // ═══════════════════════════════════════════════
-//  DROP ZONE LOGIC (Remaining Logic)
+//  DROP ZONE LOGIC
 // ═══════════════════════════════════════════════
+
+// FIXED: Added missing renderLog function
+function renderLog() {
+  const list = document.getElementById('log-list');
+  if(!list) return;
+  list.innerHTML = '';
+  
+  if (!drops.length) { 
+    list.innerHTML = '<div class="log-empty">Clipboard is empty.</div>'; 
+    return; 
+  }
+  
+  drops.forEach(item => {
+    const div = document.createElement('div'); 
+    div.className = 'log-item';
+    const ts = item.timestamp ? item.timestamp.replace('T',' ').substring(0,16) : '—';
+    const nameEsc = escapeHTML(item.name || '');
+    
+    // Determine icon/type badge
+    let badgeClass = 'file-type';
+    let typeTxt = 'FILE';
+    if (item.type === 'text') { badgeClass = ''; typeTxt = 'TEXT'; }
+    if (item.type === 'url') { badgeClass = 'url-type'; typeTxt = 'URL'; }
+
+    div.innerHTML = `
+      <div class="log-item-header">
+        <span class="log-type-badge ${badgeClass}">${typeTxt}</span>
+        <span class="log-name" style="cursor:pointer;" onclick='updateSpec(${JSON.stringify(item).replace(/'/g, "&apos;")})'>${nameEsc}</span>
+      </div>
+      <div class="log-meta"><span>${ts}</span><span>${item.size||'—'}</span></div>
+    `;
+    list.appendChild(div);
+  });
+}
+
 async function loadDrops() {
   const list = document.getElementById('log-list');
   if(!list) return;
