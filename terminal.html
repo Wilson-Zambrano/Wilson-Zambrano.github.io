@@ -6,6 +6,7 @@
 <title>W.Zambrano — Portfolio Terminal</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:ital,wght@0,300;0,400;0,600;0,700;1,400&family=Crimson+Pro:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
 <link href="blueprint.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
 
@@ -75,23 +76,35 @@
       </div>
 
       <div style="border: 2px solid var(--ink); padding: 32px; background: rgba(10,22,40,0.02);">
+        
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
           <div style="border: 1px solid var(--line-bold); padding: 16px; background: var(--paper);">
             <p style="font-size: 0.55rem; text-transform: uppercase; letter-spacing: 0.15em; color: var(--ink-dim);">Available Margin</p>
             <p style="font-size: 1.4rem; font-weight: 700; color: var(--ink); margin-top: 8px;" id="dash-margin-avail">Loading...</p>
           </div>
           <div style="border: 1px solid var(--line-bold); padding: 16px; background: var(--paper);">
-            <p style="font-size: 0.55rem; text-transform: uppercase; letter-spacing: 0.15em; color: var(--ink-dim);">Safety Level</p>
-            <p style="font-size: 1.4rem; font-weight: 700; color: var(--green); margin-top: 8px;" id="dash-margin-safe">Loading...</p>
+            <p style="font-size: 0.55rem; text-transform: uppercase; letter-spacing: 0.15em; color: var(--ink-dim);">CBOE Volatility (VIX)</p>
+            <p style="font-size: 1.4rem; font-weight: 700; color: var(--gold); margin-top: 8px;" id="dash-vix">Loading...</p>
           </div>
           <div style="border: 1px solid var(--line-bold); padding: 16px; background: var(--paper);">
-            <p style="font-size: 0.55rem; text-transform: uppercase; letter-spacing: 0.15em; color: var(--ink-dim);">Total Interest</p>
-            <p style="font-size: 1.4rem; font-weight: 700; color: var(--red); margin-top: 8px;" id="dash-interest">Loading...</p>
+            <p style="font-size: 0.55rem; text-transform: uppercase; letter-spacing: 0.15em; color: var(--ink-dim);">Net Earnings</p>
+            <p style="font-size: 1.4rem; font-weight: 700; color: var(--green); margin-top: 8px;" id="dash-net">Loading...</p>
           </div>
         </div>
 
         <div style="margin-top: 24px; padding: 24px; border: 1px dashed var(--line-bold); text-align: center;" id="connection-status">
           <p style="font-size: 0.6rem; color: var(--ink-dim); text-transform: uppercase; letter-spacing: 0.1em;">Initializing Secure Bridge...</p>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 24px;">
+          <div style="border: 1px solid var(--line-bold); background: var(--paper); padding: 16px; position: relative;">
+            <p style="font-size: 0.55rem; text-transform: uppercase; letter-spacing: 0.15em; color: var(--ink-dim); margin-bottom: 8px;">VIX & 30D SMA</p>
+            <canvas id="chartVix" height="150"></canvas>
+          </div>
+          <div style="border: 1px solid var(--line-bold); background: var(--paper); padding: 16px; position: relative;">
+            <p style="font-size: 0.55rem; text-transform: uppercase; letter-spacing: 0.15em; color: var(--ink-dim); margin-bottom: 8px;">Market Proxy (Bollinger Bands)</p>
+            <canvas id="chartS5FI" height="150"></canvas>
+          </div>
         </div>
 
         <div style="margin-top: 32px; padding: 24px; border: 1px solid var(--line-bold); background: var(--paper);">
@@ -146,6 +159,7 @@
             </table>
           </div>
         </div>
+
       </div>
     </div> 
   </div>
@@ -166,8 +180,7 @@
 <script src="app.js"></script>
 
 <script>
-// This overrides the showApp function from app.js just for this page
-// so it immediately fetches the financial data upon successful login.
+// Override the showApp function so it immediately fetches the financial data
 const originalShowApp = showApp;
 showApp = function() {
     originalShowApp();
@@ -175,7 +188,7 @@ showApp = function() {
     fetchFinanceData();
 };
 
-// If they are already logged in when they open the page, fetch the data
+// If already logged in, fetch the data automatically
 if (sessionStorage.getItem('wz_drop_jwt')) {
     fetchFinanceData();
 }

@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════
-//  DYNAMIC ASSET LOADER (PERFORMANCE OPTIMIZATION)
+//  DYNAMIC ASSET LOADER
 // ═══════════════════════════════════════════════
 const loadedScripts = {};
 function loadScript(url) {
@@ -23,7 +23,7 @@ let selectedFiles = [];
 let drops = [];
 
 // ═══════════════════════════════════════════════
-//  INIT (Detects which page you are on)
+//  INIT
 // ═══════════════════════════════════════════════
 document.addEventListener('DOMContentLoaded', () => {
   const yearEl = document.getElementById('footer-year');
@@ -37,7 +37,6 @@ document.addEventListener('DOMContentLoaded', () => {
     if (document.getElementById('public-log-list')) loadPublicDrops();
   }
 
-  // Setup listeners if elements exist
   const loginPass = document.getElementById('login-password');
   const loginUser = document.getElementById('login-username');
   if (loginPass) loginPass.addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
@@ -101,8 +100,6 @@ function showLogin() {
   if (accessVal) { accessVal.textContent = '● Locked'; accessVal.style.color = 'var(--red)'; }
   const topLogout = document.getElementById('top-logout-btn');
   if (topLogout) topLogout.style.display = 'none';
-  const usernameInput = document.getElementById('login-username');
-  if (usernameInput) usernameInput.focus();
 }
 
 function showApp() {
@@ -123,7 +120,7 @@ async function apiFetch(path, options = {}) {
 }
 
 // ═══════════════════════════════════════════════
-//  FINANCE TERMINAL LOGIC (Alpaca + Sheets)
+//  FINANCE TERMINAL LOGIC (Alpaca + Sheets + Charts)
 // ═══════════════════════════════════════════════
 async function fetchFinanceData() {
   try {
@@ -132,14 +129,19 @@ async function fetchFinanceData() {
     if (data.error) throw new Error(data.error);
 
     // Populate Top Cards
-    document.getElementById('dash-margin-avail').textContent = '$' + Number(data.availableMargin).toLocaleString(undefined, {minimumFractionDigits: 2});
-    document.getElementById('dash-margin-safe').textContent = typeof data.safetyLevel === 'number' ? (data.safetyLevel * 100).toFixed(1) + '%' : data.safetyLevel; 
-    document.getElementById('dash-interest').textContent = '$' + Number(data.totalInterest).toLocaleString(undefined, {minimumFractionDigits: 2});
-
-    // Populate Table
-    const tableBody = document.getElementById('dash-positions-table');
-    if (!tableBody) return; // Only run if table exists
+    const margin = Number(data.availableMargin);
+    document.getElementById('dash-margin-avail').textContent = !isNaN(margin) ? '$' + margin.toLocaleString(undefined, {minimumFractionDigits: 2}) : 'ERR';
     
+    document.getElementById('dash-vix').textContent = data.vix || '—';
+    
+    const net = Number(data.netEarnings);
+    const netEl = document.getElementById('dash-net');
+    netEl.textContent = !isNaN(net) ? '$' + net.toLocaleString(undefined, {minimumFractionDigits: 2}) : 'ERR';
+    netEl.style.color = net >= 0 ? 'var(--green)' : 'var(--red)';
+
+    // Populate Ledger Table
+    const tableBody = document.getElementById('dash-positions-table');
+    if (!tableBody) return; 
     tableBody.innerHTML = ''; 
 
     if (data.portfolioTable && data.portfolioTable.length > 1) {
@@ -149,31 +151,26 @@ async function fetchFinanceData() {
 
             const shares = row[2] || 0;     
             const avgCost = row[3] || 0;    
-            let price = row[4] || 0; // Default to Sheets price     
+            let price = row[4] || 0;    
             
-            // Override with Alpaca live market data if available
+            // Override with live market data if available
             if (data.liveMarket && data.liveMarket[ticker] && data.liveMarket[ticker].latestTrade) {
                 price = data.liveMarket[ticker].latestTrade.p;
             }
 
-            // Recalculate Live ROI dynamically
             let roi = row[18] || 0; 
-            if (avgCost > 0 && price > 0) {
-                roi = (price - avgCost) / avgCost;
-            }
+            if (avgCost > 0 && price > 0) roi = (price - avgCost) / avgCost;
 
             const tr = document.createElement('tr');
             tr.style.borderBottom = '1px solid var(--line)';
-
             const roiColor = roi >= 0 ? 'var(--green)' : 'var(--red)';
-            const roiFormatted = (roi * 100).toFixed(2) + '%';
 
             tr.innerHTML = `
               <td style="padding: 8px 10px; font-weight: 700; border-right: 1px solid var(--line);">${ticker}</td>
               <td style="padding: 8px 10px; border-right: 1px solid var(--line);">${shares}</td>
               <td style="padding: 8px 10px; border-right: 1px solid var(--line);">$${Number(avgCost).toFixed(2)}</td>
               <td style="padding: 8px 10px; border-right: 1px solid var(--line);">$${Number(price).toFixed(2)}</td>
-              <td style="padding: 8px 10px; font-weight: 600; color: ${roiColor};">${roiFormatted}</td>
+              <td style="padding: 8px 10px; font-weight: 600; color: ${roiColor};">${(roi * 100).toFixed(2)}%</td>
             `;
             tableBody.appendChild(tr);
         });
@@ -185,11 +182,14 @@ async function fetchFinanceData() {
         statusBox.innerHTML = '<p style="font-size: 0.6rem; color: var(--green); text-transform: uppercase; letter-spacing: 0.1em;">Secure Alpaca/Sheets Bridge Connected.</p>';
     }
 
+    // Render the charts
+    renderTerminalCharts();
+
   } catch (err) {
     if (document.getElementById('dash-margin-avail')) {
       document.getElementById('dash-margin-avail').textContent = "ERR";
-      document.getElementById('dash-margin-safe').textContent = "ERR";
-      document.getElementById('dash-interest').textContent = "ERR";
+      document.getElementById('dash-vix').textContent = "ERR";
+      document.getElementById('dash-net').textContent = "ERR";
       showToast('Failed to sync financial data', true);
     }
   }
@@ -222,12 +222,10 @@ async function submitTrade() {
 
     showToast(`Logged: ${action} ${shares} ${ticker}`);
     
-    // Clear the form
     document.getElementById('trade-ticker').value = '';
     document.getElementById('trade-shares').value = '';
     document.getElementById('trade-price').value = '';
 
-    // Immediately refresh the dashboard to show the new data!
     fetchFinanceData();
 
   } catch (err) {
@@ -235,6 +233,92 @@ async function submitTrade() {
   } finally {
     btn.disabled = false;
     btn.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 6px;"><polyline points="20 6 9 17 4 12"/></svg> Log Trade';
+  }
+}
+
+// ── Math Helpers for Charts ──
+function calculateSMA(data, period) {
+    return data.map((val, i, arr) => {
+        if (i < period - 1) return null;
+        let sum = 0;
+        for (let j = 0; j < period; j++) sum += arr[i - j];
+        return sum / period;
+    });
+}
+
+function calculateBollingerBands(data, period, multiplier) {
+    const sma = calculateSMA(data, period);
+    const upper = []; const lower = [];
+    
+    for (let i = 0; i < data.length; i++) {
+        if (i < period - 1) { upper.push(null); lower.push(null); } 
+        else {
+            let sumSq = 0;
+            for (let j = 0; j < period; j++) sumSq += Math.pow(data[i - j] - sma[i], 2);
+            let sd = Math.sqrt(sumSq / period);
+            upper.push(sma[i] + (multiplier * sd));
+            lower.push(sma[i] - (multiplier * sd));
+        }
+    }
+    return { sma, upper, lower };
+}
+
+let chartVixInstance = null;
+let chartS5FIInstance = null;
+
+async function renderTerminalCharts() {
+  try {
+    const res = await apiFetch('/api/finance/charts');
+    const data = await res.json();
+    
+    if(!data.vix || !data.spy) return;
+
+    const vixResult = data.vix.chart.result[0];
+    const spyResult = data.spy.chart.result[0];
+
+    const timestamps = vixResult.timestamp.map(t => new Date(t * 1000).toLocaleDateString(undefined, {month:'short', day:'numeric'}));
+    const vixPrices = vixResult.indicators.quote[0].close;
+    const spyPrices = spyResult.indicators.quote[0].close;
+
+    const vixSMA30 = calculateSMA(vixPrices, 30);
+    const { sma: spySMA20, upper: spyUpper, lower: spyLower } = calculateBollingerBands(spyPrices, 20, 2);
+
+    Chart.defaults.font.family = "'IBM Plex Mono', monospace";
+    Chart.defaults.color = "#2a4060";
+    const gridColor = "rgba(10,22,40,0.1)";
+
+    const ctxVix = document.getElementById('chartVix');
+    if (chartVixInstance) chartVixInstance.destroy();
+    chartVixInstance = new Chart(ctxVix, {
+        type: 'line',
+        data: {
+            labels: timestamps,
+            datasets: [
+                { label: 'VIX', data: vixPrices, borderColor: '#0a1628', borderWidth: 1.5, pointRadius: 0, tension: 0.1 },
+                { label: '30D SMA', data: vixSMA30, borderColor: '#b01020', borderWidth: 1, borderDash: [5, 5], pointRadius: 0, tension: 0.1 }
+            ]
+        },
+        options: { responsive: true, maintainAspectRatio: false, scales: { x: { grid: { color: gridColor } }, y: { grid: { color: gridColor } } } }
+    });
+
+    const ctxS5 = document.getElementById('chartS5FI');
+    if (chartS5FIInstance) chartS5FIInstance.destroy();
+    chartS5FIInstance = new Chart(ctxS5, {
+        type: 'line',
+        data: {
+            labels: timestamps,
+            datasets: [
+                { label: 'Price', data: spyPrices, borderColor: '#0a1628', borderWidth: 1.5, pointRadius: 0, tension: 0.1 },
+                { label: 'Upper', data: spyUpper, borderColor: 'rgba(42,122,42,0.5)', backgroundColor: 'rgba(42,122,42,0.05)', borderWidth: 1, pointRadius: 0, fill: '+1' },
+                { label: 'Lower', data: spyLower, borderColor: 'rgba(176,16,32,0.5)', borderWidth: 1, pointRadius: 0, fill: false },
+                { label: '20D SMA', data: spySMA20, borderColor: '#2a4060', borderWidth: 1, borderDash: [3, 3], pointRadius: 0 }
+            ]
+        },
+        options: { responsive: true, maintainAspectRatio: false, scales: { x: { grid: { color: gridColor } }, y: { grid: { color: gridColor } } } }
+    });
+
+  } catch (err) {
+      console.error("Failed to render charts", err);
   }
 }
 
@@ -484,9 +568,11 @@ async function renderDOCXViewer(blob, name, container) {
     container.innerHTML = `<div style="background: var(--white); padding: 40px; color: #000; border: 1px solid var(--line-bold); overflow-y: auto; max-height: 60vh; font-family: 'Times New Roman', serif; line-height: 1.6;">${result.value || '<p style="color:red;">Document is empty or cannot be parsed.</p>'}</div><a href="${url}" download="${escapeHTML(name)}" class="btn btn-outline" style="display:inline-flex;margin-top:12px;">Download Original DOCX →</a>`;
   } catch (err) { container.innerHTML = `<div class="preview-center" style="color:var(--red);">Failed to render DOCX. The file may be corrupted or password protected.</div>`; }
 }
+
 async function copyItem(id, type) { if (type === 'file') { showToast('Cannot copy binary file', true); return; } try { const res = await apiFetch(`/api/drop/item/${id}`); const data = await res.json(); await navigator.clipboard.writeText(data.value || ''); showToast('Copied to clipboard'); } catch { showToast('Copy failed', true); } }
 async function downloadItem(id, name) { try { const res = await apiFetch(`/api/drop/item/${id}`); const blob = await res.blob(); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = name; a.click(); URL.revokeObjectURL(url); } catch { showToast('Download failed', true); } }
 async function deleteItem(id) { try { const res = await apiFetch(`/api/drop/item/${id}`, { method: 'DELETE' }); if (!res.ok) throw new Error(); drops = drops.filter(i => i.id !== id); renderLog(); const countEl=document.getElementById('status-count'); if(countEl) countEl.textContent = drops.length; calculateStorage(); showToast('Item deleted'); } catch { showToast('Delete failed', true); } }
+
 function closePreview() { const ov = document.getElementById('preview-overlay'); if(ov) ov.classList.remove('open'); }
 const overlay = document.getElementById('preview-overlay'); if(overlay) overlay.addEventListener('click', function(e) { if (e.target === this) closePreview(); });
 
@@ -497,6 +583,7 @@ function updateSpec(item) {
   const ss = document.getElementById('spec-size'); if(ss) ss.textContent = item.size||'—';
   const tm = document.getElementById('spec-time'); if(tm) tm.textContent = item.timestamp ? item.timestamp.replace('T',' ').substring(0,19) : '—';
 }
+
 async function calculateStorage() {
   try {
     const res = await apiFetch('/api/storage/usage'); const data = await res.json(); if (!res.ok) throw new Error();
@@ -505,6 +592,7 @@ async function calculateStorage() {
     const bar = document.getElementById('storage-bar'); if(bar) { bar.style.width = percent + '%'; bar.style.background = percent > 90 ? 'var(--red)' : (percent > 75 ? 'var(--gold)' : 'var(--blue)'); }
   } catch (err) { console.error("Storage calc failed", err); }
 }
+
 function resetFileZone() { selectedFiles = []; const dz=document.getElementById('drop-zone'); if(dz) dz.classList.remove('has-file'); const fsi=document.getElementById('file-selected-info'); if(fsi) fsi.style.display = 'none'; const fi=document.getElementById('file-input'); if(fi) fi.value = ''; }
 function formatBytes(b) { if (b<1024) return b+' B'; if (b<1048576) return (b/1024).toFixed(1)+' KB'; return (b/1048576).toFixed(1)+' MB'; }
 function escapeHTML(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
