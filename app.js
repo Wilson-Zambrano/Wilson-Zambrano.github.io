@@ -50,7 +50,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
 function triggerPageData() {
     if (document.getElementById('log-list')) loadDrops();
-    if (document.getElementById('dash-positions-table')) fetchFinanceData();
 }
 
 // ═══════════════════════════════════════════════
@@ -75,6 +74,11 @@ async function doLogin() {
     sessionStorage.setItem('wz_drop_jwt', jwt);
     showApp();
     triggerPageData();
+    // If on terminal, trigger fetches manually after login
+    if (document.getElementById('dash-positions-table')) {
+        fetchFinanceData();
+        renderTerminalCharts();
+    }
   } catch (err) {
     errEl.textContent = err.message || 'Authentication failed.'; errEl.style.display = 'block';
   } finally {
@@ -120,14 +124,26 @@ async function apiFetch(path, options = {}) {
 }
 
 // ═══════════════════════════════════════════════
-//  FINANCE TERMINAL LOGIC
+//  FINANCE TERMINAL LOGIC (Decoupled execution)
 // ═══════════════════════════════════════════════
 async function fetchFinanceData() {
+  if (!document.getElementById('dash-positions-table')) return;
+
   try {
     const res = await apiFetch('/api/finance/dashboard');
-    const data = await res.json();
+    
+    // Safety check to ensure we got JSON and not an HTML error page
+    const textData = await res.text();
+    let data;
+    try {
+        data = JSON.parse(textData);
+    } catch(e) {
+        throw new Error("API returned non-JSON. Check Google Script permissions.");
+    }
+
     if (data.error) throw new Error(data.error);
 
+    // Populate Top Cards safely
     const margin = Number(data.availableMargin);
     const availEl = document.getElementById('dash-margin-avail');
     if (availEl) availEl.textContent = !isNaN(margin) ? '$' + margin.toLocaleString(undefined, {minimumFractionDigits: 2}) : 'ERR';
@@ -183,56 +199,13 @@ async function fetchFinanceData() {
         statusBox.innerHTML = '<p style="font-size: 0.6rem; color: var(--green); text-transform: uppercase; letter-spacing: 0.1em;">Secure Alpaca/Sheets Bridge Connected.</p>';
     }
 
-    // Render the charts independently so if they fail, the rest stays intact
-    renderTerminalCharts().catch(e => console.error("Chart Render Failed", e));
-
   } catch (err) {
     console.error(err);
     ['dash-margin-avail', 'dash-vix', 'dash-net'].forEach(id => {
        const el = document.getElementById(id);
        if (el) el.textContent = "ERR";
     });
-    showToast('Failed to sync financial data', true);
-  }
-}
-
-async function submitTrade() {
-  const btn = document.getElementById('trade-submit-btn');
-  const action = document.getElementById('trade-action').value;
-  const ticker = document.getElementById('trade-ticker').value.trim().toUpperCase();
-  const shares = parseFloat(document.getElementById('trade-shares').value);
-  const price = parseFloat(document.getElementById('trade-price').value);
-
-  if (!ticker || isNaN(shares) || isNaN(price)) {
-    showToast('Please fill out all trade fields', true);
-    return;
-  }
-
-  btn.disabled = true;
-  btn.innerHTML = '<span class="spinner"></span>&nbsp; Logging...';
-
-  try {
-    const res = await apiFetch('/api/finance/trade', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action, ticker, shares, price })
-    });
-    
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error || 'Failed to log trade');
-
-    showToast(`Logged: ${action} ${shares} ${ticker}`);
-    
-    document.getElementById('trade-ticker').value = '';
-    document.getElementById('trade-shares').value = '';
-    document.getElementById('trade-price').value = '';
-
-    fetchFinanceData();
-  } catch (err) {
-    showToast(err.message, true);
-  } finally {
-    btn.disabled = false;
-    btn.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 6px;"><polyline points="20 6 9 17 4 12"/></svg> Log Trade';
+    showToast('Ledger Sync Error: ' + err.message, true);
   }
 }
 
@@ -267,11 +240,14 @@ let chartVixInstance = null;
 let chartS5FIInstance = null;
 
 async function renderTerminalCharts() {
+  if (!document.getElementById('chartVix')) return;
+
   try {
     const res = await apiFetch('/api/finance/charts');
     const data = await res.json();
     
-    if(!data.vix || !data.spy || data.error) throw new Error("Chart data missing");
+    if(data.error) throw new Error(data.error);
+    if(!data.vix || !data.spy) throw new Error("Chart data missing");
 
     const vixResult = data.vix.chart.result[0];
     const spyResult = data.spy.chart.result[0];
@@ -322,6 +298,56 @@ async function renderTerminalCharts() {
     }
   } catch (err) {
       console.error("Failed to render charts", err);
+      showToast('Chart Error: ' + err.message, true);
+  }
+}
+
+// ─────────────────────────────────────────────
+// Ensure Charts trigger on terminal load
+// ─────────────────────────────────────────────
+if (sessionStorage.getItem('wz_drop_jwt') && document.getElementById('dash-positions-table')) {
+    // Run them completely independently so if one crashes, the other survives
+    fetchFinanceData();
+    renderTerminalCharts();
+}
+
+async function submitTrade() {
+  const btn = document.getElementById('trade-submit-btn');
+  const action = document.getElementById('trade-action').value;
+  const ticker = document.getElementById('trade-ticker').value.trim().toUpperCase();
+  const shares = parseFloat(document.getElementById('trade-shares').value);
+  const price = parseFloat(document.getElementById('trade-price').value);
+
+  if (!ticker || isNaN(shares) || isNaN(price)) {
+    showToast('Please fill out all trade fields', true);
+    return;
+  }
+
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>&nbsp; Logging...';
+
+  try {
+    const res = await apiFetch('/api/finance/trade', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action, ticker, shares, price })
+    });
+    
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Failed to log trade');
+
+    showToast(`Logged: ${action} ${shares} ${ticker}`);
+    
+    document.getElementById('trade-ticker').value = '';
+    document.getElementById('trade-shares').value = '';
+    document.getElementById('trade-price').value = '';
+
+    fetchFinanceData();
+  } catch (err) {
+    showToast(err.message, true);
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 6px;"><polyline points="20 6 9 17 4 12"/></svg> Log Trade';
   }
 }
 
