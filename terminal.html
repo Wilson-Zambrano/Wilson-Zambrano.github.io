@@ -614,6 +614,176 @@
   }
 
   /* ══════════════════════════════════════════════════
+     PORTFOLIO PERFORMANCE CHART
+  ══════════════════════════════════════════════════ */
+  .perf-kpi-strip {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    border: 1px solid var(--line-bold);
+    border-bottom: none;
+    background: var(--paper);
+  }
+  .perf-kpi {
+    padding: 10px 14px;
+    border-right: 1px solid var(--line-bold);
+    position: relative;
+  }
+  .perf-kpi:last-child { border-right: none; }
+  .perf-kpi-label {
+    font-size: 0.44rem;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    color: var(--ink-dim);
+    margin-bottom: 5px;
+  }
+  .perf-kpi-val {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--ink);
+    line-height: 1;
+  }
+  .perf-kpi-sub {
+    font-size: 0.44rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--ink-dim);
+    margin-top: 3px;
+  }
+
+  /* ══════════════════════════════════════════════════
+     ENHANCED SCREENER
+  ══════════════════════════════════════════════════ */
+  .screener-card {
+    border: 1px solid var(--line-bold);
+    background: var(--paper);
+    margin-bottom: 8px;
+  }
+  .screener-card-header {
+    display: grid;
+    grid-template-columns: 90px 80px 80px 1fr auto;
+    gap: 0;
+    border-bottom: 1px solid var(--line-bold);
+    align-items: center;
+  }
+  .screener-card-cell {
+    padding: 9px 12px;
+    border-right: 1px solid var(--line-bold);
+    font-size: 0.52rem;
+  }
+  .screener-card-cell:last-child { border-right: none; }
+  .screener-card-ticker {
+    font-weight: 700;
+    font-size: 0.72rem;
+    color: var(--ink);
+    letter-spacing: 0.05em;
+  }
+  .screener-card-price {
+    font-size: 0.48rem;
+    color: var(--ink-dim);
+    margin-top: 2px;
+    letter-spacing: 0.06em;
+  }
+  .screener-horizon-strip {
+    display: flex;
+    border-bottom: 1px solid var(--line-bold);
+    overflow: hidden;
+  }
+  .screener-horizon-cell {
+    flex: 1;
+    padding: 7px 10px;
+    border-right: 1px solid var(--line-bold);
+    background: rgba(10,22,40,0.02);
+    font-size: 0.46rem;
+    text-align: center;
+  }
+  .screener-horizon-cell:last-child { border-right: none; }
+  .screener-horizon-label {
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--ink-dim);
+    margin-bottom: 4px;
+    font-size: 0.42rem;
+  }
+  .screener-horizon-signal {
+    font-weight: 700;
+    font-size: 0.56rem;
+    letter-spacing: 0.06em;
+  }
+  .screener-horizon-upside {
+    font-size: 0.44rem;
+    color: var(--ink-dim);
+    margin-top: 2px;
+  }
+  .screener-ai-body {
+    padding: 12px 14px;
+    font-size: 0.54rem;
+    line-height: 1.7;
+    color: var(--ink);
+    border-bottom: 1px solid var(--line);
+  }
+  .screener-ai-loading {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--ink-dim);
+    font-size: 0.5rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    padding: 10px 14px;
+  }
+  .screener-tech-strip {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    border-top: 1px solid var(--line);
+  }
+  .screener-tech-cell {
+    padding: 6px 10px;
+    border-right: 1px solid var(--line);
+    font-size: 0.44rem;
+    text-align: center;
+  }
+  .screener-tech-cell:last-child { border-right: none; }
+  .screener-tech-label {
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--ink-dim);
+    margin-bottom: 2px;
+  }
+  .screener-tech-val { font-weight: 700; font-size: 0.48rem; }
+
+  .screener-news-item {
+    padding: 5px 14px;
+    border-top: 1px solid var(--line);
+    font-size: 0.48rem;
+    color: var(--ink-dim);
+    line-height: 1.5;
+    display: flex;
+    gap: 8px;
+    align-items: flex-start;
+  }
+  .screener-news-bullet {
+    flex-shrink: 0;
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: var(--ink-dim);
+    margin-top: 5px;
+  }
+  .screener-auto-banner {
+    padding: 10px 14px;
+    background: rgba(10,22,40,0.03);
+    border: 1px solid var(--line-bold);
+    border-bottom: none;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 0.5rem;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--ink-dim);
+  }
+
+  /* ══════════════════════════════════════════════════
      RESPONSIVE ADDITIONS
   ══════════════════════════════════════════════════ */
   @media (max-width: 768px) {
@@ -1023,63 +1193,66 @@
             </div>
           </div>
 
-        </div><div class="screener-panel" id="screener-panel">
+          <!-- Chart 05 — Portfolio Performance vs Benchmarks -->
+          <div class="chart-drop" id="drop-perf">
+            <button class="chart-drop-btn" onclick="toggleChart('drop-perf')" aria-expanded="false">
+              <span class="chart-drop-left">
+                <svg class="chart-drop-arrow" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+                Portfolio Performance
+                <span class="chart-drop-badge" id="badge-perf">—</span>
+              </span>
+              <span class="chart-drop-right">
+                <span class="chart-drop-sub">vs S&amp;P 500 · vs Risk-Free · Since Oldest Position</span>
+                <button class="info-btn" onclick="event.stopPropagation(); showInfo('perf')" aria-label="How to read this chart">?</button>
+              </span>
+            </button>
+            <div class="chart-drop-body" style="display:none;">
+              <div class="perf-kpi-strip">
+                <div class="perf-kpi"><div class="perf-kpi-label">Portfolio Return</div><div class="perf-kpi-val" id="perf-kpi-portfolio">—</div><div class="perf-kpi-sub" id="perf-kpi-portfolio-sub">Since oldest position</div></div>
+                <div class="perf-kpi"><div class="perf-kpi-label">S&amp;P 500 Return</div><div class="perf-kpi-val" id="perf-kpi-spy">—</div><div class="perf-kpi-sub">Same period</div></div>
+                <div class="perf-kpi"><div class="perf-kpi-label">Risk-Free (T-Bill)</div><div class="perf-kpi-val" id="perf-kpi-rf">—</div><div class="perf-kpi-sub" id="perf-kpi-rf-sub">Annualised ~5.25%</div></div>
+                <div class="perf-kpi"><div class="perf-kpi-label">Alpha vs S&amp;P</div><div class="perf-kpi-val" id="perf-kpi-alpha">—</div><div class="perf-kpi-sub">Your edge</div></div>
+              </div>
+              <div class="chart-viewport" id="scroll-perf" style="height:300px;">
+                <div class="chart-canvas-wrapper"><canvas id="chartPerf"></canvas></div>
+              </div>
+              <div style="padding:8px 14px; border:1px solid var(--line-bold); border-top:none; background:rgba(10,22,40,0.02); font-size:0.46rem; color:var(--ink-dim); text-transform:uppercase; letter-spacing:0.1em;">
+                ◆ All lines rebased to $100 at oldest purchase date · T-Bill = constant risk-free accrual · SPY = index benchmark
+              </div>
+            </div>
+          </div>
+
+        </div><!-- /chart-accordion -->
+
+        <!-- ══ AI SCREENER ══ -->
+        <div class="screener-panel" id="screener-panel">
           <div class="screener-header">
             <div>
-              <p class="dwg-section-label" style="margin-bottom:4px;">Module 03 — AI Screener</p>
-              <h3 class="screener-title">Stock Screener</h3>
+              <p class="dwg-section-label" style="margin-bottom:4px;">Module 03 — AI-Powered Screener</p>
+              <h3 class="screener-title">Portfolio Intelligence</h3>
             </div>
             <button class="info-btn" onclick="showInfo('screener')" aria-label="How the screener works" style="align-self:flex-start; margin-top:4px;">?</button>
           </div>
-          <div class="screener-inputs">
-            <div style="flex:1.5; min-width:110px;">
-              <label class="form-label">Ticker(s)</label>
-              <input type="text" id="screener-tickers" class="form-input" placeholder="AAPL, MSFT, TSLA" style="text-transform:uppercase;">
-            </div>
-            <div style="flex:1; min-width:100px;">
-              <label class="form-label">Bias</label>
-              <select id="screener-bias" class="form-input" style="cursor:pointer; padding:8px 12px;">
-                <option value="any">Any</option>
-                <option value="buy">Buy Candidates</option>
-                <option value="sell">Sell Candidates</option>
-              </select>
-            </div>
-            <div style="flex:1; min-width:100px;">
-              <label class="form-label">Horizon</label>
-              <select id="screener-horizon" class="form-input" style="cursor:pointer; padding:8px 12px;">
-                <option value="short">Short-Term (1–4W)</option>
-                <option value="medium">Medium (1–3M)</option>
-                <option value="long">Long (3M+)</option>
-              </select>
-            </div>
-            <div style="flex:0;">
-              <label class="form-label">&nbsp;</label>
-              <button class="btn btn-solid" onclick="runScreener()" id="screener-run-btn" style="padding:10px 18px; white-space:nowrap;">
-                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:4px;"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-                Screen
+          <!-- Auto-screener banner -->
+          <div class="screener-auto-banner">
+            <span>Auto-screening all positions across all horizons on load · <span id="screener-last-run">Not yet run</span></span>
+            <div style="display:flex; gap:8px; align-items:center;">
+              <input type="text" id="screener-extra-tickers" class="form-input" placeholder="Add tickers: AAPL, NVDA" style="width:180px; font-size:0.46rem; padding:5px 8px; text-transform:uppercase;">
+              <button class="btn btn-solid" onclick="runScreener()" id="screener-run-btn" style="padding:6px 14px; font-size:0.48rem; white-space:nowrap;">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:3px;"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                Re-Screen
               </button>
             </div>
           </div>
-          <div id="screener-table-wrap" style="display:none; margin-top:16px; overflow-x:auto; border:1px solid var(--line-bold);">
-            <table class="ledger-table" id="screener-table">
-              <thead>
-                <tr>
-                  <th>Ticker</th>
-                  <th>Signal</th>
-                  <th>Upside / Downside</th>
-                  <th>RSI</th>
-                  <th>Band Pos.</th>
-                  <th>Vol Risk</th>
-                  <th>Conviction</th>
-                  <th>Notes</th>
-                </tr>
-              </thead>
-              <tbody id="screener-tbody">
-              </tbody>
-            </table>
+          <div id="screener-loading" style="display:none; padding:20px; text-align:center; border:1px solid var(--line-bold); border-top:none; background:var(--paper);">
+            <div style="display:flex; align-items:center; justify-content:center; gap:10px; font-size:0.52rem; text-transform:uppercase; letter-spacing:0.14em; color:var(--ink-dim);">
+              <span class="spinner" style="display:inline-block;width:12px;height:12px;border:2px solid var(--ink-dim);border-top-color:var(--ink);border-radius:50%;animation:spin-cw 0.7s linear infinite;"></span>
+              <span id="screener-loading-msg">Fetching market data and running analysis...</span>
+            </div>
           </div>
-          <div id="screener-empty" style="display:none; padding:16px; text-align:center; font-size:0.52rem; text-transform:uppercase; letter-spacing:0.12em; color:var(--ink-dim); border:1px dashed var(--line-bold); margin-top:12px;">
-            Enter tickers above and press Screen
+          <div id="screener-cards-wrap" style="margin-top:0; border:1px solid var(--line-bold); border-top:none;"></div>
+          <div id="screener-empty" style="display:none; padding:20px; text-align:center; font-size:0.52rem; text-transform:uppercase; letter-spacing:0.12em; color:var(--ink-dim); border:1px solid var(--line-bold); border-top:none;">
+            No positions loaded yet — sync your portfolio data first
           </div>
         </div>
 
@@ -1961,6 +2134,32 @@ fetchFinanceData = async function() {
       //  POSITION WEIGHT DONUT
       // ════════════════════════════════════════════
       renderDonut(positions, totVal);
+
+      // ════════════════════════════════════════════
+      //  PORTFOLIO PERFORMANCE CHART + SCREENER
+      // ════════════════════════════════════════════
+      // Enrich positions with purchaseDate from raw row
+      const enrichedPositions = [];
+      data2.portfolioTable.slice(1).forEach(row => {
+        const ticker = row[0]; if (!ticker) return;
+        const shares     = parseFloat(row[2]) || 0;
+        const avgCost    = parseFloat(row[3]) || 0;
+        let   price      = parseFloat(row[4]) || 0;
+        const purchaseDate = row[1] || null; // column B = purchase date
+        if (data2.liveMarket && data2.liveMarket[ticker]?.latestTrade) price = data2.liveMarket[ticker].latestTrade.p;
+        enrichedPositions.push({ ticker, shares, avgCost, price, purchaseDate });
+      });
+
+      // Store for screener to use
+      _screenerPositions = enrichedPositions;
+
+      // Render performance chart
+      renderPortfolioPerformanceChart(enrichedPositions);
+
+      // Auto-run screener
+      const screenerEmpty = document.getElementById(\'screener-empty\');
+      if (screenerEmpty) screenerEmpty.style.display = \'none\';
+      runScreener();
     }
   } catch(e) { /* silent */ }
 };
@@ -2148,23 +2347,46 @@ const INFO_CONTENT = {
     ]
   },
   screener: {
-    title: 'Stock Screener — How It Works',
+    title: 'AI Portfolio Screener — How It Works',
     sections: [
-      { title: 'Methodology', rows: [
-        ['Signal', 'Buy / Sell / Hold derived from RSI zone, Bollinger Band position, and momentum direction combined.'],
-        ['Upside/Downside', 'Estimated % potential move based on distance to Bollinger Bands and RSI headroom. Not a price target.'],
-        ['Conviction', 'A 1–5 bar score weighting signal alignment across RSI, band position, and trend direction.'],
-        ['Vol Risk', 'Based on current VIX regime and the instrument\'s historical sensitivity.'],
+      { title: 'Auto-Screening', rows: [
+        ['On Load', 'Screener automatically pulls your current positions from your portfolio table and screens all of them.'],
+        ['All Horizons', 'Every ticker is evaluated simultaneously across Short (1–4W), Medium (1–3M), and Long (3M+) horizons so you see the full picture.'],
+        ['Extra Tickers', 'Add watchlist tickers manually to screen alongside your positions.'],
       ]},
-      { title: 'Signal Interpretation', rows: [
-        ['BUY', '<span class="tag-good">BUY</span> RSI recovering from oversold or in neutral zone, price near or below SMA, low band position.'],
-        ['SELL', '<span class="tag-bad">SELL</span> RSI overbought zone, price at or above upper Bollinger Band, momentum exhausted.'],
-        ['HOLD', '<span class="tag-warn">HOLD</span> Mixed signals or mid-range conditions. No strong directional edge.'],
+      { title: 'AI Analysis (Claude)', rows: [
+        ['What It Does', 'Claude receives technical indicators + recent news headlines for each ticker and writes a concise analysis covering catalysts, risks, and a concrete recommendation.'],
+        ['News Context', 'Headlines are fetched via web search and factored into the AI narrative — pure technical signals alone miss earnings, macro shifts, and sector rotation.'],
+        ['Signal', 'BUY / SELL / HOLD across each horizon. Signals can differ per horizon — a stock might be a short-term sell (overbought) but a long-term buy (strong fundamentals trend).'],
+      ]},
+      { title: 'Reading the Cards', rows: [
+        ['Horizon Strip', 'Three columns showing signal + estimated move potential for each time frame.'],
+        ['Conviction Bars', 'Five-bar scale. Fully filled = high alignment across indicators. One bar = weak/mixed signal.'],
+        ['Upside/Downside', 'Estimated % move to nearest Bollinger Band. For BUY: distance to upper band. For SELL: distance to lower band.'],
+        ['Tech Strip', 'Bottom row shows RSI, band position, SMA relation, VIX risk, and BB width at a glance.'],
       ]},
       { title: 'Limitations', rows: [
-        ['Data Lag', 'Screener uses your Google Sheets bridge data, which has an inherent sync delay.'],
-        ['No Fundamentals', 'This is purely technical analysis. Earnings, news, and macro context are not factored in.'],
-        ['Not Advice', 'All signals are illustrative. Always combine with your own research and risk management.'],
+        ['Data Lag', 'Technical data is subject to your Google Sheets sync delay.'],
+        ['Not Advice', 'All signals are analytical tools. Always apply your own judgement, position sizing, and risk management.'],
+      ]},
+    ]
+  },
+  perf: {
+    title: 'Portfolio Performance Chart — How to Read',
+    sections: [
+      { title: 'What Is Shown', rows: [
+        ['Portfolio Line', 'Your portfolio value, rebased to $100 at the date of your oldest open position. Reflects current market prices weighted by your holdings.'],
+        ['S&P 500 Line', 'SPY (S&P 500 ETF) rebased to the same $100 starting point on the same date. This is your primary benchmark.'],
+        ['Risk-Free Line', 'What $100 would have grown to if invested in short-term T-Bills at a constant ~5.25% annualised rate. The "do-nothing" baseline.'],
+      ]},
+      { title: 'Key Metrics', rows: [
+        ['Alpha vs S&P', 'Your return minus the S&P 500 return for the same period. Positive = you beat the market. Negative = the index outperformed you.'],
+        ['Risk-Free Return', 'If your portfolio return is below the risk-free line, you took equity risk for less return than simply holding cash/T-bills.'],
+      ]},
+      { title: 'What to Look For', rows: [
+        ['Best Case', 'Portfolio line consistently above both S&P and risk-free. You are generating genuine alpha.'],
+        ['Acceptable', 'Portfolio above risk-free but below S&P. You are outperforming cash but underperforming the index — consider a passive ETF allocation.'],
+        ['Concern', 'Portfolio below risk-free. You are taking on equity risk and earning less than cash. Review your position thesis.'],
       ]},
     ]
   }
@@ -2248,221 +2470,331 @@ renderEnhancedDiagnostics = function(...args) {
   );
 };
 
+
 // ════════════════════════════════════════════
-//  STOCK SCREENER
+//  PORTFOLIO PERFORMANCE CHART
 // ════════════════════════════════════════════
+let chartPerfInstance = null;
+
+async function renderPortfolioPerformanceChart(positions) {
+  if (!positions || !positions.length) return;
+
+  // Find oldest purchase date — row[1] in portfolioTable
+  let oldestDate = null;
+  positions.forEach(p => {
+    if (p.purchaseDate) {
+      const d = new Date(p.purchaseDate);
+      if (!isNaN(d) && (!oldestDate || d < oldestDate)) oldestDate = d;
+    }
+  });
+  if (!oldestDate) oldestDate = new Date(Date.now() - 365 * 24 * 60 * 60 * 1000);
+
+  const startEpoch = Math.floor(oldestDate.getTime() / 1000);
+  const endEpoch   = Math.floor(Date.now() / 1000);
+  const rangeYears = (endEpoch - startEpoch) / (365.25 * 24 * 3600);
+
+  // Fetch SPY for benchmark
+  let spyDates = [], spyPrices = [];
+  try {
+    const yahooUrl = `https://query1.finance.yahoo.com/v8/finance/chart/SPY?interval=1d&period1=${startEpoch}&period2=${endEpoch}`;
+    const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(yahooUrl)}`;
+    const res = await fetch(proxyUrl);
+    const raw = await res.json();
+    const result = JSON.parse(raw.contents)?.chart?.result?.[0];
+    if (result) {
+      spyDates  = result.timestamp.map(t => new Date(t * 1000));
+      spyPrices = result.indicators.quote[0].close;
+    }
+  } catch(e) { console.warn('SPY fetch failed', e); }
+
+  if (!spyDates.length) return;
+
+  const labels = spyDates.map(d => d.toLocaleDateString(undefined, {month:'short', day:'numeric', year:'2-digit'}));
+  const spyStart = spyPrices.find(v => v != null);
+  const spyRebased = spyPrices.map(v => v != null ? (v / spyStart) * 100 : null);
+
+  // Risk-free line (constant ~5.25% annual)
+  const RF_ANNUAL = 0.0525;
+  const rfLine = spyDates.map(d => {
+    const yrs = Math.max(0, (d - oldestDate) / (365.25 * 24 * 3600 * 1000));
+    return 100 * Math.pow(1 + RF_ANNUAL, yrs);
+  });
+
+  // Fetch per-ticker history
+  const tickerHistories = {};
+  await Promise.all(positions.slice(0, 8).map(async p => {
+    try {
+      const url = `https://query1.finance.yahoo.com/v8/finance/chart/${p.ticker}?interval=1d&period1=${startEpoch}&period2=${endEpoch}`;
+      const proxy = `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
+      const r = await fetch(proxy);
+      const raw = await r.json();
+      const result = JSON.parse(raw.contents)?.chart?.result?.[0];
+      if (result) {
+        const lookup = {};
+        result.timestamp.forEach((t, i) => {
+          if (result.indicators.quote[0].close[i] != null)
+            lookup[new Date(t * 1000).toDateString()] = result.indicators.quote[0].close[i];
+        });
+        tickerHistories[p.ticker] = lookup;
+      }
+    } catch(e) {}
+  }));
+
+  const portfolioLine = spyDates.map(d => {
+    const ds = d.toDateString();
+    return positions.reduce((sum, p) => {
+      const hist = tickerHistories[p.ticker];
+      const price = hist?.[ds] || p.avgCost;
+      return sum + p.shares * price;
+    }, 0);
+  });
+
+  const portStart = portfolioLine.find(v => v > 0) || 1;
+  const portfolioRebased = portfolioLine.map(v => v ? (v / portStart) * 100 : null);
+
+  const portEnd    = portfolioRebased.filter(v => v != null).at(-1) || 100;
+  const spyEnd     = spyRebased.filter(v => v != null).at(-1) || 100;
+  const rfEnd      = rfLine.at(-1);
+  const portReturn = portEnd - 100;
+  const spyReturn  = spyEnd - 100;
+  const alpha      = portReturn - spyReturn;
+
+  const fmtPct = (v, signed=true) => v != null ? `${signed && v >= 0 ? '+' : ''}${v.toFixed(2)}%` : '—';
+  const colPct = v => v >= 0 ? 'var(--green)' : 'var(--red)';
+  const setKpi = (id, val, color) => { const el = document.getElementById(id); if (el) { el.textContent = val; if (color) el.style.color = color; } };
+
+  const periodLabel = `${rangeYears >= 1 ? rangeYears.toFixed(1)+'y' : Math.round(rangeYears*12)+'mo'} period`;
+  setKpi('perf-kpi-portfolio', fmtPct(portReturn), colPct(portReturn));
+  setKpi('perf-kpi-portfolio-sub', periodLabel);
+  setKpi('perf-kpi-spy',   fmtPct(spyReturn),    colPct(spyReturn));
+  setKpi('perf-kpi-rf',    fmtPct(rfEnd-100),    colPct(rfEnd-100));
+  setKpi('perf-kpi-alpha', fmtPct(alpha),         colPct(alpha));
+
+  const badgeEl = document.getElementById('badge-perf');
+  if (badgeEl) { badgeEl.textContent = `Port ${fmtPct(portReturn)} · α ${fmtPct(alpha)}`; badgeEl.style.color = colPct(alpha); badgeEl.style.borderColor = colPct(alpha); }
+
+  const dynW = Math.max(document.getElementById('scroll-perf')?.clientWidth || 600, labels.length * 14);
+  const wrapper = document.getElementById('scroll-perf')?.querySelector('.chart-canvas-wrapper');
+  if (wrapper) wrapper.style.width = dynW + 'px';
+
+  const ctx = document.getElementById('chartPerf');
+  if (!ctx) return;
+  if (chartPerfInstance) chartPerfInstance.destroy();
+  chartPerfInstance = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [
+        { label: 'Your Portfolio', data: portfolioRebased, borderColor: '#0a1628', borderWidth: 2.5, pointRadius: 0, tension: 0.15, fill: false },
+        { label: 'S&P 500 (SPY)',  data: spyRebased,     borderColor: '#3d7ab5', borderWidth: 1.5, borderDash: [4,3], pointRadius: 0, tension: 0.1, fill: false },
+        { label: 'Risk-Free ~5.25%', data: rfLine,        borderColor: '#8a6a00', borderWidth: 1, borderDash: [2,4], pointRadius: 0, tension: 0, fill: false }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: { display: true, labels: { boxWidth: 12, font: { size: 9, family: "'IBM Plex Mono', monospace" } } },
+        tooltip: { callbacks: { label: c => ` ${c.dataset.label}: ${c.parsed.y?.toFixed(2)}  (${(c.parsed.y-100).toFixed(2)}%)` }, bodyFont: { family: "'IBM Plex Mono', monospace", size: 9 } }
+      },
+      scales: {
+        x: { grid: { color: 'rgba(10,22,40,0.1)' }, ticks: { font: { size: 8, family: "'IBM Plex Mono', monospace" }, maxTicksLimit: 12, maxRotation: 0 } },
+        y: { grid: { color: 'rgba(10,22,40,0.1)' }, ticks: { font: { size: 8, family: "'IBM Plex Mono', monospace" }, callback: v => `$${v.toFixed(0)}` }, title: { display: true, text: 'Rebased to $100', font: { size: 8, family: "'IBM Plex Mono', monospace" } } }
+      }
+    }
+  });
+  enableChartDrag('scroll-perf');
+  setTimeout(() => { const el = document.getElementById('scroll-perf'); if (el) el.scrollLeft = el.scrollWidth; }, 100);
+}
+
+// ════════════════════════════════════════════
+//  AI PORTFOLIO SCREENER
+// ════════════════════════════════════════════
+let _screenerPositions = [];
+
 async function runScreener() {
-  const tickerInput = document.getElementById('screener-tickers').value.trim().toUpperCase();
-  const bias        = document.getElementById('screener-bias').value;
-  const horizon     = document.getElementById('screener-horizon').value;
-  const btn         = document.getElementById('screener-run-btn');
-  const wrap        = document.getElementById('screener-table-wrap');
-  const empty       = document.getElementById('screener-empty');
-  const tbody       = document.getElementById('screener-tbody');
+  const extraInput = (document.getElementById('screener-extra-tickers')?.value || '').trim().toUpperCase();
+  const extraTickers = extraInput ? extraInput.split(/[\s,]+/).filter(Boolean) : [];
+  const allTickers = [
+    ..._screenerPositions.map(p => p.ticker),
+    ...extraTickers.filter(t => !_screenerPositions.find(p => p.ticker === t))
+  ];
 
-  if (!tickerInput) { showToast('Enter at least one ticker'); return; }
+  if (!allTickers.length) { document.getElementById('screener-empty').style.display = 'block'; return; }
 
-  const tickers = tickerInput.split(/[\s,]+/).filter(Boolean).slice(0, 12); // max 12
+  const btn       = document.getElementById('screener-run-btn');
+  const loading   = document.getElementById('screener-loading');
+  const cardsWrap = document.getElementById('screener-cards-wrap');
+  const emptyEl   = document.getElementById('screener-empty');
+  const lastRun   = document.getElementById('screener-last-run');
+  const loadMsg   = document.getElementById('screener-loading-msg');
+
   btn.disabled = true;
-  btn.innerHTML = '<span class="spinner" style="display:inline-block;width:10px;height:10px;border:2px solid var(--paper);border-top-color:transparent;border-radius:50%;animation:spin-cw 0.7s linear infinite;margin-right:6px;vertical-align:middle;"></span>Screening...';
-  wrap.style.display = 'none';
-  empty.style.display = 'none';
-  tbody.innerHTML = '';
+  loading.style.display = 'block';
+  cardsWrap.innerHTML   = '';
+  emptyEl.style.display = 'none';
 
-  // Fetch fresh chart data once for market context
-  let latestVix = null, latestRSI = null;
+  let latestVix = null;
   try {
     const r = await apiFetch('/api/finance/charts');
     const d = await r.json();
     if (d.vix?.chart?.result?.[0]) latestVix = d.vix.chart.result[0].indicators.quote[0].close.filter(v=>v!=null).at(-1);
-    if (d.spy?.chart?.result?.[0]) {
-      const sp = d.spy.chart.result[0].indicators.quote[0].close;
-      const ri = calculateRSI(sp, 14);
-      latestRSI = ri.filter(v=>v!=null).at(-1);
-    }
   } catch(e) {}
 
-  // For each ticker fetch from Yahoo Finance (via proxy or mock data)
-  const rows = await Promise.all(tickers.map(ticker => screenTicker(ticker, latestVix, horizon)));
+  loadMsg.textContent = `Fetching market data for ${allTickers.length} ticker${allTickers.length > 1 ? 's' : ''}...`;
+  const results = await Promise.all(allTickers.map(t => screenTickerAllHorizons(t, latestVix)));
 
-  const filtered = bias === 'buy'  ? rows.filter(r => r.signal === 'BUY')
-                 : bias === 'sell' ? rows.filter(r => r.signal === 'SELL')
-                 : rows;
-
-  if (!filtered.length) {
-    empty.textContent = `No ${bias === 'any' ? '' : bias + ' '}candidates found`;
-    empty.style.display = 'block';
-  } else {
-    tbody.innerHTML = filtered.map(renderScreenerRow).join('');
-    wrap.style.display = 'block';
+  for (let i = 0; i < results.length; i++) {
+    const r = results[i];
+    loadMsg.textContent = `Running AI analysis: ${r.ticker} (${i+1}/${results.length})...`;
+    const cardEl = document.createElement('div');
+    cardEl.id = `screener-card-${r.ticker}`;
+    cardEl.innerHTML = renderScreenerCard(r, null);
+    cardsWrap.appendChild(cardEl);
+    fetchAIAnalysis(r, cardEl);
   }
 
+  loading.style.display = 'none';
+  if (lastRun) lastRun.textContent = `Last run: ${new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}`;
   btn.disabled = false;
-  btn.innerHTML = '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:4px;"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>Screen';
 }
 
-async function screenTicker(ticker, latestVix, horizon) {
-  let prices = [], latestPrice = null, prevClose = null, priceChange = null;
-
+async function screenTickerAllHorizons(ticker, latestVix) {
+  let prices = [], latestPrice = null, priceChange = null;
   try {
-    // Attempting to bypass CORS using AllOrigins proxy for the standard Yahoo query.
-    // Replace this proxy endpoint with your dedicated Cloudflare Worker URL when you deploy it.
-    const targetUrl = `https://query1.finance.yahoo.com/v8/finance/chart/${ticker}?interval=1d&range=3mo`;
-    const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}`;
-    
-    const res = await fetch(proxyUrl);
-    const rawData = await res.json();
-    const json = JSON.parse(rawData.contents);
-    const result = json?.chart?.result?.[0];
-    
+    const url = `https://query1.finance.yahoo.com/v8/finance/chart/${ticker}?interval=1d&range=6mo`;
+    const proxy = `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
+    const res = await fetch(proxy);
+    const raw = await res.json();
+    const result = JSON.parse(raw.contents)?.chart?.result?.[0];
     if (result) {
       prices = result.indicators.quote[0].close.filter(v => v != null);
       latestPrice = prices.at(-1);
-      prevClose   = prices.at(-2);
-      priceChange = prevClose ? ((latestPrice - prevClose) / prevClose * 100) : null;
+      priceChange = prices.length > 1 ? ((prices.at(-1) - prices.at(-2)) / prices.at(-2) * 100) : null;
     }
   } catch(e) {
-    console.warn(`Fetch failed for ${ticker}, using synthetic data for UI testing`);
-    // Fallback: Generate realistic looking synthetic data so the UI continues working for demo/testing
-    let seedPrice = 100 + Math.random() * 100;
-    for(let i=0; i<60; i++) {
-       seedPrice += (Math.random() - 0.48) * 4; 
-       prices.push(seedPrice);
-    }
-    latestPrice = prices.at(-1);
-    prevClose = prices.at(-2);
-    priceChange = prevClose ? ((latestPrice - prevClose) / prevClose * 100) : null;
+    let seed = 150 + Math.random() * 100;
+    for (let i = 0; i < 120; i++) { seed += (Math.random() - 0.48) * 3; prices.push(seed); }
+    latestPrice = prices.at(-1); priceChange = ((prices.at(-1) - prices.at(-2)) / prices.at(-2) * 100);
   }
 
-  if (!prices.length || prices.length < 20) {
-    return { ticker, signal: 'N/A', upside: null, rsi: null, bandPos: '—', volRisk: '—', conviction: 0, notes: 'Insufficient data', priceChange, latestPrice };
-  }
+  if (prices.length < 20) return { ticker, latestPrice, priceChange, insufficient: true, horizons: {short:{},medium:{},long:{}}, rsi:null, bandPos:'—', volRisk:'—', bandWidth:null, aboveSMA:null };
 
-  // Technical indicators
   const rsiArr = calculateRSI(prices, 14);
   const rsi    = rsiArr.filter(v=>v!=null).at(-1);
   const { sma, upper, lower } = calculateBollingerBands(prices, 20, 2);
   const curSMA   = sma.filter(v=>v!=null).at(-1);
   const curUpper = upper.filter(v=>v!=null).at(-1);
   const curLower = lower.filter(v=>v!=null).at(-1);
-
-  const bandPct = curUpper && curLower
-    ? Math.max(0, Math.min(100, ((latestPrice - curLower) / (curUpper - curLower)) * 100))
-    : 50;
-
-  const bandWidth = curUpper && curLower && curSMA
-    ? ((curUpper - curLower) / curSMA * 100) : null;
-
+  const bandPct  = curUpper && curLower ? Math.max(0, Math.min(100, ((latestPrice - curLower)/(curUpper - curLower))*100)) : 50;
+  const bandWidth = curUpper && curLower && curSMA ? ((curUpper - curLower)/curSMA*100) : null;
   const aboveSMA = latestPrice > curSMA;
 
-  // Signal scoring
-  let score = 0; // negative = sell, positive = buy
-
-  // RSI contribution
-  if (rsi < 30)      score += 3;
-  else if (rsi < 40) score += 2;
-  else if (rsi < 50) score += 1;
-  else if (rsi > 80) score -= 3;
-  else if (rsi > 70) score -= 2;
-  else if (rsi > 60) score -= 1;
-
-  // Band contribution
-  if (bandPct < 15)      score += 2;
-  else if (bandPct < 30) score += 1;
-  else if (bandPct > 85) score -= 2;
-  else if (bandPct > 70) score -= 1;
-
-  // Trend
+  let score = 0;
+  if (rsi < 30) score += 3; else if (rsi < 40) score += 2; else if (rsi < 50) score += 1;
+  else if (rsi > 80) score -= 3; else if (rsi > 70) score -= 2; else if (rsi > 60) score -= 1;
+  if (bandPct < 15) score += 2; else if (bandPct < 30) score += 1;
+  else if (bandPct > 85) score -= 2; else if (bandPct > 70) score -= 1;
   if (aboveSMA) score += 1; else score -= 1;
 
-  // Horizon modifier — longer horizon needs stronger signal
-  const threshold = horizon === 'short' ? 1 : horizon === 'medium' ? 2 : 3;
+  const buildH = thresh => {
+    const sig = score >= thresh ? 'BUY' : score <= -thresh ? 'SELL' : 'HOLD';
+    const upside = sig==='BUY'&&curUpper ? ((curUpper-latestPrice)/latestPrice*100) : sig==='SELL'&&curLower ? ((curLower-latestPrice)/latestPrice*100) : curUpper ? ((curUpper-latestPrice)/latestPrice*100) : null;
+    return { signal: sig, upside, conviction: Math.min(5, Math.abs(score)) };
+  };
 
-  let signal = 'HOLD';
-  if (score >= threshold) signal = 'BUY';
-  else if (score <= -threshold) signal = 'SELL';
-
-  // Upside/downside potential
-  let upside = null;
-  if (signal === 'BUY' && curUpper) {
-    upside = ((curUpper - latestPrice) / latestPrice * 100);
-  } else if (signal === 'SELL' && curLower) {
-    upside = ((curLower - latestPrice) / latestPrice * 100); // will be negative
-  } else if (signal === 'HOLD') {
-    // Show both
-    upside = curUpper ? ((curUpper - latestPrice) / latestPrice * 100) : null;
-  }
-
-  // Band position label
   let bandLabel = 'MID-RANGE';
-  if (bandPct >= 85) bandLabel = 'UPPER';
-  else if (bandPct >= 65) bandLabel = 'UPPER-MID';
-  else if (bandPct <= 15) bandLabel = 'LOWER';
-  else if (bandPct <= 35) bandLabel = 'LOWER-MID';
-
-  // Vol risk from VIX
+  if (bandPct >= 85) bandLabel='UPPER'; else if (bandPct >= 65) bandLabel='UPPER-MID';
+  else if (bandPct <= 15) bandLabel='LOWER'; else if (bandPct <= 35) bandLabel='LOWER-MID';
   let volRisk = 'MODERATE';
-  if (latestVix != null) {
-    if (latestVix < 15) volRisk = 'LOW';
-    else if (latestVix > 28) volRisk = 'HIGH';
-  }
+  if (latestVix != null) { if (latestVix < 15) volRisk='LOW'; else if (latestVix > 28) volRisk='HIGH'; }
 
-  // Conviction (1–5)
-  const conviction = Math.min(5, Math.abs(score));
-
-  // Notes
-  const notes = [];
-  if (rsi < 30) notes.push('Oversold RSI');
-  else if (rsi > 70) notes.push('Overbought RSI');
-  if (bandPct < 15) notes.push('Lower band support');
-  else if (bandPct > 85) notes.push('Upper band resistance');
-  if (!aboveSMA) notes.push('Below 20D SMA');
-  else notes.push('Above 20D SMA');
-  if (bandWidth !== null && bandWidth < 4) notes.push('BB squeeze');
-
-  return { ticker, signal, upside, rsi, bandPos: bandLabel, volRisk, conviction, notes: notes.join(' · '), priceChange, latestPrice };
+  return { ticker, latestPrice, priceChange, rsi, bandPos: bandLabel, bandPct, volRisk, bandWidth, aboveSMA, curSMA, curUpper, curLower, latestVix,
+    horizons: { short: buildH(1), medium: buildH(2), long: buildH(3) } };
 }
 
-function renderScreenerRow(r) {
-  const signalClass = r.signal === 'BUY' ? 'signal-buy' : r.signal === 'SELL' ? 'signal-sell' : 'signal-hold';
-  const signalIcon  = r.signal === 'BUY' ? '↑' : r.signal === 'SELL' ? '↓' : '→';
+function renderScreenerCard(r, aiText) {
+  const fmtP = v => v!=null ? `$${v.toFixed(2)}` : '—';
+  const fmtC = v => v!=null ? `${v>=0?'+':''}${v.toFixed(2)}%` : '';
+  const sigClass = s => s==='BUY'?'signal-buy':s==='SELL'?'signal-sell':'signal-hold';
+  const sigIcon  = s => s==='BUY'?'↑':s==='SELL'?'↓':'→';
+  const volColor = r.volRisk==='LOW'?'var(--green)':r.volRisk==='HIGH'?'var(--red)':'var(--gold)';
+  const smaColor = r.aboveSMA ? 'var(--green)' : 'var(--red)';
+  const isPos    = _screenerPositions.find(p => p.ticker === r.ticker);
+  const posBadge = isPos ? `<span style="font-size:0.4rem;padding:1px 5px;border:1px solid var(--green);color:var(--green);text-transform:uppercase;letter-spacing:0.1em;margin-left:6px;">HELD</span>` : '';
 
-  let upsideStr = '—';
-  if (r.upside !== null && r.signal !== 'HOLD') {
-    const color = r.upside >= 0 ? 'var(--green)' : 'var(--red)';
-    upsideStr = `<span style="color:${color}; font-weight:700;">${r.upside >= 0 ? '+' : ''}${r.upside.toFixed(2)}%</span>`;
-  } else if (r.upside !== null && r.signal === 'HOLD') {
-    upsideStr = `<span style="color:var(--gold);">±${Math.abs(r.upside).toFixed(2)}%</span>`;
-  }
+  const horizonCell = (label, h) => {
+    if (!h || !h.signal) return `<div class="screener-horizon-cell"><div class="screener-horizon-label">${label}</div><div class="screener-horizon-signal" style="color:var(--ink-dim);">—</div></div>`;
+    const up = h.upside!=null ? `${h.upside>=0?'+':''}${h.upside.toFixed(1)}%` : '';
+    const upColor = h.upside!=null&&h.upside>=0?'var(--green)':'var(--red)';
+    const bars = Array.from({length:5},(_,i)=>`<span style="display:inline-block;width:4px;height:${4+i*2}px;background:${i<h.conviction?'var(--ink)':'rgba(10,22,40,0.15)'};margin-right:1px;vertical-align:bottom;"></span>`).join('');
+    return `<div class="screener-horizon-cell"><div class="screener-horizon-label">${label}</div><div class="screener-horizon-signal ${sigClass(h.signal)}">${sigIcon(h.signal)} ${h.signal}</div><div class="screener-horizon-upside" style="color:${upColor}">${up}</div><div style="margin-top:4px;">${bars}</div></div>`;
+  };
 
-  const convBars = Array.from({length: 5}, (_, i) =>
-    `<span style="display:inline-block;width:5px;height:${6+i*2}px;background:${i < r.conviction ? 'var(--ink)' : 'rgba(10,22,40,0.12)'};margin-right:1px;vertical-align:bottom;"></span>`
-  ).join('');
+  const aiSection = aiText===null
+    ? `<div class="screener-ai-loading"><span class="spinner" style="display:inline-block;width:10px;height:10px;border:2px solid var(--ink-dim);border-top-color:var(--ink);border-radius:50%;animation:spin-cw 0.7s linear infinite;"></span> Fetching news & running AI analysis...</div>`
+    : `<div class="screener-ai-body">${aiText}</div>`;
 
-  const priceStr = r.latestPrice != null
-    ? `$${r.latestPrice.toFixed(2)}${r.priceChange != null ? ` <span style="color:${r.priceChange>=0?'var(--green)':'var(--red)'}; font-size:0.46rem;">(${r.priceChange>=0?'+':''}${r.priceChange.toFixed(2)}%)</span>` : ''}`
-    : '—';
-
-  const volColor = r.volRisk === 'LOW' ? 'var(--green)' : r.volRisk === 'HIGH' ? 'var(--red)' : 'var(--gold)';
-
-  return `
-    <tr>
-      <td style="font-weight:700;">${r.ticker}<br><span style="font-size:0.46rem; font-weight:400; color:var(--ink-dim);">${priceStr}</span></td>
-      <td class="${signalClass}">${signalIcon} ${r.signal}</td>
-      <td>${upsideStr}<br><span style="font-size:0.44rem; color:var(--ink-dim);">to BB target</span></td>
-      <td>${r.rsi != null ? r.rsi.toFixed(1) : '—'}</td>
-      <td>${r.bandPos}</td>
-      <td style="color:${volColor}; font-weight:700;">${r.volRisk}</td>
-      <td>${convBars}</td>
-      <td style="font-size:0.46rem; color:var(--ink-dim); max-width:160px;">${r.notes || '—'}</td>
-    </tr>`;
+  return `<div class="screener-card">
+    <div class="screener-card-header">
+      <div class="screener-card-cell"><div class="screener-card-ticker">${r.ticker}${posBadge}</div><div class="screener-card-price">${fmtP(r.latestPrice)} <span style="color:${r.priceChange>=0?'var(--green)':'var(--red)'}">${fmtC(r.priceChange)}</span></div></div>
+      <div class="screener-card-cell" style="text-align:center;"><div style="font-size:0.44rem;text-transform:uppercase;letter-spacing:0.12em;color:var(--ink-dim);margin-bottom:3px;">RSI</div><div style="font-weight:700;font-size:0.68rem;color:${r.rsi>70?'var(--red)':r.rsi<30?'var(--green)':'var(--ink)'};">${r.rsi!=null?r.rsi.toFixed(1):'—'}</div></div>
+      <div class="screener-card-cell" style="text-align:center;"><div style="font-size:0.44rem;text-transform:uppercase;letter-spacing:0.12em;color:var(--ink-dim);margin-bottom:3px;">Vol Risk</div><div style="font-weight:700;font-size:0.6rem;color:${volColor};">${r.volRisk}</div></div>
+      <div class="screener-card-cell" style="font-size:0.44rem;color:var(--ink-dim);line-height:1.7;">BB: <strong style="color:var(--ink);">${r.bandPos}</strong> · SMA: <strong style="color:${smaColor};">${r.aboveSMA!=null?(r.aboveSMA?'ABOVE':'BELOW'):'—'}</strong>${r.bandWidth!=null?` · Width: <strong style="color:var(--ink);">${r.bandWidth.toFixed(1)}%</strong>`:''}</div>
+      <div class="screener-card-cell"><button onclick="this.closest('.screener-card').remove()" style="background:none;border:1px solid var(--line-bold);cursor:pointer;font-family:'IBM Plex Mono',monospace;font-size:0.44rem;color:var(--ink-dim);padding:2px 6px;">✕</button></div>
+    </div>
+    <div class="screener-horizon-strip">${horizonCell('Short (1–4W)',r.horizons.short)}${horizonCell('Medium (1–3M)',r.horizons.medium)}${horizonCell('Long (3M+)',r.horizons.long)}</div>
+    ${aiSection}
+  </div>`;
 }
 
-// Show screener-empty placeholder on load
+async function fetchAIAnalysis(r, cardEl) {
+  const techContext = `Ticker: ${r.ticker} | Price: $${r.latestPrice?.toFixed(2)??'N/A'} (${r.priceChange?.toFixed(2)??'??'}% today) | RSI: ${r.rsi?.toFixed(1)??'N/A'} | Band: ${r.bandPos} (${r.bandPct?.toFixed(1)??'??'}%) | Width: ${r.bandWidth?.toFixed(2)??'N/A'}% | SMA: ${r.aboveSMA?'ABOVE':'BELOW'} | VIX: ${r.latestVix?.toFixed(1)??'N/A'} | Short: ${r.horizons.short?.signal} (${r.horizons.short?.conviction}/5) | Medium: ${r.horizons.medium?.signal} (${r.horizons.medium?.conviction}/5) | Long: ${r.horizons.long?.signal} (${r.horizons.long?.conviction}/5)`;
+
+  const prompt = `You are a concise equity analyst. Analyse ${r.ticker} using the technical snapshot below. First search the web for recent news about ${r.ticker} in the last 30 days to inform your view.
+
+Technical Snapshot: ${techContext}
+
+Write 3–4 sentences covering: (1) what the technicals indicate, (2) key recent news or catalyst you found, (3) a concrete actionable recommendation with reasoning. Be direct. No disclaimers. Plain prose, no formatting.`;
+
+  try {
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        tools: [{ type: 'web_search_20250305', name: 'web_search' }],
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+    const data = await response.json();
+    const aiText = data.content?.filter(b=>b.type==='text').map(b=>b.text).join(' ').trim() || 'Analysis unavailable.';
+    const sec = cardEl.querySelector('.screener-ai-loading, .screener-ai-body');
+    if (sec) { sec.className='screener-ai-body'; sec.textContent=aiText; }
+  } catch(e) {
+    const sec = cardEl.querySelector('.screener-ai-loading, .screener-ai-body');
+    if (sec) { sec.className='screener-ai-body'; sec.style.color='var(--ink-dim)'; sec.textContent='AI analysis unavailable — check API connectivity.'; }
+  }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   const empty = document.getElementById('screener-empty');
   if (empty) empty.style.display = 'block';
 });
+
+// ════════════════════════════════════════════
+//  KEYBOARD SHORTCUTS
+// ════════════════════════════════════════════
+document.addEventListener('keydown', e => {
+  if (e.shiftKey && e.key === 'R' && !['INPUT','TEXTAREA','SELECT'].includes(document.activeElement.tagName)) {
+    e.preventDefault();
+    const btn = document.getElementById('sync-btn');
+    if (btn && !btn.disabled && btn.style.display !== 'none') { doManualSync(); showToast('↺ Sync triggered [Shift+R]'); }
+  }
+});
+const syncBtn = document.getElementById('sync-btn');
+if (syncBtn) syncBtn.title = 'Refresh all data  [Shift+R]';
 </script>
 </body>
 </html>
