@@ -1193,7 +1193,6 @@
             </div>
           </div>
 
-          <!-- Chart 05 — Portfolio Performance vs Benchmarks -->
           <div class="chart-drop" id="drop-perf">
             <button class="chart-drop-btn" onclick="toggleChart('drop-perf')" aria-expanded="false">
               <span class="chart-drop-left">
@@ -1222,18 +1221,14 @@
             </div>
           </div>
 
-        </div><!-- /chart-accordion -->
-
-        <!-- ══ AI SCREENER ══ -->
-        <div class="screener-panel" id="screener-panel">
+        </div><div class="screener-panel" id="screener-panel">
           <div class="screener-header">
             <div>
-              <p class="dwg-section-label" style="margin-bottom:4px;">Module 03 — AI-Powered Screener</p>
+              <p class="dwg-section-label" style="margin-bottom:4px;">Module 03 — Algorithmic Screener</p>
               <h3 class="screener-title">Portfolio Intelligence</h3>
             </div>
             <button class="info-btn" onclick="showInfo('screener')" aria-label="How the screener works" style="align-self:flex-start; margin-top:4px;">?</button>
           </div>
-          <!-- Auto-screener banner -->
           <div class="screener-auto-banner">
             <span>Auto-screening all positions across all horizons on load · <span id="screener-last-run">Not yet run</span></span>
             <div style="display:flex; gap:8px; align-items:center;">
@@ -2157,8 +2152,8 @@ fetchFinanceData = async function() {
       renderPortfolioPerformanceChart(enrichedPositions);
 
       // Auto-run screener
-      const screenerEmpty = document.getElementById(\'screener-empty\');
-      if (screenerEmpty) screenerEmpty.style.display = \'none\';
+      const screenerEmpty = document.getElementById('screener-empty');
+      if (screenerEmpty) screenerEmpty.style.display = 'none';
       runScreener();
     }
   } catch(e) { /* silent */ }
@@ -2347,17 +2342,17 @@ const INFO_CONTENT = {
     ]
   },
   screener: {
-    title: 'AI Portfolio Screener — How It Works',
+    title: 'Algorithmic Screener — How It Works',
     sections: [
       { title: 'Auto-Screening', rows: [
         ['On Load', 'Screener automatically pulls your current positions from your portfolio table and screens all of them.'],
         ['All Horizons', 'Every ticker is evaluated simultaneously across Short (1–4W), Medium (1–3M), and Long (3M+) horizons so you see the full picture.'],
         ['Extra Tickers', 'Add watchlist tickers manually to screen alongside your positions.'],
       ]},
-      { title: 'AI Analysis (Claude)', rows: [
-        ['What It Does', 'Claude receives technical indicators + recent news headlines for each ticker and writes a concise analysis covering catalysts, risks, and a concrete recommendation.'],
-        ['News Context', 'Headlines are fetched via web search and factored into the AI narrative — pure technical signals alone miss earnings, macro shifts, and sector rotation.'],
-        ['Signal', 'BUY / SELL / HOLD across each horizon. Signals can differ per horizon — a stock might be a short-term sell (overbought) but a long-term buy (strong fundamentals trend).'],
+      { title: 'Automated Analysis (Local Engine)', rows: [
+        ['What It Does', 'A local algorithmic engine receives technical indicators for each ticker and dynamically writes a heuristic analysis covering trends, risks, and a concrete recommendation.'],
+        ['Data Privacy', 'All analysis runs 100% locally in your browser. No external API calls are made, and your portfolio data is kept completely private.'],
+        ['Signal', 'BUY / SELL / HOLD across each horizon. Signals can differ per horizon — a stock might be a short-term sell (overbought) but a long-term buy.'],
       ]},
       { title: 'Reading the Cards', rows: [
         ['Horizon Strip', 'Three columns showing signal + estimated move potential for each time frame.'],
@@ -2608,7 +2603,7 @@ async function renderPortfolioPerformanceChart(positions) {
 }
 
 // ════════════════════════════════════════════
-//  AI PORTFOLIO SCREENER
+//  AI PORTFOLIO SCREENER (NOW LOCAL)
 // ════════════════════════════════════════════
 let _screenerPositions = [];
 
@@ -2646,7 +2641,7 @@ async function runScreener() {
 
   for (let i = 0; i < results.length; i++) {
     const r = results[i];
-    loadMsg.textContent = `Running AI analysis: ${r.ticker} (${i+1}/${results.length})...`;
+    loadMsg.textContent = `Running Local Analysis: ${r.ticker} (${i+1}/${results.length})...`;
     const cardEl = document.createElement('div');
     cardEl.id = `screener-card-${r.ticker}`;
     cardEl.innerHTML = renderScreenerCard(r, null);
@@ -2732,7 +2727,7 @@ function renderScreenerCard(r, aiText) {
   };
 
   const aiSection = aiText===null
-    ? `<div class="screener-ai-loading"><span class="spinner" style="display:inline-block;width:10px;height:10px;border:2px solid var(--ink-dim);border-top-color:var(--ink);border-radius:50%;animation:spin-cw 0.7s linear infinite;"></span> Fetching news & running AI analysis...</div>`
+    ? `<div class="screener-ai-loading"><span class="spinner" style="display:inline-block;width:10px;height:10px;border:2px solid var(--ink-dim);border-top-color:var(--ink);border-radius:50%;animation:spin-cw 0.7s linear infinite;"></span> Running heuristic analysis...</div>`
     : `<div class="screener-ai-body">${aiText}</div>`;
 
   return `<div class="screener-card">
@@ -2749,32 +2744,55 @@ function renderScreenerCard(r, aiText) {
 }
 
 async function fetchAIAnalysis(r, cardEl) {
-  const techContext = `Ticker: ${r.ticker} | Price: $${r.latestPrice?.toFixed(2)??'N/A'} (${r.priceChange?.toFixed(2)??'??'}% today) | RSI: ${r.rsi?.toFixed(1)??'N/A'} | Band: ${r.bandPos} (${r.bandPct?.toFixed(1)??'??'}%) | Width: ${r.bandWidth?.toFixed(2)??'N/A'}% | SMA: ${r.aboveSMA?'ABOVE':'BELOW'} | VIX: ${r.latestVix?.toFixed(1)??'N/A'} | Short: ${r.horizons.short?.signal} (${r.horizons.short?.conviction}/5) | Medium: ${r.horizons.medium?.signal} (${r.horizons.medium?.conviction}/5) | Long: ${r.horizons.long?.signal} (${r.horizons.long?.conviction}/5)`;
-
-  const prompt = `You are a concise equity analyst. Analyse ${r.ticker} using the technical snapshot below. First search the web for recent news about ${r.ticker} in the last 30 days to inform your view.
-
-Technical Snapshot: ${techContext}
-
-Write 3–4 sentences covering: (1) what the technicals indicate, (2) key recent news or catalyst you found, (3) a concrete actionable recommendation with reasoning. Be direct. No disclaimers. Plain prose, no formatting.`;
+  // Simulate a slight network delay to maintain the "processing" UI feel
+  await new Promise(resolve => setTimeout(resolve, 600 + Math.random() * 800));
 
   try {
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 1000,
-        tools: [{ type: 'web_search_20250305', name: 'web_search' }],
-        messages: [{ role: 'user', content: prompt }]
-      })
-    });
-    const data = await response.json();
-    const aiText = data.content?.filter(b=>b.type==='text').map(b=>b.text).join(' ').trim() || 'Analysis unavailable.';
+    // Sentence 1: Momentum & Trend
+    let sentence1 = "";
+    if (r.rsi > 70) sentence1 = `${r.ticker} is currently flashing overbought momentum signals with an RSI of ${r.rsi?.toFixed(1) || 'N/A'}.`;
+    else if (r.rsi < 30) sentence1 = `${r.ticker} is deeply oversold (RSI: ${r.rsi?.toFixed(1) || 'N/A'}), highlighting a potential mean-reversion setup.`;
+    else sentence1 = `${r.ticker} is trading with neutral momentum (RSI: ${r.rsi?.toFixed(1) || 'N/A'}) and remains ${r.aboveSMA ? 'above' : 'below'} its 20-day moving average.`;
+
+    // Sentence 2: Volatility & Bollinger Bands
+    let sentence2 = "";
+    if (r.bandWidth != null && r.bandWidth < 5) sentence2 = ` Bollinger Bands are highly compressed (width: ${r.bandWidth.toFixed(1)}%), signaling a potential volatility squeeze and imminent directional breakout.`;
+    else if (r.bandPct != null && r.bandPct > 85) sentence2 = ` Price action is hugging the upper Bollinger Band, increasing the risk of a near-term pullback.`;
+    else if (r.bandPct != null && r.bandPct < 15) sentence2 = ` Price is resting near the lower Bollinger Band, suggesting local support if the broader trend holds.`;
+    else sentence2 = ` Price remains within the mid-range of its Bollinger Bands, reflecting normalized volatility.`;
+
+    // Sentence 3: Macro Context (VIX)
+    let sentence3 = "";
+    if (r.volRisk === 'HIGH') sentence3 = ` However, elevated macro volatility (VIX above 28) dictates strict risk management and tighter stops.`;
+    else if (r.volRisk === 'LOW') sentence3 = ` A calm VIX environment provides a constructive macro backdrop for this setup.`;
+    else sentence3 = ` Broader market volatility remains moderate, placing focus purely on idiosyncratic price action.`;
+
+    // Sentence 4: Final Recommendation
+    let sentence4 = "";
+    const shortSig = r.horizons.short?.signal || 'HOLD';
+    const longSig = r.horizons.long?.signal || 'HOLD';
+
+    if (shortSig === 'BUY' && longSig === 'BUY') sentence4 = ` Strong alignment across time horizons supports a definitive BUY recommendation.`;
+    else if (shortSig === 'SELL' && longSig === 'SELL') sentence4 = ` Technical deterioration across short and long timeframes warrants a SELL rating.`;
+    else if (shortSig === 'BUY') sentence4 = ` Consider a short-term tactical BUY, though long-term conviction remains mixed.`;
+    else if (shortSig === 'SELL') sentence4 = ` Consider taking profits or hedging (SELL) in the near-term, despite the longer-term setup.`;
+    else sentence4 = ` Lacking definitive directional edge, the prudent recommendation is to HOLD and wait for clearer technical triggers.`;
+
+    // Combine sentences
+    const localText = sentence1 + sentence2 + sentence3 + sentence4;
+
     const sec = cardEl.querySelector('.screener-ai-loading, .screener-ai-body');
-    if (sec) { sec.className='screener-ai-body'; sec.textContent=aiText; }
+    if (sec) { 
+      sec.className = 'screener-ai-body'; 
+      sec.innerHTML = `<span style="color:var(--ink-dim);font-weight:600;margin-right:6px;">LOCAL HEURISTIC:</span> ${localText}`; 
+    }
   } catch(e) {
     const sec = cardEl.querySelector('.screener-ai-loading, .screener-ai-body');
-    if (sec) { sec.className='screener-ai-body'; sec.style.color='var(--ink-dim)'; sec.textContent='AI analysis unavailable — check API connectivity.'; }
+    if (sec) { 
+      sec.className = 'screener-ai-body'; 
+      sec.style.color = 'var(--ink-dim)'; 
+      sec.textContent = 'Local analysis unavailable due to processing error.'; 
+    }
   }
 }
 
