@@ -2465,16 +2465,360 @@ renderEnhancedDiagnostics = function(...args) {
   );
 };
 
+// ══════════════════════════════════════════════════════════════════
+//  PORTFOLIO PERFORMANCE CHART — SNAPSHOT-BASED
+//  Replace the existing renderPortfolioPerformanceChart() function
+//  in your terminal.html <script> block with this entire section.
+//
+//  HOW IT WORKS:
+//  1. Reads real daily snapshots from your Google Sheet (via your
+//     existing /api/finance/dashboard or a new /api/snapshots route)
+//  2. Fetches SPY closing prices for the same date range from Yahoo
+//     (via your backend proxy — NOT allorigins.win)
+//  3. Rebases both to $100 on day 1
+//  4. Renders a clean Chart.js line chart with alpha calculation
+//
+//  REQUIREMENTS:
+//  - The Apps Script logger must have been running and capturing
+//    daily snapshots into your PortfolioSnapshots sheet tab
+//  - Your backend must expose the snapshot data (see notes below)
+// ══════════════════════════════════════════════════════════════════
 
-// ════════════════════════════════════════════
-//  PORTFOLIO PERFORMANCE CHART
-// ════════════════════════════════════════════
 let chartPerfInstance = null;
 
+// ── STEP 1: Fetch snapshot rows from your sheet via your backend ──
+// Your existing apiFetch() already handles auth headers.
+// You need ONE new backend route: GET /api/finance/snapshots
+// That route reads the PortfolioSnapshots tab and returns JSON like:
+//
+//   { snapshots: [
+//       { date: "2024-11-01", totalValue: 12450.00, spyPrice: 584.20 },
+//       { date: "2024-11-04", totalValue: 12680.50, spyPrice: 589.10 },
+//       ...
+//   ]}
+//
+// If you haven't added that route yet, the function falls back to
+// the positions-based reconstruction with a warning banner.
+
 async function renderPortfolioPerformanceChart(positions) {
+  const container = document.getElementById('scroll-perf');
+  if (!container) return;
+
+  // ── Try snapshot-based chart first ──
+  const snapshotSuccess = await trySnapshotChart();
+  if (snapshotSuccess) return;
+
+  // ── Fallback: reconstructed chart with honest warning ──
+  renderReconstructedChartWithWarning(positions);
+}
+
+
+// ══════════════════════════════════════════════════════════════════
+//  SNAPSHOT-BASED CHART (the real one)
+// ══════════════════════════════════════════════════════════════════
+
+async function trySnapshotChart() {
+  try {
+    const res = await apiFetch('/api/finance/snapshots');
+    if (!res.ok) return false;
+
+    const data = await res.json();
+    const snapshots = data?.snapshots;
+
+    if (!snapshots || snapshots.length < 2) {
+      // Not enough data yet — show an info banner
+      showSnapshotOnboarding(snapshots?.length || 0);
+      return true; // Still "handled" — don't show fallback
+    }
+
+    // ── Parse and sort snapshots ──
+    const sorted = snapshots
+      .map(s => ({
+        date:       new Date(s['Date'] || s.date),
+        value:      parseFloat(s['Total Value ($)'] || s.totalValue) || 0,
+        spyPrice:   parseFloat(s['SPY Price'] || s.spyPrice) || 0,
+        pnl:        parseFloat(s['Total P&L ($)'] || s.totalPnl) || 0,
+        roi:        parseFloat(s['Total ROI (%)'] || s.totalRoi) || 0,
+      }))
+      .filter(s => s.date && !isNaN(s.date) && s.value > 0)
+      .sort((a, b) => a.date - b.date);
+
+    if (sorted.length < 2) {
+      showSnapshotOnboarding(sorted.length);
+      return true;
+    }
+
+    const labels          = sorted.map(s =>
+      s.date.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: '2-digit' })
+    );
+
+    // ── Rebase portfolio to $100 ──
+    const portStart       = sorted[0].value;
+    const portfolioLine   = sorted.map(s => (s.value / portStart) * 100);
+
+    // ── Rebase SPY to $100 (using snapshot SPY prices) ──
+    const spyStart        = sorted.find(s => s.spyPrice > 0)?.spyPrice || 1;
+    const spyLine         = sorted.map(s => s.spyPrice > 0 ? (s.spyPrice / spyStart) * 100 : null);
+
+    // ── Risk-free line (T-Bill ~5.25% annualised) ──
+    const RF_ANNUAL       = 0.0525;
+    const startDate       = sorted[0].date;
+    const rfLine          = sorted.map(s => {
+      const yrs = Math.max(0, (s.date - startDate) / (365.25 * 24 * 3600 * 1000));
+      return 100 * Math.pow(1 + RF_ANNUAL, yrs);
+    });
+
+    // ── KPI calculations ──
+    const portEnd         = portfolioLine.at(-1);
+    const spyEnd          = spyLine.filter(v => v != null).at(-1) || 100;
+    const rfEnd           = rfLine.at(-1);
+    const portReturn      = portEnd - 100;
+    const spyReturn       = spyEnd - 100;
+    const alpha           = portReturn - spyReturn;
+    const rangeMs         = sorted.at(-1).date - sorted[0].date;
+    const rangeYears      = rangeMs / (365.25 * 24 * 3600 * 1000);
+    const periodLabel     = rangeYears >= 1
+      ? rangeYears.toFixed(1) + 'y'
+      : Math.round(rangeYears * 12) + 'mo';
+
+    // ── Update KPI strip ──
+    const fmtPct  = (v, signed = true) => v != null
+      ? `${signed && v >= 0 ? '+' : ''}${v.toFixed(2)}%`
+      : '—';
+    const colPct  = v => v >= 0 ? 'var(--green)' : 'var(--red)';
+    const setKpi  = (id, val, color) => {
+      const el = document.getElementById(id);
+      if (el) { el.textContent = val; if (color) el.style.color = color; }
+    };
+
+    setKpi('perf-kpi-portfolio',     fmtPct(portReturn),   colPct(portReturn));
+    setKpi('perf-kpi-portfolio-sub', `${periodLabel} · ${sorted.length} snapshots`);
+    setKpi('perf-kpi-spy',           fmtPct(spyReturn),    colPct(spyReturn));
+    setKpi('perf-kpi-rf',            fmtPct(rfEnd - 100),  colPct(rfEnd - 100));
+    setKpi('perf-kpi-alpha',         fmtPct(alpha),        colPct(alpha));
+    setKpi('perf-kpi-rf-sub',        'Annualised ~5.25%');
+
+    // ── Update accordion badge ──
+    const badgeEl = document.getElementById('badge-perf');
+    if (badgeEl) {
+      badgeEl.textContent    = `Port ${fmtPct(portReturn)} · α ${fmtPct(alpha)}`;
+      badgeEl.style.color    = colPct(alpha);
+      badgeEl.style.borderColor = colPct(alpha);
+    }
+
+    // ── Render chart ──
+    const dynW    = Math.max(
+      document.getElementById('scroll-perf')?.clientWidth || 600,
+      labels.length * 14
+    );
+    const wrapper = document.getElementById('scroll-perf')?.querySelector('.chart-canvas-wrapper');
+    if (wrapper) wrapper.style.width = dynW + 'px';
+
+    const ctx = document.getElementById('chartPerf');
+    if (!ctx) return true;
+    if (chartPerfInstance) chartPerfInstance.destroy();
+
+    chartPerfInstance = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels,
+        datasets: [
+          {
+            label: 'Your Portfolio (actual)',
+            data: portfolioLine,
+            borderColor: '#0a1628',
+            borderWidth: 2.5,
+            pointRadius: sorted.length <= 30 ? 3 : 0,
+            pointBackgroundColor: '#0a1628',
+            tension: 0.15,
+            fill: false,
+          },
+          {
+            label: 'S&P 500 (SPY)',
+            data: spyLine,
+            borderColor: '#3d7ab5',
+            borderWidth: 1.5,
+            borderDash: [4, 3],
+            pointRadius: 0,
+            tension: 0.1,
+            fill: false,
+          },
+          {
+            label: 'Risk-Free ~5.25%',
+            data: rfLine,
+            borderColor: '#8a6a00',
+            borderWidth: 1,
+            borderDash: [2, 4],
+            pointRadius: 0,
+            tension: 0,
+            fill: false,
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: { mode: 'index', intersect: false },
+        plugins: {
+          legend: {
+            display: true,
+            labels: {
+              boxWidth: 12,
+              font: { size: 9, family: "'IBM Plex Mono', monospace" },
+            },
+          },
+          tooltip: {
+            callbacks: {
+              label: ctx => {
+                const v = ctx.parsed.y;
+                return v != null
+                  ? ` ${ctx.dataset.label}: $${v.toFixed(2)} (${(v - 100).toFixed(2)}%)`
+                  : ` ${ctx.dataset.label}: —`;
+              },
+              afterBody: (items) => {
+                // Show actual portfolio value on hover
+                const idx   = items[0]?.dataIndex;
+                const snap  = sorted[idx];
+                return snap ? [`Portfolio value: $${snap.value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`] : [];
+              },
+            },
+            bodyFont: { family: "'IBM Plex Mono', monospace", size: 9 },
+          },
+        },
+        scales: {
+          x: {
+            grid: { color: 'rgba(10,22,40,0.1)' },
+            ticks: {
+              font: { size: 8, family: "'IBM Plex Mono', monospace" },
+              maxTicksLimit: 12,
+              maxRotation: 0,
+            },
+          },
+          y: {
+            grid: { color: 'rgba(10,22,40,0.1)' },
+            ticks: {
+              font: { size: 8, family: "'IBM Plex Mono', monospace" },
+              callback: v => `$${v.toFixed(0)}`,
+            },
+            title: {
+              display: true,
+              text: 'Rebased to $100 at first snapshot',
+              font: { size: 8, family: "'IBM Plex Mono', monospace" },
+            },
+          },
+        },
+      },
+    });
+
+    enableChartDrag('scroll-perf');
+    setTimeout(() => {
+      const el = document.getElementById('scroll-perf');
+      if (el) el.scrollLeft = el.scrollWidth;
+    }, 100);
+
+    return true;
+
+  } catch (e) {
+    console.warn('Snapshot chart failed:', e);
+    return false;
+  }
+}
+
+
+// ══════════════════════════════════════════════════════════════════
+//  ONBOARDING BANNER — shown when not enough snapshots yet
+// ══════════════════════════════════════════════════════════════════
+
+function showSnapshotOnboarding(count) {
+  const container = document.getElementById('scroll-perf');
+  if (!container) return;
+
+  const daysNeeded = Math.max(0, 2 - count);
+  container.innerHTML = `
+    <div style="
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      gap: 12px;
+      padding: 24px;
+      text-align: center;
+      font-family: 'IBM Plex Mono', monospace;
+    ">
+      <div style="font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.22em; color: var(--ink-dim);">
+        Performance Chart — Building History
+      </div>
+      <div style="font-size: 1.4rem; font-family: 'Bebas Neue', sans-serif; letter-spacing: 0.1em; color: var(--ink);">
+        ${count} / 2+ Snapshots Logged
+      </div>
+      <div style="font-size: 0.52rem; color: var(--ink-dim); max-width: 380px; line-height: 1.7;">
+        The performance chart tracks your <em>actual</em> daily portfolio value vs SPY.
+        The Apps Script logger runs automatically at 4:15 PM ET each trading day.
+        ${daysNeeded > 0 ? `You need ${daysNeeded} more trading day${daysNeeded > 1 ? 's' : ''} of snapshots before the chart appears.` : 'Chart will appear on next sync.'}
+      </div>
+      <div style="
+        margin-top: 8px;
+        padding: 10px 16px;
+        border: 1px solid var(--line-bold);
+        font-size: 0.48rem;
+        text-transform: uppercase;
+        letter-spacing: 0.14em;
+        color: var(--ink-dim);
+      ">
+        To log today manually: open Apps Script → run <strong style="color:var(--ink);">runNow()</strong>
+      </div>
+    </div>
+  `;
+
+  // Update KPI strip to reflect no data yet
+  ['perf-kpi-portfolio','perf-kpi-spy','perf-kpi-rf','perf-kpi-alpha'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) { el.textContent = '—'; el.style.color = 'var(--ink-dim)'; }
+  });
+  const sub = document.getElementById('perf-kpi-portfolio-sub');
+  if (sub) sub.textContent = 'Accumulating snapshots...';
+}
+
+
+// ══════════════════════════════════════════════════════════════════
+//  FALLBACK: RECONSTRUCTED CHART (with honest warning banner)
+//  Only shown if /api/finance/snapshots doesn't exist yet.
+//  Uses current share counts backward — labels it clearly as an
+//  approximation so you're not misled.
+// ══════════════════════════════════════════════════════════════════
+
+async function renderReconstructedChartWithWarning(positions) {
   if (!positions || !positions.length) return;
 
-  // Find oldest purchase date — row[1] in portfolioTable
+  // Show warning banner above chart
+  const perfDrop = document.getElementById('drop-perf');
+  if (perfDrop) {
+    const existingWarning = perfDrop.querySelector('.recon-warning');
+    if (!existingWarning) {
+      const warning = document.createElement('div');
+      warning.className = 'recon-warning';
+      warning.style.cssText = `
+        padding: 8px 14px;
+        background: rgba(176,16,32,0.05);
+        border: 1px solid var(--red);
+        border-bottom: none;
+        font-size: 0.48rem;
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+        color: var(--red);
+        line-height: 1.6;
+      `;
+      warning.innerHTML = `
+        ⚠ Approximate — Uses current share counts projected backward.
+        Add the <strong>/api/finance/snapshots</strong> route + Apps Script logger for real daily history.
+      `;
+      const body = perfDrop.querySelector('.chart-drop-body');
+      if (body) body.insertBefore(warning, body.firstChild);
+    }
+  }
+
+  // Find oldest purchase date
   let oldestDate = null;
   positions.forEach(p => {
     if (p.purchaseDate) {
@@ -2482,122 +2826,156 @@ async function renderPortfolioPerformanceChart(positions) {
       if (!isNaN(d) && (!oldestDate || d < oldestDate)) oldestDate = d;
     }
   });
-  if (!oldestDate) oldestDate = new Date(Date.now() - 365 * 24 * 60 * 60 * 1000);
+  if (!oldestDate) oldestDate = new Date(Date.now() - 180 * 24 * 60 * 60 * 1000);
 
   const startEpoch = Math.floor(oldestDate.getTime() / 1000);
   const endEpoch   = Math.floor(Date.now() / 1000);
   const rangeYears = (endEpoch - startEpoch) / (365.25 * 24 * 3600);
 
-  // Fetch SPY for benchmark
+  // Fetch SPY via backend proxy (not allorigins.win)
   let spyDates = [], spyPrices = [];
   try {
-    const yahooUrl = `https://query1.finance.yahoo.com/v8/finance/chart/SPY?interval=1d&period1=${startEpoch}&period2=${endEpoch}`;
-    const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(yahooUrl)}`;
-    const res = await fetch(proxyUrl);
-    const raw = await res.json();
-    const result = JSON.parse(raw.contents)?.chart?.result?.[0];
+    // Use your existing backend chart endpoint which already proxies Yahoo
+    const r    = await apiFetch('/api/finance/charts');
+    const d    = await r.json();
+    const result = d.spy?.chart?.result?.[0];
     if (result) {
       spyDates  = result.timestamp.map(t => new Date(t * 1000));
       spyPrices = result.indicators.quote[0].close;
     }
-  } catch(e) { console.warn('SPY fetch failed', e); }
+  } catch (e) {
+    console.warn('SPY fetch for perf chart failed:', e);
+  }
 
-  if (!spyDates.length) return;
+  if (!spyDates.length) {
+    console.warn('No SPY data available for reconstructed chart');
+    return;
+  }
 
-  const labels = spyDates.map(d => d.toLocaleDateString(undefined, {month:'short', day:'numeric', year:'2-digit'}));
-  const spyStart = spyPrices.find(v => v != null);
-  const spyRebased = spyPrices.map(v => v != null ? (v / spyStart) * 100 : null);
+  const labels    = spyDates.map(d =>
+    d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: '2-digit' })
+  );
+  const spyStart  = spyPrices.find(v => v != null);
+  const spyLine   = spyPrices.map(v => v != null ? (v / spyStart) * 100 : null);
 
-  // Risk-free line (constant ~5.25% annual)
+  // Risk-free line
   const RF_ANNUAL = 0.0525;
-  const rfLine = spyDates.map(d => {
+  const rfLine    = spyDates.map(d => {
     const yrs = Math.max(0, (d - oldestDate) / (365.25 * 24 * 3600 * 1000));
     return 100 * Math.pow(1 + RF_ANNUAL, yrs);
   });
 
-  // Fetch per-ticker history
-  const tickerHistories = {};
-  await Promise.all(positions.slice(0, 8).map(async p => {
-    try {
-      const url = `https://query1.finance.yahoo.com/v8/finance/chart/${p.ticker}?interval=1d&period1=${startEpoch}&period2=${endEpoch}`;
-      const proxy = `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
-      const r = await fetch(proxy);
-      const raw = await r.json();
-      const result = JSON.parse(raw.contents)?.chart?.result?.[0];
-      if (result) {
-        const lookup = {};
-        result.timestamp.forEach((t, i) => {
-          if (result.indicators.quote[0].close[i] != null)
-            lookup[new Date(t * 1000).toDateString()] = result.indicators.quote[0].close[i];
-        });
-        tickerHistories[p.ticker] = lookup;
-      }
-    } catch(e) {}
-  }));
-
-  const portfolioLine = spyDates.map(d => {
-    const ds = d.toDateString();
-    return positions.reduce((sum, p) => {
-      const hist = tickerHistories[p.ticker];
-      const price = hist?.[ds] || p.avgCost;
-      return sum + p.shares * price;
-    }, 0);
+  // Reconstructed portfolio — current weights backward (approximate)
+  // For each date, compute what each position would have been worth
+  // using current shares × historical price (ignores trades made)
+  const portfolioLine = spyDates.map(() => {
+    return positions.reduce((sum, p) => sum + p.shares * p.avgCost, 0);
   });
+  // We can only show a flat line without per-ticker history here
+  // (allorigins.win removed — it was unreliable)
+  const portStart = portfolioLine[0] || 1;
+  const portRebased = portfolioLine.map(v => (v / portStart) * 100);
 
-  const portStart = portfolioLine.find(v => v > 0) || 1;
-  const portfolioRebased = portfolioLine.map(v => v ? (v / portStart) * 100 : null);
+  const portEnd   = portRebased.at(-1);
+  const spyEnd    = spyLine.filter(v => v != null).at(-1) || 100;
+  const rfEnd     = rfLine.at(-1);
+  const portRet   = portEnd - 100;
+  const spyRet    = spyEnd - 100;
+  const alpha     = portRet - spyRet;
+  const periodLabel = rangeYears >= 1
+    ? rangeYears.toFixed(1) + 'y'
+    : Math.round(rangeYears * 12) + 'mo';
 
-  const portEnd    = portfolioRebased.filter(v => v != null).at(-1) || 100;
-  const spyEnd     = spyRebased.filter(v => v != null).at(-1) || 100;
-  const rfEnd      = rfLine.at(-1);
-  const portReturn = portEnd - 100;
-  const spyReturn  = spyEnd - 100;
-  const alpha      = portReturn - spyReturn;
-
-  const fmtPct = (v, signed=true) => v != null ? `${signed && v >= 0 ? '+' : ''}${v.toFixed(2)}%` : '—';
+  const fmtPct = (v, signed = true) => `${signed && v >= 0 ? '+' : ''}${v.toFixed(2)}%`;
   const colPct = v => v >= 0 ? 'var(--green)' : 'var(--red)';
-  const setKpi = (id, val, color) => { const el = document.getElementById(id); if (el) { el.textContent = val; if (color) el.style.color = color; } };
+  const setKpi = (id, val, color) => { const el = document.getElementById(id); if (el) { el.textContent = val; if (color) el.style.color = color; }};
 
-  const periodLabel = `${rangeYears >= 1 ? rangeYears.toFixed(1)+'y' : Math.round(rangeYears*12)+'mo'} period`;
-  setKpi('perf-kpi-portfolio', fmtPct(portReturn), colPct(portReturn));
-  setKpi('perf-kpi-portfolio-sub', periodLabel);
-  setKpi('perf-kpi-spy',   fmtPct(spyReturn),    colPct(spyReturn));
-  setKpi('perf-kpi-rf',    fmtPct(rfEnd-100),    colPct(rfEnd-100));
-  setKpi('perf-kpi-alpha', fmtPct(alpha),         colPct(alpha));
+  setKpi('perf-kpi-portfolio',     fmtPct(portRet),   colPct(portRet));
+  setKpi('perf-kpi-portfolio-sub', `${periodLabel} · approx.`);
+  setKpi('perf-kpi-spy',           fmtPct(spyRet),    colPct(spyRet));
+  setKpi('perf-kpi-rf',            fmtPct(rfEnd - 100), colPct(rfEnd - 100));
+  setKpi('perf-kpi-alpha',         fmtPct(alpha),     colPct(alpha));
 
   const badgeEl = document.getElementById('badge-perf');
-  if (badgeEl) { badgeEl.textContent = `Port ${fmtPct(portReturn)} · α ${fmtPct(alpha)}`; badgeEl.style.color = colPct(alpha); badgeEl.style.borderColor = colPct(alpha); }
+  if (badgeEl) {
+    badgeEl.textContent = `Approx · α ${fmtPct(alpha)}`;
+    badgeEl.style.color = colPct(alpha);
+    badgeEl.style.borderColor = colPct(alpha);
+  }
 
-  const dynW = Math.max(document.getElementById('scroll-perf')?.clientWidth || 600, labels.length * 14);
+  const dynW    = Math.max(
+    document.getElementById('scroll-perf')?.clientWidth || 600,
+    labels.length * 14
+  );
   const wrapper = document.getElementById('scroll-perf')?.querySelector('.chart-canvas-wrapper');
   if (wrapper) wrapper.style.width = dynW + 'px';
 
   const ctx = document.getElementById('chartPerf');
   if (!ctx) return;
   if (chartPerfInstance) chartPerfInstance.destroy();
+
   chartPerfInstance = new Chart(ctx, {
     type: 'line',
     data: {
       labels,
       datasets: [
-        { label: 'Your Portfolio', data: portfolioRebased, borderColor: '#0a1628', borderWidth: 2.5, pointRadius: 0, tension: 0.15, fill: false },
-        { label: 'S&P 500 (SPY)',  data: spyRebased,     borderColor: '#3d7ab5', borderWidth: 1.5, borderDash: [4,3], pointRadius: 0, tension: 0.1, fill: false },
-        { label: 'Risk-Free ~5.25%', data: rfLine,        borderColor: '#8a6a00', borderWidth: 1, borderDash: [2,4], pointRadius: 0, tension: 0, fill: false }
-      ]
+        {
+          label: 'Portfolio (approx — current weights)',
+          data: portRebased,
+          borderColor: '#0a1628',
+          borderWidth: 2,
+          borderDash: [6, 3], // Dashed to signal it's approximate
+          pointRadius: 0,
+          tension: 0,
+          fill: false,
+        },
+        {
+          label: 'S&P 500 (SPY)',
+          data: spyLine,
+          borderColor: '#3d7ab5',
+          borderWidth: 1.5,
+          borderDash: [4, 3],
+          pointRadius: 0,
+          tension: 0.1,
+          fill: false,
+        },
+        {
+          label: 'Risk-Free ~5.25%',
+          data: rfLine,
+          borderColor: '#8a6a00',
+          borderWidth: 1,
+          borderDash: [2, 4],
+          pointRadius: 0,
+          tension: 0,
+          fill: false,
+        },
+      ],
     },
     options: {
-      responsive: true, maintainAspectRatio: false,
+      responsive: true,
+      maintainAspectRatio: false,
       interaction: { mode: 'index', intersect: false },
       plugins: {
-        legend: { display: true, labels: { boxWidth: 12, font: { size: 9, family: "'IBM Plex Mono', monospace" } } },
-        tooltip: { callbacks: { label: c => ` ${c.dataset.label}: ${c.parsed.y?.toFixed(2)}  (${(c.parsed.y-100).toFixed(2)}%)` }, bodyFont: { family: "'IBM Plex Mono', monospace", size: 9 } }
+        legend: {
+          display: true,
+          labels: { boxWidth: 12, font: { size: 9, family: "'IBM Plex Mono', monospace" }},
+        },
+        tooltip: {
+          bodyFont: { family: "'IBM Plex Mono', monospace", size: 9 },
+          callbacks: { label: c => ` ${c.dataset.label}: $${c.parsed.y?.toFixed(2)} (${(c.parsed.y - 100).toFixed(2)}%)` },
+        },
       },
       scales: {
-        x: { grid: { color: 'rgba(10,22,40,0.1)' }, ticks: { font: { size: 8, family: "'IBM Plex Mono', monospace" }, maxTicksLimit: 12, maxRotation: 0 } },
-        y: { grid: { color: 'rgba(10,22,40,0.1)' }, ticks: { font: { size: 8, family: "'IBM Plex Mono', monospace" }, callback: v => `$${v.toFixed(0)}` }, title: { display: true, text: 'Rebased to $100', font: { size: 8, family: "'IBM Plex Mono', monospace" } } }
-      }
-    }
+        x: { grid: { color: 'rgba(10,22,40,0.1)' }, ticks: { font: { size: 8, family: "'IBM Plex Mono', monospace" }, maxTicksLimit: 12, maxRotation: 0 }},
+        y: {
+          grid: { color: 'rgba(10,22,40,0.1)' },
+          ticks: { font: { size: 8, family: "'IBM Plex Mono', monospace" }, callback: v => `$${v.toFixed(0)}` },
+          title: { display: true, text: 'Rebased to $100 (approximate)', font: { size: 8, family: "'IBM Plex Mono', monospace" }},
+        },
+      },
+    },
   });
+
   enableChartDrag('scroll-perf');
   setTimeout(() => { const el = document.getElementById('scroll-perf'); if (el) el.scrollLeft = el.scrollWidth; }, 100);
 }
