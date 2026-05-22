@@ -468,80 +468,80 @@ async function renderTerminalCharts() {
 //  DROP ZONE LOGIC
 // ═══════════════════════════════════════════════
 
-// FIXED: Added missing renderLog function
 function renderLog() {
   const list = document.getElementById('log-list');
-  if(!list) return;
+  if (!list) return;
   list.innerHTML = '';
-  
-  if (!drops.length) { 
-    list.innerHTML = '<div class="log-empty">Clipboard is empty.</div>'; 
-    return; 
+
+  if (!drops.length) {
+    list.innerHTML = '<div class="log-empty">Clipboard is empty.</div>';
+    return;
   }
-  
-  drops.forEach(item => {
-    const div = document.createElement('div'); 
+
+  drops.forEach((item, index) => {
+    const div = document.createElement('div');
     div.className = 'log-item';
-    const ts = item.timestamp ? item.timestamp.replace('T',' ').substring(0,16) : '—';
-    const nameEsc = escapeHTML(item.name || '');
-    
+
+    const ts       = item.timestamp ? item.timestamp.replace('T', ' ').substring(0, 16) : '—';
+    const nameEsc  = escapeHTML(item.name || '');
+    const itemId   = escapeHTML(item.id   || '');
+
     let badgeClass = 'file-type';
-    let typeTxt = 'FILE';
-    if (item.type === 'text') { badgeClass = ''; typeTxt = 'TEXT'; }
-    if (item.type === 'url')  { badgeClass = 'url-type'; typeTxt = 'URL'; }
+    let typeTxt    = 'FILE';
+    if (item.type === 'text') { badgeClass = '';         typeTxt = 'TEXT'; }
+    if (item.type === 'url')  { badgeClass = 'url-type'; typeTxt = 'URL';  }
 
-    drops.forEach((item, index) => {
-    const div = document.createElement('div'); 
-    div.className = 'log-item';
-    div.dataset.index = index;  // store index, not raw JSON
-    // ...
-    div.innerHTML = `
-      <div class="log-item-header">
-        <span class="log-type-badge ${badgeClass}">${typeTxt}</span>
-        <span class="log-name" style="cursor:pointer;" onclick="updateSpec(drops[${index}])">${nameEsc}</span>
-      </div>
-      <div class="log-meta"><span>${ts}</span><span>${item.size||'—'}</span></div>
-      <div class="log-actions">
-        <button class="log-btn" onclick="previewItem(drops[${index}])">
-          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-          Preview
-        </button>
-        ${item.type === 'file' ? `
-        <a href="${API_BASE}/api/drop/item/${item.id}" download="${nameEsc}" class="log-btn" style="text-decoration:none;display:inline-flex;align-items:center;gap:4px;">
-          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-          Download
-        </a>` : ''}
-        <button class="log-btn" style="color:var(--red);border-color:var(--red);" onclick="deleteItem('${item.id}')">
-          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/></svg>
-          Delete
-        </button>
-      </div>
-    `;
-    list.appendChild(div);
-  });
+    // ── Header ──────────────────────────────────────
+    const header = document.createElement('div');
+    header.className = 'log-item-header';
+    header.innerHTML = `<span class="log-type-badge ${badgeClass}">${typeTxt}</span>`;
 
-    div.innerHTML = `
-      <div class="log-item-header">
-        <span class="log-type-badge ${badgeClass}">${typeTxt}</span>
-        <span class="log-name" style="cursor:pointer;" onclick='updateSpec(${itemJSON})'>${nameEsc}</span>
-      </div>
-      <div class="log-meta"><span>${ts}</span><span>${item.size||'—'}</span></div>
-      <div class="log-actions">
-        <button class="log-btn" onclick='previewItem(${itemJSON})'>
-          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-          Preview
-        </button>
-        ${item.type === 'file' ? `
-        <a href="${API_BASE}/api/drop/item/${item.id}" download="${nameEsc}" class="log-btn" style="text-decoration:none;display:inline-flex;align-items:center;gap:4px;">
-          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-          Download
-        </a>` : ''}
-        <button class="log-btn" style="color:var(--red);border-color:var(--red);" onclick="deleteItem('${item.id}')">
-          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/></svg>
-          Delete
-        </button>
-      </div>
-    `;
+    const nameSpan = document.createElement('span');
+    nameSpan.className = 'log-name';
+    nameSpan.style.cursor = 'pointer';
+    nameSpan.textContent = item.name || '—';
+    nameSpan.addEventListener('click', () => updateSpec(item));
+    header.appendChild(nameSpan);
+
+    // ── Meta ─────────────────────────────────────────
+    const meta = document.createElement('div');
+    meta.className = 'log-meta';
+    meta.innerHTML = `<span>${ts}</span><span>${escapeHTML(item.size || '—')}</span>`;
+
+    // ── Actions ──────────────────────────────────────
+    const actions = document.createElement('div');
+    actions.className = 'log-actions';
+
+    // Preview button (all types)
+    const previewBtn = document.createElement('button');
+    previewBtn.className = 'log-btn';
+    previewBtn.innerHTML = `<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg> Preview`;
+    previewBtn.addEventListener('click', () => previewItem(item));
+    actions.appendChild(previewBtn);
+
+    // Download link (files only)
+    if (item.type === 'file') {
+      const dlLink = document.createElement('a');
+      dlLink.className = 'log-btn';
+      dlLink.href = `${API_BASE}/api/drop/item/${itemId}`;
+      dlLink.download = item.name || '';
+      dlLink.style.cssText = 'text-decoration:none;display:inline-flex;align-items:center;gap:4px;';
+      dlLink.innerHTML = `<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Download`;
+      actions.appendChild(dlLink);
+    }
+
+    // Delete button (all types)
+    const deleteBtn = document.createElement('button');
+    deleteBtn.className = 'log-btn';
+    deleteBtn.style.cssText = 'color:var(--red);border-color:var(--red);';
+    deleteBtn.innerHTML = `<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/></svg> Delete`;
+    deleteBtn.addEventListener('click', () => deleteItem(item.id));
+    actions.appendChild(deleteBtn);
+
+    // ── Assemble ─────────────────────────────────────
+    div.appendChild(header);
+    div.appendChild(meta);
+    div.appendChild(actions);
     list.appendChild(div);
   });
 }
