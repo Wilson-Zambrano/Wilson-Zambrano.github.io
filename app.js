@@ -485,18 +485,34 @@ function renderLog() {
     const ts = item.timestamp ? item.timestamp.replace('T',' ').substring(0,16) : '—';
     const nameEsc = escapeHTML(item.name || '');
     
-    // Determine icon/type badge
     let badgeClass = 'file-type';
     let typeTxt = 'FILE';
     if (item.type === 'text') { badgeClass = ''; typeTxt = 'TEXT'; }
-    if (item.type === 'url') { badgeClass = 'url-type'; typeTxt = 'URL'; }
+    if (item.type === 'url')  { badgeClass = 'url-type'; typeTxt = 'URL'; }
+
+    const itemJSON = JSON.stringify(item).replace(/'/g, "&apos;");
 
     div.innerHTML = `
       <div class="log-item-header">
         <span class="log-type-badge ${badgeClass}">${typeTxt}</span>
-        <span class="log-name" style="cursor:pointer;" onclick='updateSpec(${JSON.stringify(item).replace(/'/g, "&apos;")})'>${nameEsc}</span>
+        <span class="log-name" style="cursor:pointer;" onclick='updateSpec(${itemJSON})'>${nameEsc}</span>
       </div>
       <div class="log-meta"><span>${ts}</span><span>${item.size||'—'}</span></div>
+      <div class="log-actions">
+        <button class="log-btn" onclick='previewItem(${itemJSON})'>
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          Preview
+        </button>
+        ${item.type === 'file' ? `
+        <a href="${API_BASE}/api/drop/item/${item.id}" download="${nameEsc}" class="log-btn" style="text-decoration:none;display:inline-flex;align-items:center;gap:4px;">
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Download
+        </a>` : ''}
+        <button class="log-btn" style="color:var(--red);border-color:var(--red);" onclick="deleteItem('${item.id}')">
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/></svg>
+          Delete
+        </button>
+      </div>
     `;
     list.appendChild(div);
   });
@@ -628,4 +644,75 @@ function updateSpec(item) {
   const sn = document.getElementById('spec-name'); if(sn) sn.textContent = (item.name||'—').substring(0,28);
   const ss = document.getElementById('spec-size'); if(ss) ss.textContent = item.size||'—';
   const tm = document.getElementById('spec-time'); if(tm) tm.textContent = item.timestamp ? item.timestamp.replace('T',' ').substring(0,19) : '—';
+}
+
+async function deleteItem(id) {
+  if (!confirm('Delete this item? This cannot be undone.')) return;
+  try {
+    const res = await apiFetch(`/api/drop/item/${id}`, { method: 'DELETE' });
+    if (!res.ok) throw new Error('Delete failed');
+    drops = drops.filter(d => d.id !== id);
+    renderLog();
+    const countEl = document.getElementById('status-count');
+    if (countEl) countEl.textContent = drops.length;
+    calculateStorage();
+    showToast('Item deleted');
+  } catch (err) {
+    showToast(err.message || 'Delete failed', true);
+  }
+}
+
+async function previewItem(item) {
+  const overlay = document.getElementById('preview-overlay');
+  const content = document.getElementById('preview-content');
+  const title   = document.getElementById('preview-title');
+  if (!overlay || !content) return;
+
+  title.textContent = item.name || 'Preview';
+  content.innerHTML = '<div class="log-loading"><span class="spinner"></span>&nbsp; Loading...</div>';
+  overlay.style.display = 'flex';
+
+  try {
+    if (item.type === 'url') {
+      content.innerHTML = `<p style="font-size:0.7rem;margin-bottom:8px;color:var(--ink-dim);">Stored URL:</p>
+        <a href="${escapeHTML(item.url||item.name)}" target="_blank" rel="noopener" 
+           style="font-size:0.75rem;color:var(--blue);word-break:break-all;">${escapeHTML(item.url||item.name)}</a>`;
+      return;
+    }
+
+    if (item.type === 'text') {
+      const res = await apiFetch(`/api/drop/item/${item.id}`);
+      const text = await res.text();
+      const lang = item.lang || 'plaintext';
+      const escaped = escapeHTML(text);
+      content.innerHTML = `<pre style="margin:0;overflow:auto;max-height:60vh;"><code class="language-${lang}">${escaped}</code></pre>`;
+      if (window.Prism) Prism.highlightAllUnder(content);
+      return;
+    }
+
+    // File: image preview or download link
+    const ext = (item.name || '').split('.').pop().toLowerCase();
+    const imageExts = ['png','jpg','jpeg','gif','webp','svg','bmp'];
+    if (imageExts.includes(ext)) {
+      content.innerHTML = `<img src="${API_BASE}/api/drop/item/${item.id}?token=${encodeURIComponent(jwt)}" 
+        alt="${escapeHTML(item.name)}" style="max-width:100%;max-height:65vh;display:block;margin:auto;">`;
+    } else {
+      content.innerHTML = `
+        <div style="text-align:center;padding:32px 0;">
+          <p style="font-size:0.65rem;color:var(--ink-dim);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:16px;">No preview available for this file type.</p>
+          <a href="${API_BASE}/api/drop/item/${item.id}" download="${escapeHTML(item.name)}"
+             class="btn btn-solid" style="text-decoration:none;display:inline-flex;align-items:center;gap:6px;">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Download ${escapeHTML(item.name)}
+          </a>
+        </div>`;
+    }
+  } catch (err) {
+    content.innerHTML = `<p style="color:var(--red);font-size:0.65rem;">Failed to load preview: ${escapeHTML(err.message)}</p>`;
+  }
+}
+
+function closePreview() {
+  const overlay = document.getElementById('preview-overlay');
+  if (overlay) overlay.style.display = 'none';
 }
