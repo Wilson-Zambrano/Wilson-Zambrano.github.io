@@ -691,16 +691,59 @@ async function previewItem(item) {
     }
 
     // File: image preview or download link
+    // File: preview by extension
     const ext = (item.name || '').split('.').pop().toLowerCase();
-    const imageExts = ['png','jpg','jpeg','gif','webp','svg','bmp'];
+    
+    const imageExts = ['png','jpg','jpeg','gif','webp','svg','bmp','tiff','tif','ico','avif'];
+    const videoExts = ['mp4','webm','ogg','mov','m4v'];
+    const audioExts = ['mp3','wav','ogg','m4a','aac','flac','opus'];
+    const codeExts  = {
+      js:'javascript', ts:'javascript', jsx:'javascript', tsx:'javascript',
+      py:'python', c:'c', cpp:'cpp', h:'cpp', cs:'cpp',
+      json:'json', xml:'markup', html:'markup', css:'css',
+      md:'markdown', sh:'bash', yaml:'yaml', yml:'yaml', txt:'plaintext'
+    };
+
+    const fileUrl = `${API_BASE}/api/drop/item/${item.id}`;
+    const authedUrl = `${fileUrl}?token=${encodeURIComponent(jwt)}`;
+
     if (imageExts.includes(ext)) {
-      content.innerHTML = `<img src="${API_BASE}/api/drop/item/${item.id}?token=${encodeURIComponent(jwt)}" 
-        alt="${escapeHTML(item.name)}" style="max-width:100%;max-height:65vh;display:block;margin:auto;">`;
+      content.innerHTML = `<img src="${authedUrl}" alt="${escapeHTML(item.name)}"
+        style="max-width:100%;max-height:65vh;display:block;margin:auto;border:1px solid var(--line);">`;
+
+    } else if (ext === 'pdf') {
+      content.innerHTML = `<iframe src="${authedUrl}" style="width:100%;height:65vh;border:1px solid var(--line);background:#fff;"></iframe>`;
+
+    } else if (videoExts.includes(ext)) {
+      content.innerHTML = `<video controls style="max-width:100%;max-height:65vh;display:block;margin:auto;border:1px solid var(--line);">
+        <source src="${authedUrl}" type="video/${ext === 'mov' ? 'quicktime' : ext}">
+        <p style="color:var(--ink-dim);font-size:0.65rem;">Your browser does not support this video format.</p>
+      </video>`;
+
+    } else if (audioExts.includes(ext)) {
+      content.innerHTML = `
+        <div style="padding:32px;text-align:center;">
+          <p style="font-size:0.55rem;text-transform:uppercase;letter-spacing:0.15em;color:var(--ink-dim);margin-bottom:16px;">${escapeHTML(item.name)}</p>
+          <audio controls style="width:100%;max-width:480px;">
+            <source src="${authedUrl}" type="audio/${ext === 'm4a' ? 'mp4' : ext}">
+          </audio>
+        </div>`;
+
+    } else if (codeExts[ext]) {
+      try {
+        const res = await apiFetch(`/api/drop/item/${item.id}`);
+        const text = await res.text();
+        content.innerHTML = `<pre style="margin:0;overflow:auto;max-height:65vh;"><code class="language-${codeExts[ext]}">${escapeHTML(text)}</code></pre>`;
+        if (window.Prism) Prism.highlightAllUnder(content);
+      } catch(e) {
+        content.innerHTML = `<p style="color:var(--red);font-size:0.65rem;">Failed to load file: ${escapeHTML(e.message)}</p>`;
+      }
+
     } else {
       content.innerHTML = `
         <div style="text-align:center;padding:32px 0;">
-          <p style="font-size:0.65rem;color:var(--ink-dim);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:16px;">No preview available for this file type.</p>
-          <a href="${API_BASE}/api/drop/item/${item.id}" download="${escapeHTML(item.name)}"
+          <p style="font-size:0.65rem;color:var(--ink-dim);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:16px;">No preview available for .${escapeHTML(ext)} files.</p>
+          <a href="${fileUrl}" download="${escapeHTML(item.name)}"
              class="btn btn-solid" style="text-decoration:none;display:inline-flex;align-items:center;gap:6px;">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
             Download ${escapeHTML(item.name)}
