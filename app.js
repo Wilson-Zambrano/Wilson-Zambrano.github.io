@@ -490,7 +490,35 @@ function renderLog() {
     if (item.type === 'text') { badgeClass = ''; typeTxt = 'TEXT'; }
     if (item.type === 'url')  { badgeClass = 'url-type'; typeTxt = 'URL'; }
 
-    const itemJSON = JSON.stringify(item).replace(/'/g, "&apos;");
+    drops.forEach((item, index) => {
+    const div = document.createElement('div'); 
+    div.className = 'log-item';
+    div.dataset.index = index;  // store index, not raw JSON
+    // ...
+    div.innerHTML = `
+      <div class="log-item-header">
+        <span class="log-type-badge ${badgeClass}">${typeTxt}</span>
+        <span class="log-name" style="cursor:pointer;" onclick="updateSpec(drops[${index}])">${nameEsc}</span>
+      </div>
+      <div class="log-meta"><span>${ts}</span><span>${item.size||'—'}</span></div>
+      <div class="log-actions">
+        <button class="log-btn" onclick="previewItem(drops[${index}])">
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          Preview
+        </button>
+        ${item.type === 'file' ? `
+        <a href="${API_BASE}/api/drop/item/${item.id}" download="${nameEsc}" class="log-btn" style="text-decoration:none;display:inline-flex;align-items:center;gap:4px;">
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Download
+        </a>` : ''}
+        <button class="log-btn" style="color:var(--red);border-color:var(--red);" onclick="deleteItem('${item.id}')">
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/></svg>
+          Delete
+        </button>
+      </div>
+    `;
+    list.appendChild(div);
+  });
 
     div.innerHTML = `
       <div class="log-item-header">
