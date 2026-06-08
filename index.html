@@ -110,14 +110,14 @@ h1.hero-name em { font-style: normal; color: var(--red); display: block; }
   transition: background 0.2s; 
   display: flex; 
   flex-direction: column; 
-  background: rgba(255, 255, 255, 0.85); /* Translucent background for text readability */
-  backdrop-filter: blur(4px);
+  background: rgba(10, 22, 40, 0.04); /* Soft, frosted paper finish */
+  backdrop-filter: blur(6px);
 }
 .project-card:nth-child(3n) { border-right: none; }
 .project-card:nth-last-child(-n+3):nth-child(3n+1),
 .project-card:nth-last-child(-n+3):nth-child(3n+2),
 .project-card:nth-last-child(-n+3) { border-bottom: none; }
-.project-card:hover { background: rgba(255, 255, 255, 1); }
+.project-card:hover { background: rgba(10, 22, 40, 0.08); }
 
 .card-callout { position: absolute; top: 12px; right: 12px; width: 22px; height: 22px; border: 1.5px solid var(--ink); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.55rem; font-weight: 700; color: var(--ink); background: var(--paper); z-index: 5; }
 .card-img-wrap { height: 140px; overflow: hidden; border-bottom: 1px solid var(--line-bold); position: relative; background: var(--paper-dark); }
@@ -413,7 +413,7 @@ h1.hero-name em { font-style: normal; color: var(--red); display: block; }
           <p class="card-desc">
             Optimized the design of an at-home corticosteroid autoinjector. Ensuring exactly <strong>0.1 ± 5% cc</strong> fluid delivery at <strong>1.1 mm</strong> depth. Iterated mechanism for facial and neck reliability.
           </p>
-          <a href="Indomo-Injector_Poster.pdf" target="_blank" download class="btn btn-outline btn-sm" style="display:flex;justify-content:center;text-align:center;">View Technical Poster →</a>
+          <a href="Indomo-Injector_Poster.pdf" target="_blank" class="btn btn-outline btn-sm" style="display:flex;justify-content:center;text-align:center;">View Technical Poster →</a>
         </div>
       </div>
 
@@ -434,8 +434,8 @@ h1.hero-name em { font-style: normal; color: var(--red); display: block; }
             Leading mechanical design of an <strong>autonomous mating system</strong> for New Glenn umbilical panels. 4-DOF alignment via kinematic couplings, validating tolerance stacks for launch operations.
           </p>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
-            <a href="Blue Origin Final Presentation.pdf" target="_blank" download class="btn btn-outline btn-sm" style="display:flex;justify-content:center;text-align:center;">Slides →</a>
-            <a href="Blue Origin Poster Final - Project Day.pdf" target="_blank" download class="btn btn-outline btn-sm" style="display:flex;justify-content:center;text-align:center;">Poster →</a>
+            <a href="Blue Origin Final Presentation.pdf" target="_blank" class="btn btn-outline btn-sm" style="display:flex;justify-content:center;text-align:center;">Slides →</a>
+            <a href="Blue Origin Poster Final - Project Day.pdf" target="_blank" class="btn btn-outline btn-sm" style="display:flex;justify-content:center;text-align:center;">Poster →</a>
           </div>
         </div>
       </div>
@@ -458,7 +458,7 @@ h1.hero-name em { font-style: normal; color: var(--red); display: block; }
           </p>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
             <a href="poster.html" target="_blank" class="btn btn-outline btn-sm" style="display:flex;justify-content:center;text-align:center;">View Research Data →</a>
-            <a href="FILM_Poster_APSDFD25.pdf" target="_blank" download class="btn btn-outline btn-sm" style="display:flex;justify-content:center;text-align:center;">Conf. Poster →</a>
+            <a href="FILM_Poster_APSDFD25.pdf" target="_blank" class="btn btn-outline btn-sm" style="display:flex;justify-content:center;text-align:center;">Conf. Poster →</a>
           </div>
         </div>
       </div>
@@ -479,7 +479,7 @@ h1.hero-name em { font-style: normal; color: var(--red); display: block; }
           <p class="card-desc">
             Designed and tested AUV nose cone geometries. Validated Exp. Cone Cd <strong>0.959</strong> vs COMSOL sim <strong>0.636</strong>. Analyzed deviations for geometry optimization recommendations.
           </p>
-          <a href="Final Report IEEE.docx.pdf" target="_blank" download class="btn btn-outline btn-sm" style="display:flex;justify-content:center;text-align:center;">Read IEEE Report →</a>
+          <a href="Final Report IEEE.docx.pdf" target="_blank" class="btn btn-outline btn-sm" style="display:flex;justify-content:center;text-align:center;">Read IEEE Report →</a>
         </div>
       </div>
 
@@ -500,8 +500,8 @@ h1.hero-name em { font-style: normal; color: var(--red); display: block; }
             Custom AC-DC converter with <strong>Pulse Width Modulation</strong> for variable power delivery. Duty cycle modulation for motors and thermal systems. Validated via oscilloscope.
           </p>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
-            <a href="E84 Hardware Circuit Testing.pdf" target="_blank" download class="btn btn-outline btn-sm" style="display:flex;justify-content:center;text-align:center;">Test Report →</a>
-            <a href="E84 Final...entation.pdf" target="_blank" download class="btn btn-outline btn-sm" style="display:flex;justify-content:center;text-align:center;">Presentation →</a>
+            <a href="E84 Hardware Circuit Testing.pdf" target="_blank" class="btn btn-outline btn-sm" style="display:flex;justify-content:center;text-align:center;">Test Report →</a>
+            <a href="E84 Final Presentation.pdf" target="_blank" class="btn btn-outline btn-sm" style="display:flex;justify-content:center;text-align:center;">Presentation →</a>
           </div>
         </div>
       </div>
@@ -558,7 +558,7 @@ h1.hero-name em { font-style: normal; color: var(--red); display: block; }
           <p class="card-desc">
             Built a complete <strong>electric go-kart drivetrain</strong> with BLDC motors, Raspberry Pi PWM control, active precharge contactor logic, and a custom Molex wire harness. Covered battery fundamentals (SOC, BMS cell balancing), Hall-effect commutation, and Python embedded control loops.
           </p>
-          <a href="E49C__Cart_Wiring_Harness.pdf" target="_blank" download class="btn btn-outline btn-sm" style="display:flex;justify-content:center;text-align:center;">Wiring Diagram →</a>
+          <a href="E49C_ Cart Wiring Harness.pdf" target="_blank" class="btn btn-outline btn-sm" style="display:flex;justify-content:center;text-align:center;">Wiring Diagram →</a>
         </div>
       </div>
 
@@ -597,10 +597,6 @@ h1.hero-name em { font-style: normal; color: var(--red); display: block; }
         <img src="WilsonZambrano.jpg" alt="Wilson Zambrano Resume" onerror="this.outerHTML='<div style=\'padding:80px;text-align:center;font-family:IBM Plex Mono,monospace;font-size:0.7rem;color:var(--ink-dim);background:var(--paper-dark);\'>WilsonZambrano.jpg<br><br>Resume Preview</div>'">
       </a>
       <div style="margin-top:16px;display:flex;gap:12px;">
-        <a href="WilsonZambrano.pdf" download class="btn btn-outline" style="display:inline-flex;align-items:center;gap:8px;">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-          Download PDF
-        </a>
         <a href="WilsonZambrano.pdf" target="_blank" class="btn btn-solid" style="display:inline-flex;align-items:center;gap:8px;">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
           Open Full PDF
