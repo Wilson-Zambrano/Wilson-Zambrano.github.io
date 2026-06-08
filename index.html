@@ -102,12 +102,22 @@ h1.hero-name em { font-style: normal; color: var(--red); display: block; }
 ═══════════════════════════════════════════════════════ */
 #projects { background: rgba(10,22,40,0.02); }
 .projects-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0; border: 2px solid var(--ink); }
-.project-card { border-right: 1px solid var(--line-bold); border-bottom: 1px solid var(--line-bold); position: relative; overflow: hidden; transition: background 0.2s; display: flex; flex-direction: column; }
+.project-card { 
+  border-right: 1px solid var(--line-bold); 
+  border-bottom: 1px solid var(--line-bold); 
+  position: relative; 
+  overflow: hidden; 
+  transition: background 0.2s; 
+  display: flex; 
+  flex-direction: column; 
+  background: rgba(255, 255, 255, 0.85); /* Translucent background for text readability */
+  backdrop-filter: blur(4px);
+}
 .project-card:nth-child(3n) { border-right: none; }
 .project-card:nth-last-child(-n+3):nth-child(3n+1),
 .project-card:nth-last-child(-n+3):nth-child(3n+2),
 .project-card:nth-last-child(-n+3) { border-bottom: none; }
-.project-card:hover { background: rgba(10,22,40,0.04); }
+.project-card:hover { background: rgba(255, 255, 255, 1); }
 
 .card-callout { position: absolute; top: 12px; right: 12px; width: 22px; height: 22px; border: 1.5px solid var(--ink); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.55rem; font-weight: 700; color: var(--ink); background: var(--paper); z-index: 5; }
 .card-img-wrap { height: 140px; overflow: hidden; border-bottom: 1px solid var(--line-bold); position: relative; background: var(--paper-dark); }
@@ -403,7 +413,7 @@ h1.hero-name em { font-style: normal; color: var(--red); display: block; }
           <p class="card-desc">
             Optimized the design of an at-home corticosteroid autoinjector. Ensuring exactly <strong>0.1 ± 5% cc</strong> fluid delivery at <strong>1.1 mm</strong> depth. Iterated mechanism for facial and neck reliability.
           </p>
-          <a href="Indomo-Injector_Poster.pdf" target="_blank" class="btn btn-outline btn-sm">View Technical Poster →</a>
+          <a href="Indomo-Injector_Poster.pdf" target="_blank" download class="btn btn-outline btn-sm" style="display:flex;justify-content:center;text-align:center;">View Technical Poster →</a>
         </div>
       </div>
 
@@ -418,14 +428,14 @@ h1.hero-name em { font-style: normal; color: var(--red); display: block; }
           <div class="card-tags">
             <span class="card-tag">Systems Eng</span>
             <span class="card-tag">Robotics</span>
-            <span class="card-tag">6-DOF</span>
+            <span class="card-tag">4-DOF</span>
           </div>
           <p class="card-desc">
-            Leading mechanical design of an <strong>autonomous mating system</strong> for New Glenn umbilical panels. 6-DOF alignment via kinematic couplings, validating tolerance stacks for launch operations.
+            Leading mechanical design of an <strong>autonomous mating system</strong> for New Glenn umbilical panels. 4-DOF alignment via kinematic couplings, validating tolerance stacks for launch operations.
           </p>
-          <div style="display:flex;gap:8px;flex-wrap:wrap;">
-            <a href="Blue Origin Final Presentation.pdf" target="_blank" class="btn btn-outline btn-sm">Slides →</a>
-            <a href="Blue Origin Poster Final - Project Day.pdf" target="_blank" class="btn btn-outline btn-sm">Poster →</a>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+            <a href="Blue Origin Final Presentation.pdf" target="_blank" download class="btn btn-outline btn-sm" style="display:flex;justify-content:center;text-align:center;">Slides →</a>
+            <a href="Blue Origin Poster Final - Project Day.pdf" target="_blank" download class="btn btn-outline btn-sm" style="display:flex;justify-content:center;text-align:center;">Poster →</a>
           </div>
         </div>
       </div>
@@ -446,9 +456,9 @@ h1.hero-name em { font-style: normal; color: var(--red); display: block; }
           <p class="card-desc">
             Synchronized <strong>6-axis load cell</strong> with high-speed video and PIV to correlate Archer fish thrust with wake topology. Custom MATLAB flow-field scripts.
           </p>
-          <div style="display:flex;gap:8px;flex-wrap:wrap;">
-            <a href="poster.html" target="_blank" class="btn btn-outline btn-sm">View Research Data →</a>
-            <a href="FILM_Poster_APSDFD25.pdf" target="_blank" class="btn btn-outline btn-sm">Conf. Poster →</a>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+            <a href="poster.html" target="_blank" class="btn btn-outline btn-sm" style="display:flex;justify-content:center;text-align:center;">View Research Data →</a>
+            <a href="FILM_Poster_APSDFD25.pdf" target="_blank" download class="btn btn-outline btn-sm" style="display:flex;justify-content:center;text-align:center;">Conf. Poster →</a>
           </div>
         </div>
       </div>
@@ -469,7 +479,7 @@ h1.hero-name em { font-style: normal; color: var(--red); display: block; }
           <p class="card-desc">
             Designed and tested AUV nose cone geometries. Validated Exp. Cone Cd <strong>0.959</strong> vs COMSOL sim <strong>0.636</strong>. Analyzed deviations for geometry optimization recommendations.
           </p>
-          <a href="Final Report IEEE.docx.pdf" target="_blank" class="btn btn-outline btn-sm">Read IEEE Report →</a>
+          <a href="Final Report IEEE.docx.pdf" target="_blank" download class="btn btn-outline btn-sm" style="display:flex;justify-content:center;text-align:center;">Read IEEE Report →</a>
         </div>
       </div>
 
@@ -489,9 +499,9 @@ h1.hero-name em { font-style: normal; color: var(--red); display: block; }
           <p class="card-desc">
             Custom AC-DC converter with <strong>Pulse Width Modulation</strong> for variable power delivery. Duty cycle modulation for motors and thermal systems. Validated via oscilloscope.
           </p>
-          <div style="display:flex;gap:8px;">
-            <a href="E84 Hardware Circuit Testing.pdf" target="_blank" class="btn btn-outline btn-sm">Test Report →</a>
-            <a href="E84 Final...entation.pdf" target="_blank" class="btn btn-outline btn-sm">Presentation →</a>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+            <a href="E84 Hardware Circuit Testing.pdf" target="_blank" download class="btn btn-outline btn-sm" style="display:flex;justify-content:center;text-align:center;">Test Report →</a>
+            <a href="E84 Final...entation.pdf" target="_blank" download class="btn btn-outline btn-sm" style="display:flex;justify-content:center;text-align:center;">Presentation →</a>
           </div>
         </div>
       </div>
@@ -500,56 +510,44 @@ h1.hero-name em { font-style: normal; color: var(--red); display: block; }
         <div class="card-callout">06</div>
         <div class="card-img-wrap" style="background:#0a1628;display:flex;align-items:center;justify-content:center;padding:0;">
           <svg viewBox="0 0 280 140" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;padding:12px;">
-            <!-- Battery -->
             <rect x="8" y="54" width="44" height="32" rx="2" fill="none" stroke="#4a90d9" stroke-width="1.2"/>
             <text x="30" y="68" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="5.5" fill="#4a90d9">BATT</text>
             <text x="30" y="78" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="4.5" fill="#4a90d9">36V</text>
-            <!-- Arrow 1 -->
             <line x1="52" y1="70" x2="68" y2="70" stroke="#c0c8d8" stroke-width="1"/>
             <polygon points="68,67 72,70 68,73" fill="#c0c8d8"/>
-            <!-- Contactor/Relay block -->
             <rect x="72" y="54" width="44" height="32" rx="2" fill="none" stroke="#e8523a" stroke-width="1.2"/>
             <text x="94" y="68" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="5" fill="#e8523a">RELAY</text>
             <text x="94" y="78" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="4" fill="#e8523a">PreC+Main</text>
-            <!-- Arrow 2 -->
             <line x1="116" y1="70" x2="132" y2="70" stroke="#c0c8d8" stroke-width="1"/>
             <polygon points="132,67 136,70 132,73" fill="#c0c8d8"/>
-            <!-- Motor Controller -->
             <rect x="136" y="48" width="54" height="44" rx="2" fill="none" stroke="#5ec26a" stroke-width="1.2"/>
             <text x="163" y="64" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="5" fill="#5ec26a">MOTOR</text>
             <text x="163" y="73" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="5" fill="#5ec26a">CTRL</text>
             <text x="163" y="82" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="4" fill="#5ec26a">ZS-X11H</text>
-            <!-- Arrow 3 -->
             <line x1="190" y1="70" x2="206" y2="70" stroke="#c0c8d8" stroke-width="1"/>
             <polygon points="206,67 210,70 206,73" fill="#c0c8d8"/>
-            <!-- Motor -->
             <rect x="210" y="54" width="44" height="32" rx="2" fill="none" stroke="#f5c842" stroke-width="1.2"/>
             <circle cx="232" cy="70" r="10" fill="none" stroke="#f5c842" stroke-width="1"/>
             <text x="232" y="73" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="5" fill="#f5c842">BLDC</text>
-            <!-- RasPi box top -->
             <rect x="136" y="12" width="54" height="24" rx="2" fill="none" stroke="#9b7be8" stroke-width="1"/>
             <text x="163" y="22" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="5" fill="#9b7be8">RasPi</text>
             <text x="163" y="31" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="4" fill="#9b7be8">PWM 20kHz</text>
-            <!-- RasPi down-arrow to ctrl -->
             <line x1="163" y1="36" x2="163" y2="48" stroke="#9b7be8" stroke-width="0.8" stroke-dasharray="3,2"/>
             <polygon points="160,48 163,52 166,48" fill="#9b7be8"/>
-            <!-- Hall sensors label -->
             <text x="232" y="100" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="4" fill="#c0c8d8">H1 H2 H3</text>
             <line x1="222" y1="86" x2="222" y2="96" stroke="#c0c8d8" stroke-width="0.7"/>
             <line x1="232" y1="86" x2="232" y2="96" stroke="#c0c8d8" stroke-width="0.7"/>
             <line x1="242" y1="86" x2="242" y2="96" stroke="#c0c8d8" stroke-width="0.7"/>
-            <!-- Bottom labels -->
             <text x="30" y="106" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="4" fill="#4a90d9">Energy</text>
             <text x="94" y="106" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="4" fill="#e8523a">Safety</text>
             <text x="163" y="106" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="4" fill="#5ec26a">Intelligence</text>
             <text x="232" y="106" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="4" fill="#f5c842">Motion</text>
-            <!-- Top title -->
             <text x="140" y="135" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="4.5" fill="rgba(192,200,216,0.5)" letter-spacing="2">EV CART — ELECTRICAL SYSTEM OVERVIEW</text>
           </svg>
         </div>
         <div class="card-body">
           <p class="card-section-tag">Electrical / Mechatronics</p>
-          <h3 class="card-title">EV Go-Kart — Prof. Stinson</h3>
+          <h3 class="card-title">EV Go-Kart Design + Build</h3>
           <div class="card-tags">
             <span class="card-tag">EV Systems</span>
             <span class="card-tag">Raspberry Pi</span>
@@ -560,14 +558,14 @@ h1.hero-name em { font-style: normal; color: var(--red); display: block; }
           <p class="card-desc">
             Built a complete <strong>electric go-kart drivetrain</strong> with BLDC motors, Raspberry Pi PWM control, active precharge contactor logic, and a custom Molex wire harness. Covered battery fundamentals (SOC, BMS cell balancing), Hall-effect commutation, and Python embedded control loops.
           </p>
-          <a href="E49C__Cart_Wiring_Harness.pdf" target="_blank" class="btn btn-outline btn-sm">Wiring Diagram →</a>
+          <a href="E49C__Cart_Wiring_Harness.pdf" target="_blank" download class="btn btn-outline btn-sm" style="display:flex;justify-content:center;text-align:center;">Wiring Diagram →</a>
         </div>
       </div>
 
       <div class="project-card reveal">
         <div class="card-callout">07</div>
         <div class="card-img-wrap">
-          <img src="HMC Logo.png" alt="Amphibious Bicycle" onerror="this.parentNode.classList.add('hatch-bg');this.style.display='none'">
+          <img src="bikeassembly.jpg" alt="Amphibious Bicycle" onerror="this.parentNode.classList.add('hatch-bg');this.style.display='none'">
         </div>
         <div class="card-body">
           <p class="card-section-tag">Mechanical Design</p>
@@ -580,7 +578,7 @@ h1.hero-name em { font-style: normal; color: var(--red); display: block; }
           <p class="card-desc">
             Designed and built a human-powered <strong>amphibious bicycle</strong> capable of <strong>4 m/s on land</strong> and <strong>0.5 m/s in water</strong>. Six 10 ft PVC pontoons integrated onto a 700cc frame; waterwheel rear drive and front-wheel rudder steering for dual-domain mobility.
           </p>
-          <a href="https://sites.google.com/g.hmc.edu/engr177finalproject/requirements-specifications?authuser=0" target="_blank" class="btn btn-outline btn-sm">View Project Site →</a>
+          <a href="https://sites.google.com/g.hmc.edu/engr177finalproject/requirements-specifications?authuser=0" target="_blank" class="btn btn-outline btn-sm" style="display:flex;justify-content:center;text-align:center;">View Project Site →</a>
         </div>
       </div>
 
