@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>W.Zambrano — Engineering Calculator</title>
+  <!-- Reuse your existing blueprint styles -->
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:ital,wght@0,300;0,400;0,600;0,700;1,400&family=Crimson+Pro:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+  <link href="blueprint.css" rel="stylesheet">
+</head>
+<body>
+
+  <!-- 1. The Login Screen (matches your drop.html structure) -->
+  <div id="login-screen">
+    <div class="login-box-wrapper" style="margin: 60px auto;">
+      <div class="login-box">
+        <div class="login-header">
+          <span class="login-header-title">Authentication Required</span>
+        </div>
+        <div class="login-body">
+          <div class="form-group">
+            <label class="form-label">Username</label>
+            <input type="text" id="login-username" class="form-input">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Password</label>
+            <input type="password" id="login-password" class="form-input">
+          </div>
+          <button class="btn btn-solid btn-full" id="login-btn" onclick="doLogin()">Authenticate</button>
+          <div id="login-error" style="display:none; color:var(--red); margin-top:10px;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. The Protected App Screen -->
+  <div id="app-screen" style="display:none; max-width: 1200px; margin: 0 auto; padding: 40px;">
+    <h1 class="dwg-title">Engineering Calculator</h1>
+    
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+      <!-- Material Selector -->
+      <div style="border: 2px solid var(--ink); padding: 20px;">
+        <h2 style="font-size: 1rem; color: var(--red); margin-bottom: 16px;">Material Selector</h2>
+        <select id="material-select" class="form-input" onchange="updateMaterial()">
+          <option value="steel_a36">Structural Steel (A36)</option>
+          <option value="al_6061">Aluminum (6061-T6)</option>
+          <option value="ti_6al">Titanium (Ti-6Al-4V)</option>
+          <option value="delrin">Delrin/Acetal</option>
+        </select>
+        <div id="material-specs" style="margin-top: 16px; font-size: 0.7rem; line-height: 1.8;">
+          <!-- Specs will populate here -->
+        </div>
+      </div>
+
+      <!-- Beam Deflection -->
+      <div style="border: 2px solid var(--ink); padding: 20px;">
+        <h2 style="font-size: 1rem; color: var(--blue); margin-bottom: 16px;">Beam Analysis</h2>
+        <select id="beam-type" class="form-input" style="margin-bottom: 12px;">
+          <option value="cantilever_point">Cantilever (Point Load at End)</option>
+          <option value="simply_uniform">Simply Supported (Uniform Load)</option>
+        </select>
+        <button class="btn btn-solid" onclick="calculateBeam()">Run Analysis</button>
+        <div id="beam-result" style="margin-top: 16px; font-size: 0.7rem; font-weight: bold;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Load your existing auth and logic script -->
+  <script src="app.js"></script>
+  <script src="calc.js"></script>
+</body>
+</html>
