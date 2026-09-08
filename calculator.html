@@ -94,7 +94,7 @@
         <div class="login-body">
           <div class="form-group">
             <label class="form-label">Material</label>
-            <select id="material-select" class="form-input" onchange="updateMaterial()"></select>
+            <select id="material-select" class="form-input material-dropdown" onchange="updateMaterial()"></select>
           </div>
           <div class="spec-block">
             <div class="spec-block-header">Properties</div>
@@ -323,6 +323,73 @@
         <table class="cheat-table">
           <tr><td class="eq">Re = ρvD / μ</td><td>Reynolds number</td><td class="notes">Re &lt; 2300 laminar (pipe flow)</td></tr>
           <tr><td class="eq">ΔP = f(L/D)(ρv²/2)</td><td>Darcy-Weisbach pressure drop</td><td class="notes">f = friction factor</td></tr>
+        </table>
+      </div>
+
+      <div class="cheat-section">
+        <p class="cheat-section-title">Basic Electrical</p>
+        <table class="cheat-table">
+          <tr><td class="eq">V = IR</td><td>Ohm's Law</td><td class="notes">V = volts, I = amps, R = ohms</td></tr>
+          <tr><td class="eq">P = VI = I²R = V²/R</td><td>Electrical power</td><td class="notes">P in watts</td></tr>
+          <tr><td class="eq">R_series = R₁+R₂+...</td><td>Series resistance</td><td class="notes"></td></tr>
+          <tr><td class="eq">1/R_parallel = Σ(1/Rᵢ)</td><td>Parallel resistance</td><td class="notes"></td></tr>
+          <tr><td class="eq">E = ½CV²</td><td>Energy stored in a capacitor</td><td class="notes">C in farads</td></tr>
+          <tr><td class="eq">τ = RC</td><td>RC time constant</td><td class="notes">time to ~63% charge/discharge</td></tr>
+          <tr><td class="eq">T_motor = kₜ·I</td><td>DC motor torque</td><td class="notes">kₜ = torque constant</td></tr>
+        </table>
+      </div>
+
+      <div class="cheat-section">
+        <p class="cheat-section-title">Fasteners — Metric Thread Reference</p>
+        <table class="cheat-table">
+          <tr><td class="eq">M3 × 0.5</td><td>Tap drill Ø 2.5 mm</td><td class="notes">clearance drill Ø 3.4 mm</td></tr>
+          <tr><td class="eq">M4 × 0.7</td><td>Tap drill Ø 3.3 mm</td><td class="notes">clearance drill Ø 4.5 mm</td></tr>
+          <tr><td class="eq">M5 × 0.8</td><td>Tap drill Ø 4.2 mm</td><td class="notes">clearance drill Ø 5.5 mm</td></tr>
+          <tr><td class="eq">M6 × 1.0</td><td>Tap drill Ø 5.0 mm</td><td class="notes">clearance drill Ø 6.6 mm</td></tr>
+          <tr><td class="eq">M8 × 1.25</td><td>Tap drill Ø 6.8 mm</td><td class="notes">clearance drill Ø 9.0 mm</td></tr>
+          <tr><td class="eq">M10 × 1.5</td><td>Tap drill Ø 8.5 mm</td><td class="notes">clearance drill Ø 11.0 mm</td></tr>
+          <tr><td class="eq">M12 × 1.75</td><td>Tap drill Ø 10.2 mm</td><td class="notes">clearance drill Ø 13.5 mm</td></tr>
+        </table>
+        <p class="cheat-note">Tap drill ≈ major Ø − pitch. Rule of thumb for ~75% thread engagement, adequate for most non-critical joints.</p>
+      </div>
+
+      <div class="cheat-section">
+        <p class="cheat-section-title">Recommended Factors of Safety</p>
+        <table class="cheat-table">
+          <tr><td class="eq">1.25 – 1.5</td><td>Static load, ductile material, load well known</td><td class="notes">high-confidence analysis</td></tr>
+          <tr><td class="eq">1.5 – 2.0</td><td>Static load, ductile material, typical design</td><td class="notes">general machine parts</td></tr>
+          <tr><td class="eq">2.0 – 2.5</td><td>Static load, brittle material</td><td class="notes">or uncertain loading</td></tr>
+          <tr><td class="eq">2.5 – 4.0</td><td>Dynamic/repeated loading</td><td class="notes">fatigue-prone joints</td></tr>
+          <tr><td class="eq">4.0 +</td><td>Shock or impact loading</td><td class="notes">or high consequence of failure</td></tr>
+        </table>
+      </div>
+
+      <div class="cheat-section">
+        <p class="cheat-section-title">GD&amp;T Quick Reference</p>
+        <table class="cheat-table">
+          <tr><td class="eq">⏤ Straightness</td><td>Form</td><td class="notes">no datum required</td></tr>
+          <tr><td class="eq">⏥ Flatness</td><td>Form</td><td class="notes">no datum required</td></tr>
+          <tr><td class="eq">○ Circularity</td><td>Form</td><td class="notes">no datum required</td></tr>
+          <tr><td class="eq">⌭ Cylindricity</td><td>Form</td><td class="notes">no datum required</td></tr>
+          <tr><td class="eq">∥ Parallelism</td><td>Orientation</td><td class="notes">references a datum</td></tr>
+          <tr><td class="eq">⊥ Perpendicularity</td><td>Orientation</td><td class="notes">references a datum</td></tr>
+          <tr><td class="eq">∠ Angularity</td><td>Orientation</td><td class="notes">references a datum</td></tr>
+          <tr><td class="eq">⌖ Position</td><td>Location</td><td class="notes">true position of a feature</td></tr>
+          <tr><td class="eq">◎ Concentricity</td><td>Location</td><td class="notes">rarely used — position preferred</td></tr>
+          <tr><td class="eq">⌰ Runout</td><td>Runout</td><td class="notes">circular or total</td></tr>
+        </table>
+      </div>
+
+      <div class="cheat-section">
+        <p class="cheat-section-title">Unit Conversions</p>
+        <table class="cheat-table">
+          <tr><td class="eq">1 in = 25.4 mm</td><td>Length</td><td class="notes"></td></tr>
+          <tr><td class="eq">1 lbf = 4.448 N</td><td>Force</td><td class="notes"></td></tr>
+          <tr><td class="eq">1 psi = 6.895 kPa</td><td>Pressure / stress</td><td class="notes">1 ksi = 6.895 MPa</td></tr>
+          <tr><td class="eq">1 lbf·in = 0.113 N·m</td><td>Torque / moment</td><td class="notes">1 lbf·ft = 1.356 N·m</td></tr>
+          <tr><td class="eq">1 hp = 745.7 W</td><td>Power</td><td class="notes"></td></tr>
+          <tr><td class="eq">1 BTU = 1055 J</td><td>Energy</td><td class="notes"></td></tr>
+          <tr><td class="eq">°F = °C × 9/5 + 32</td><td>Temperature</td><td class="notes"></td></tr>
         </table>
       </div>
     </div>

@@ -58,7 +58,15 @@ table.cheat-table tr { border-bottom: 1px solid var(--line); }
 table.cheat-table tr:last-child { border-bottom: none; }
 table.cheat-table td { padding: 7px 10px; text-align: left; vertical-align: top; color: var(--ink-dim); }
 table.cheat-table td.eq { color: var(--ink); font-weight: 600; white-space: nowrap; letter-spacing: 0.02em; }
-table.cheat-table td.notes { color: var(--ink-faint); font-size: 0.6rem; }
+table.cheat-table td.notes { color: var(--ink-dim); font-size: 0.62rem; opacity: 0.85; }
+
+.cheat-note {
+  font-size: 0.62rem;
+  color: var(--ink-dim);
+  line-height: 1.7;
+  padding: 10px 0 4px;
+}
+.cheat-note strong { color: var(--ink); }
 
 @media (max-width: 720px) {
   table.cheat-table td.eq { white-space: normal; }

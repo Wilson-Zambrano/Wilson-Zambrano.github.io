@@ -18,6 +18,7 @@ const materials = {
 function updateMaterial() {
   const key = document.getElementById('material-select').value;
   const mat = materials[key];
+  if (!mat) return; // options not populated yet
   document.getElementById('material-specs').innerHTML = `
     <strong>Young's Modulus (E):</strong> ${mat.youngs_modulus} GPa<br>
     <strong>Shear Modulus (G):</strong> ${mat.shear_modulus} GPa<br>
@@ -315,8 +316,8 @@ function calcSpring() {
 // INIT
 // ============================================================
 document.addEventListener('DOMContentLoaded', () => {
-  updateMaterial();
   populateMaterialDropdowns();
+  updateMaterial();
   onBeamTypeChange();
   onSectionChange();
 });
