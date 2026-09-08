@@ -28,6 +28,10 @@
         <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:inline;vertical-align:middle;margin-right:4px;"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
         <span>Portfolio Terminal</span>
       </a>
+      <a href="calculator.html" class="btn btn-outline" style="padding: 6px 12px; font-size: 0.5rem; text-decoration: none;">
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:inline;vertical-align:middle;margin-right:4px;"><rect x="4" y="4" width="16" height="16" rx="2" ry="2"/><rect x="8" y="8" width="3" height="3"/><rect x="13" y="8" width="3" height="3"/><rect x="8" y="13" width="3" height="3"/><rect x="13" y="13" width="3" height="3"/></svg>
+        <span>Calculator</span>
+      </a>
       <button id="top-logout-btn" onclick="doLogout()" class="btn btn-outline" style="display:none; padding: 6px 12px; font-size: 0.5rem; border-color: var(--red); color: var(--red);">
         <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:inline;vertical-align:middle;margin-right:4px;"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
         Logout
@@ -192,7 +196,7 @@
 </footer>
 
 <div id="status-bar">
-  <div class="status-cell"><span class="status-dot offline" id="status-dot"></span><span id="status-text">System <strong>Locked</strong></span></div>
+  <div class="status-cell"><span class="status-dot" id="status-dot"></span><span id="status-text">System <strong>Active</strong></span></div>
   <div class="status-cell">Mode: <strong id="status-mode">File</strong></div>
   <div class="status-cell">Items: <strong id="status-count">—</strong></div>
 </div>
