@@ -163,18 +163,22 @@ function runBeamSimulation() {
 
   drawBeamSVG(bc.diagram, xs, ys, L, yMax, beamType, posA);
 
-  const fosColor = fos < 1.2 ? 'var(--red, #c0392b)' : (fos < 2 ? '#b8860b' : 'var(--blue, #2c5f8a)');
+  const fosColor = fos < 1.2 ? 'var(--red)' : (fos < 2 ? 'var(--gold)' : 'var(--green)');
   document.getElementById('beam-result').innerHTML = `
-    <div class="result-grid">
-      <div><span class="result-label">Load case:</span> ${result.loadDesc}</div>
-      <div><span class="result-label">Section:</span> I = ${I.toFixed(0)} mm⁴, c = ${c.toFixed(2)} mm</div>
-      <div><span class="result-label">Max moment:</span> ${(Mmax / 1000).toFixed(2)} N·m</div>
-      <div><span class="result-label">Max bending stress:</span> ${sigmaMax.toFixed(1)} MPa</div>
-      <div><span class="result-label">Max deflection:</span> ${yMax.toFixed(3)} mm (${(yMax / L * 100).toFixed(2)}% of span)</div>
-      <div><span class="result-label">Factor of safety (yield):</span> <span style="color:${fosColor}; font-weight:700;">${fos.toFixed(2)}</span></div>
-    </div>
+    <div class="spec-row"><span class="spec-key">Load Case</span><span class="spec-val">${result.loadDesc}</span></div>
+    <div class="spec-row"><span class="spec-key">Section</span><span class="spec-val">I = ${I.toFixed(0)} mm⁴, c = ${c.toFixed(2)} mm</span></div>
+    <div class="spec-row"><span class="spec-key">Max Moment</span><span class="spec-val">${(Mmax / 1000).toFixed(2)} N·m</span></div>
+    <div class="spec-row"><span class="spec-key">Max Bending Stress</span><span class="spec-val">${sigmaMax.toFixed(1)} MPa</span></div>
+    <div class="spec-row"><span class="spec-key">Max Deflection</span><span class="spec-val">${yMax.toFixed(3)} mm (${(yMax / L * 100).toFixed(2)}%)</span></div>
+    <div class="spec-row"><span class="spec-key">Factor of Safety</span><span class="spec-val" style="color:${fosColor};">${fos.toFixed(2)}</span></div>
     <div class="formula-line">${bc.formula}</div>
   `;
+  setStatusResult(`FoS ${fos.toFixed(2)}`);
+}
+
+function setStatusResult(text) {
+  const el = document.getElementById('status-result');
+  if (el) el.textContent = text;
 }
 
 function drawBeamSVG(diagramType, xs, ys, L, yMaxAbs, beamType, posA) {
@@ -190,16 +194,16 @@ function drawBeamSVG(diagramType, xs, ys, L, yMaxAbs, beamType, posA) {
 
   let supports = '';
   if (diagramType === 'fixed_free') {
-    supports += `<line x1="${xMargin}" y1="${baseY - 45}" x2="${xMargin}" y2="${baseY + 45}" stroke="var(--ink,#1a1a2e)" stroke-width="4"/>`;
+    supports += `<line x1="${xMargin}" y1="${baseY - 45}" x2="${xMargin}" y2="${baseY + 45}" stroke="var(--ink)" stroke-width="4"/>`;
     for (let i = 0; i < 6; i++) {
       const hy = baseY - 40 + i * 16;
-      supports += `<line x1="${xMargin}" y1="${hy}" x2="${xMargin - 12}" y2="${hy + 14}" stroke="var(--ink,#1a1a2e)" stroke-width="2"/>`;
+      supports += `<line x1="${xMargin}" y1="${hy}" x2="${xMargin - 12}" y2="${hy + 14}" stroke="var(--ink)" stroke-width="2"/>`;
     }
   } else if (diagramType === 'pin_pin') {
     const rx = xMargin, lx = W - xMargin;
     [rx, lx].forEach(px => {
-      supports += `<polygon points="${px},${baseY} ${px - 12},${baseY + 22} ${px + 12},${baseY + 22}" fill="none" stroke="var(--ink,#1a1a2e)" stroke-width="2"/>`;
-      supports += `<line x1="${px - 18}" y1="${baseY + 22}" x2="${px + 18}" y2="${baseY + 22}" stroke="var(--ink,#1a1a2e)" stroke-width="2"/>`;
+      supports += `<polygon points="${px},${baseY} ${px - 12},${baseY + 22} ${px + 12},${baseY + 22}" fill="none" stroke="var(--ink)" stroke-width="2"/>`;
+      supports += `<line x1="${px - 18}" y1="${baseY + 22}" x2="${px + 18}" y2="${baseY + 22}" stroke="var(--ink)" stroke-width="2"/>`;
     });
   }
 
@@ -223,20 +227,20 @@ function drawBeamSVG(diagramType, xs, ys, L, yMaxAbs, beamType, posA) {
 
   const svg = `
   <svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" style="width:100%; height:auto; font-family:'IBM Plex Mono',monospace;">
-    <line x1="${xMargin}" y1="${baseY}" x2="${W - xMargin}" y2="${baseY}" stroke="var(--ink,#1a1a2e)" stroke-width="1" stroke-dasharray="4,3" opacity="0.4"/>
+    <line x1="${xMargin}" y1="${baseY}" x2="${W - xMargin}" y2="${baseY}" stroke="var(--ink)" stroke-width="1" stroke-dasharray="4,3" opacity="0.4"/>
     ${supports}
     ${loadArrows}
-    <polyline points="${pathPts}" fill="none" stroke="var(--red,#c0392b)" stroke-width="2.5"/>
-    <text x="${xMargin}" y="${H - 15}" font-size="11" fill="var(--ink,#1a1a2e)">0</text>
-    <text x="${W - xMargin - 30}" y="${H - 15}" font-size="11" fill="var(--ink,#1a1a2e)">L = ${L} mm</text>
-    <text x="${W/2 - 60}" y="${H - 15}" font-size="11" fill="var(--red,#c0392b)">deflection ×${exaggeration.toFixed(0)} (exaggerated)</text>
+    <polyline points="${pathPts}" fill="none" stroke="var(--red)" stroke-width="2.5"/>
+    <text x="${xMargin}" y="${H - 15}" font-size="11" fill="var(--ink)">0</text>
+    <text x="${W - xMargin - 30}" y="${H - 15}" font-size="11" fill="var(--ink)">L = ${L} mm</text>
+    <text x="${W/2 - 60}" y="${H - 15}" font-size="11" fill="var(--red)">deflection ×${exaggeration.toFixed(0)} (exaggerated)</text>
   </svg>`;
   document.getElementById('beam-svg-container').innerHTML = svg;
 }
 
 function arrow(x1, y1, x2, y2) {
-  return `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="var(--blue,#2c5f8a)" stroke-width="2"/>
-    <polygon points="${x2},${y2} ${x2-5},${y2-9} ${x2+5},${y2-9}" fill="var(--blue,#2c5f8a)"/>`;
+  return `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="var(--blue)" stroke-width="2"/>
+    <polygon points="${x2},${y2} ${x2-5},${y2-9} ${x2+5},${y2-9}" fill="var(--blue)"/>`;
 }
 
 function onBeamTypeChange() {
@@ -263,7 +267,9 @@ function calcStress() {
   const sigma = F / A;
   const fos = mat.yield_strength / sigma;
   document.getElementById('stress-result').innerHTML =
-    `σ = F/A = <strong>${sigma.toFixed(2)} MPa</strong> &nbsp;|&nbsp; FoS vs yield = <strong>${fos.toFixed(2)}</strong>`;
+    `<div class="spec-row"><span class="spec-key">Stress σ</span><span class="spec-val">${sigma.toFixed(2)} MPa</span></div>
+     <div class="spec-row"><span class="spec-key">Factor of Safety</span><span class="spec-val">${fos.toFixed(2)}</span></div>`;
+  setStatusResult(`σ ${sigma.toFixed(1)} MPa`);
 }
 
 function calcTorsion() {
@@ -277,7 +283,9 @@ function calcTorsion() {
   const tau = (T * (d / 2)) / J;
   const theta = (T * Lg) / (G * J); // radians
   document.getElementById('torsion-result').innerHTML =
-    `τ_max = <strong>${tau.toFixed(2)} MPa</strong> &nbsp;|&nbsp; θ = <strong>${(theta * 180 / Math.PI).toFixed(3)}°</strong> over ${Lg} mm`;
+    `<div class="spec-row"><span class="spec-key">Shear Stress τ</span><span class="spec-val">${tau.toFixed(2)} MPa</span></div>
+     <div class="spec-row"><span class="spec-key">Angle of Twist</span><span class="spec-val">${(theta * 180 / Math.PI).toFixed(3)}° over ${Lg} mm</span></div>`;
+  setStatusResult(`τ ${tau.toFixed(1)} MPa`);
 }
 
 function calcBuckling() {
@@ -286,7 +294,9 @@ function calcBuckling() {
   const Lg = parseFloat(document.getElementById('buckle-L').value);
   const K = parseFloat(document.getElementById('buckle-K').value);
   const Pcr = (Math.PI ** 2 * E * I) / Math.pow(K * Lg, 2);
-  document.getElementById('buckle-result').innerHTML = `P_cr = <strong>${Pcr.toFixed(1)} N</strong> (${(Pcr/1000).toFixed(2)} kN)`;
+  document.getElementById('buckle-result').innerHTML =
+    `<div class="spec-row"><span class="spec-key">Critical Load</span><span class="spec-val">${Pcr.toFixed(1)} N (${(Pcr/1000).toFixed(2)} kN)</span></div>`;
+  setStatusResult(`P_cr ${(Pcr/1000).toFixed(2)} kN`);
 }
 
 function calcSpring() {
@@ -296,7 +306,9 @@ function calcSpring() {
   const D = parseFloat(document.getElementById('spring-D').value);
   const n = parseFloat(document.getElementById('spring-n').value);
   const k = (G * Math.pow(d, 4)) / (8 * Math.pow(D, 3) * n);
-  document.getElementById('spring-result').innerHTML = `k = <strong>${k.toFixed(2)} N/mm</strong>`;
+  document.getElementById('spring-result').innerHTML =
+    `<div class="spec-row"><span class="spec-key">Spring Rate k</span><span class="spec-val">${k.toFixed(2)} N/mm</span></div>`;
+  setStatusResult(`k ${k.toFixed(2)} N/mm`);
 }
 
 // ============================================================

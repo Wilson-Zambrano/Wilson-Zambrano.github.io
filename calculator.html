@@ -1,193 +1,260 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>W.Zambrano — Engineering Calculator</title>
-  <!-- Reuse your existing blueprint styles -->
-  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:ital,wght@0,300;0,400;0,600;0,700;1,400&family=Crimson+Pro:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
-  <link href="blueprint.css" rel="stylesheet">
-  <link href="calculator-additions.css" rel="stylesheet">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>W.Zambrano — Engineering Calculator</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:ital,wght@0,300;0,400;0,600;0,700;1,400&family=Crimson+Pro:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<link href="blueprint.css" rel="stylesheet">
+<link href="calculator-additions.css" rel="stylesheet">
 </head>
 <body>
 
-  <!-- 1. The Login Screen (matches your drop.html structure) -->
+<div class="reg-mark tl"></div><div class="reg-mark tr"></div><div class="reg-mark bl"></div><div class="reg-mark br"></div>
+
+<header id="header">
+  <nav class="nav-inner">
+    <div style="display: flex; align-items: center;">
+      <a href="index.html" class="nav-brand" title="Return to Portfolio">W<span>.</span>Zambrano</a>
+    </div>
+
+    <div style="display: flex; align-items: center; gap: 12px; margin-left: auto; padding-right: 16px; border-right: 1px solid var(--line-bold);">
+      <a href="terminal.html" class="btn btn-outline" style="padding: 6px 12px; font-size: 0.5rem; text-decoration: none;">
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:inline;vertical-align:middle;margin-right:4px;"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        <span>Portfolio Terminal</span>
+      </a>
+      <a href="drop.html" class="btn btn-outline" style="padding: 6px 12px; font-size: 0.5rem; text-decoration: none;">
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:inline;vertical-align:middle;margin-right:4px;"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        <span>Drop Zone</span>
+      </a>
+      <button id="top-logout-btn" onclick="doLogout()" class="btn btn-outline" style="display:none; padding: 6px 12px; font-size: 0.5rem; border-color: var(--red); color: var(--red);">
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:inline;vertical-align:middle;margin-right:4px;"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        Logout
+      </button>
+    </div>
+
+    <div class="nav-doc-ref" style="margin-left: 0;">
+      <div class="nav-doc-cell" style="border-left: none;"><span class="nav-doc-key">Document</span><span class="nav-doc-val">WZ-CALC-001</span></div>
+      <div class="nav-doc-cell"><span class="nav-doc-key">Access</span><span class="nav-doc-val" id="nav-access-val" style="color:var(--red);">● Locked</span></div>
+    </div>
+  </nav>
+</header>
+
+<main>
   <div id="login-screen">
-    <div class="login-box-wrapper" style="margin: 60px auto;">
+    <div style="margin-bottom:28px; width: 100%; max-width: 480px;">
+      <p class="dwg-section-label">Document WZ-CALC-001 Rev A — Design Reference Station</p>
+      <h1 class="dwg-title">Calculator</h1>
+    </div>
+    <div class="login-box-wrapper">
       <div class="login-box">
         <div class="login-header">
           <span class="login-header-title">Authentication Required</span>
+          <span class="login-doc-ref">WZ-CALC / AUTH</span>
         </div>
         <div class="login-body">
+          <p class="login-eyebrow">Secure Access — JWT Protected</p>
+          <div id="login-error">Invalid credentials. Access denied.</div>
           <div class="form-group">
             <label class="form-label">Username</label>
-            <input type="text" id="login-username" class="form-input">
+            <input type="text" id="login-username" class="form-input" placeholder="username" autocomplete="username">
           </div>
           <div class="form-group">
             <label class="form-label">Password</label>
-            <input type="password" id="login-password" class="form-input">
+            <input type="password" id="login-password" class="form-input" placeholder="••••••••" autocomplete="current-password">
           </div>
-          <button class="btn btn-solid btn-full" id="login-btn" onclick="doLogin()">Authenticate</button>
-          <div id="login-error" style="display:none; color:var(--red); margin-top:10px;"></div>
+          <button class="btn btn-solid btn-full" id="login-btn" onclick="doLogin()">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg> Authenticate
+          </button>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- 2. The Protected App Screen -->
-  <div id="app-screen" style="display:none; max-width: 1000px; margin: 0 auto; padding: 40px;">
-    <h1 class="dwg-title">Engineering Calculator</h1>
+  <div id="app-screen" style="display:none;">
+    <div style="margin-bottom:28px;">
+      <p class="dwg-section-label">Document WZ-CALC-001 Rev A — Design Reference Station</p>
+      <h1 class="dwg-title">Engineering Calculator</h1>
+    </div>
 
-    <div class="tab-bar">
-      <button class="tab-btn active" data-tab="materials" onclick="switchTab('materials')">01 — Materials</button>
-      <button class="tab-btn" data-tab="beam" onclick="switchTab('beam')">02 — Beam Simulator</button>
-      <button class="tab-btn" data-tab="calcs" onclick="switchTab('calcs')">03 — Design Calcs</button>
-      <button class="tab-btn" data-tab="cheat" onclick="switchTab('cheat')">04 — Cheat Sheet</button>
+    <div class="input-mode-toggle" style="margin-bottom: 24px;">
+      <button class="mode-btn active" data-tab="materials" onclick="switchTab('materials')">Materials</button>
+      <button class="mode-btn" data-tab="beam" onclick="switchTab('beam')">Beam Simulator</button>
+      <button class="mode-btn" data-tab="calcs" onclick="switchTab('calcs')">Design Calcs</button>
+      <button class="mode-btn" data-tab="cheat" onclick="switchTab('cheat')">Cheat Sheet</button>
     </div>
 
     <!-- TAB: MATERIALS -->
     <div class="tab-panel active" id="tab-materials">
-      <div class="calc-card">
-        <h2 style="color:var(--red);">Material Selector</h2>
-        <select id="material-select" class="form-input" onchange="updateMaterial()">
-        </select>
-        <div id="material-specs" style="margin-top: 16px; font-size: 0.75rem; line-height: 1.8;"></div>
+      <div class="login-box">
+        <div class="login-header">
+          <span class="login-header-title">Material Selector</span>
+          <span class="login-doc-ref">WZ-CALC / MAT</span>
+        </div>
+        <div class="login-body">
+          <div class="form-group">
+            <label class="form-label">Material</label>
+            <select id="material-select" class="form-input" onchange="updateMaterial()"></select>
+          </div>
+          <div class="spec-block">
+            <div class="spec-block-header">Properties</div>
+            <div id="material-specs"></div>
+          </div>
+        </div>
       </div>
     </div>
 
     <!-- TAB: BEAM SIMULATOR -->
     <div class="tab-panel" id="tab-beam">
-      <div class="calc-card">
-        <h2 style="color:var(--blue);">Beam Deflection Simulator</h2>
-
-        <div class="field-row">
-          <div class="form-group">
-            <label>Load Case</label>
-            <select id="beam-type" class="form-input" onchange="onBeamTypeChange()">
-              <option value="cantilever_point">Cantilever — Point Load at End</option>
-              <option value="cantilever_udl">Cantilever — Uniform Load</option>
-              <option value="ss_point_center">Simply Supported — Point Load at Center</option>
-              <option value="ss_point_offset">Simply Supported — Point Load Off-Center</option>
-              <option value="ss_udl">Simply Supported — Uniform Load</option>
-            </select>
+      <div class="login-box">
+        <div class="login-header">
+          <span class="login-header-title">Beam Deflection Simulator</span>
+          <span class="login-doc-ref">WZ-CALC / BEAM</span>
+        </div>
+        <div class="login-body">
+          <div class="field-row">
+            <div class="form-group">
+              <label class="form-label">Load Case</label>
+              <select id="beam-type" class="form-input" onchange="onBeamTypeChange()">
+                <option value="cantilever_point">Cantilever — Point Load at End</option>
+                <option value="cantilever_udl">Cantilever — Uniform Load</option>
+                <option value="ss_point_center">Simply Supported — Point Load at Center</option>
+                <option value="ss_point_offset">Simply Supported — Point Load Off-Center</option>
+                <option value="ss_udl">Simply Supported — Uniform Load</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Material</label>
+              <select id="beam-material" class="form-input material-dropdown"></select>
+            </div>
           </div>
-          <div class="form-group">
-            <label>Material</label>
-            <select id="beam-material" class="form-input material-dropdown"></select>
+
+          <div class="field-row">
+            <div class="form-group">
+              <label class="form-label">Length L (mm)</label>
+              <input type="number" id="beam-length" class="form-input" value="500">
+            </div>
+            <div class="form-group">
+              <label class="form-label" id="load-label">Load P (N)</label>
+              <input type="number" id="beam-load" class="form-input" value="200">
+            </div>
+            <div class="form-group" id="position-field" style="display:none;">
+              <label class="form-label">Position a (mm from left)</label>
+              <input type="number" id="beam-position" class="form-input" value="150">
+            </div>
+          </div>
+
+          <div class="field-row">
+            <div class="form-group">
+              <label class="form-label">Cross-Section</label>
+              <select id="cross-section" class="form-input" onchange="onSectionChange()">
+                <option value="rect">Rectangular</option>
+                <option value="circle">Circular (solid)</option>
+                <option value="tube">Circular (tube)</option>
+                <option value="custom">Custom I</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="field-row" id="section-rect">
+            <div class="form-group"><label class="form-label">Width b (mm)</label><input type="number" id="dim-b" class="form-input" value="20"></div>
+            <div class="form-group"><label class="form-label">Height h (mm)</label><input type="number" id="dim-h" class="form-input" value="10"></div>
+          </div>
+          <div class="field-row" id="section-circle" style="display:none;">
+            <div class="form-group"><label class="form-label">Diameter d (mm)</label><input type="number" id="dim-d" class="form-input" value="15"></div>
+          </div>
+          <div class="field-row" id="section-tube" style="display:none;">
+            <div class="form-group"><label class="form-label">Outer Ø (mm)</label><input type="number" id="dim-do" class="form-input" value="20"></div>
+            <div class="form-group"><label class="form-label">Inner Ø (mm)</label><input type="number" id="dim-di" class="form-input" value="16"></div>
+          </div>
+          <div class="field-row" id="section-custom" style="display:none;">
+            <div class="form-group"><label class="form-label">I (mm⁴)</label><input type="number" id="dim-I" class="form-input" value="1667"></div>
+            <div class="form-group"><label class="form-label">c (mm)</label><input type="number" id="dim-c" class="form-input" value="5"></div>
+          </div>
+
+          <button class="btn btn-solid" onclick="runBeamSimulation()">Run Simulation</button>
+
+          <div class="spec-block" style="margin-top:16px;">
+            <div class="spec-block-header">Deflection Plot — Exaggerated Scale</div>
+            <div id="beam-svg-container"></div>
+          </div>
+          <div class="spec-block" style="margin-top:12px;">
+            <div class="spec-block-header">Result</div>
+            <div id="beam-result"></div>
           </div>
         </div>
-
-        <div class="field-row">
-          <div class="form-group">
-            <label>Length L (mm)</label>
-            <input type="number" id="beam-length" class="form-input" value="500">
-          </div>
-          <div class="form-group">
-            <label id="load-label">Load P (N)</label>
-            <input type="number" id="beam-load" class="form-input" value="200">
-          </div>
-          <div class="form-group" id="position-field" style="display:none;">
-            <label>Position a (mm from left)</label>
-            <input type="number" id="beam-position" class="form-input" value="150">
-          </div>
-        </div>
-
-        <div class="field-row">
-          <div class="form-group">
-            <label>Cross-Section</label>
-            <select id="cross-section" class="form-input" onchange="onSectionChange()">
-              <option value="rect">Rectangular</option>
-              <option value="circle">Circular (solid)</option>
-              <option value="tube">Circular (tube)</option>
-              <option value="custom">Custom I</option>
-            </select>
-          </div>
-        </div>
-
-        <div class="field-row" id="section-rect">
-          <div class="form-group"><label>Width b (mm)</label><input type="number" id="dim-b" class="form-input" value="20"></div>
-          <div class="form-group"><label>Height h (mm)</label><input type="number" id="dim-h" class="form-input" value="10"></div>
-        </div>
-        <div class="field-row" id="section-circle" style="display:none;">
-          <div class="form-group"><label>Diameter d (mm)</label><input type="number" id="dim-d" class="form-input" value="15"></div>
-        </div>
-        <div class="field-row" id="section-tube" style="display:none;">
-          <div class="form-group"><label>Outer Ø (mm)</label><input type="number" id="dim-do" class="form-input" value="20"></div>
-          <div class="form-group"><label>Inner Ø (mm)</label><input type="number" id="dim-di" class="form-input" value="16"></div>
-        </div>
-        <div class="field-row" id="section-custom" style="display:none;">
-          <div class="form-group"><label>I (mm⁴)</label><input type="number" id="dim-I" class="form-input" value="1667"></div>
-          <div class="form-group"><label>c (mm)</label><input type="number" id="dim-c" class="form-input" value="5"></div>
-        </div>
-
-        <button class="btn btn-solid" onclick="runBeamSimulation()">Run Simulation</button>
-
-        <div id="beam-svg-container"></div>
-        <div id="beam-result"></div>
       </div>
     </div>
 
     <!-- TAB: DESIGN CALCS -->
     <div class="tab-panel" id="tab-calcs">
-      <div class="calc-card">
-        <h2 style="color:var(--red);">Axial Stress &amp; Factor of Safety</h2>
-        <div class="field-row">
-          <div class="form-group"><label>Force F (N)</label><input type="number" id="stress-F" class="form-input" value="5000"></div>
-          <div class="form-group"><label>Area A (mm²)</label><input type="number" id="stress-A" class="form-input" value="100"></div>
-          <div class="form-group"><label>Material</label><select id="stress-material" class="form-input material-dropdown"></select></div>
-        </div>
-        <button class="btn btn-solid" onclick="calcStress()">Calculate</button>
-        <div id="stress-result" style="margin-top:12px; font-size:0.8rem;"></div>
-      </div>
-
-      <div class="calc-card">
-        <h2 style="color:var(--blue);">Shaft Torsion</h2>
-        <div class="field-row">
-          <div class="form-group"><label>Torque T (N·mm)</label><input type="number" id="torsion-T" class="form-input" value="15000"></div>
-          <div class="form-group"><label>Shaft Ø d (mm)</label><input type="number" id="torsion-d" class="form-input" value="20"></div>
-          <div class="form-group"><label>Length L (mm)</label><input type="number" id="torsion-L" class="form-input" value="300"></div>
-          <div class="form-group"><label>Material</label><select id="torsion-material" class="form-input material-dropdown"></select></div>
-        </div>
-        <button class="btn btn-solid" onclick="calcTorsion()">Calculate</button>
-        <div id="torsion-result" style="margin-top:12px; font-size:0.8rem;"></div>
-      </div>
-
-      <div class="calc-card">
-        <h2 style="color:var(--red);">Column Buckling (Euler)</h2>
-        <div class="field-row">
-          <div class="form-group"><label>Material</label><select id="buckle-material" class="form-input material-dropdown"></select></div>
-          <div class="form-group"><label>I (mm⁴)</label><input type="number" id="buckle-I" class="form-input" value="8333"></div>
-          <div class="form-group"><label>Length L (mm)</label><input type="number" id="buckle-L" class="form-input" value="800"></div>
-          <div class="form-group"><label>End condition K</label>
-            <select id="buckle-K" class="form-input">
-              <option value="2">Fixed-Free (K=2)</option>
-              <option value="1" selected>Pinned-Pinned (K=1)</option>
-              <option value="0.7">Fixed-Pinned (K=0.7)</option>
-              <option value="0.5">Fixed-Fixed (K=0.5)</option>
-            </select>
+      <div class="login-box" style="margin-bottom:20px;">
+        <div class="login-header"><span class="login-header-title">Axial Stress &amp; Factor of Safety</span><span class="login-doc-ref">WZ-CALC / AXL</span></div>
+        <div class="login-body">
+          <div class="field-row">
+            <div class="form-group"><label class="form-label">Force F (N)</label><input type="number" id="stress-F" class="form-input" value="5000"></div>
+            <div class="form-group"><label class="form-label">Area A (mm²)</label><input type="number" id="stress-A" class="form-input" value="100"></div>
+            <div class="form-group"><label class="form-label">Material</label><select id="stress-material" class="form-input material-dropdown"></select></div>
           </div>
+          <button class="btn btn-solid" onclick="calcStress()">Calculate</button>
+          <div class="spec-block" style="margin-top:12px;"><div class="spec-block-header">Result</div><div id="stress-result"></div></div>
         </div>
-        <button class="btn btn-solid" onclick="calcBuckling()">Calculate</button>
-        <div id="buckle-result" style="margin-top:12px; font-size:0.8rem;"></div>
       </div>
 
-      <div class="calc-card">
-        <h2 style="color:var(--blue);">Helical Spring Rate</h2>
-        <div class="field-row">
-          <div class="form-group"><label>Wire Ø d (mm)</label><input type="number" id="spring-d" class="form-input" value="2"></div>
-          <div class="form-group"><label>Coil Ø D (mm)</label><input type="number" id="spring-D" class="form-input" value="18"></div>
-          <div class="form-group"><label>Active coils n</label><input type="number" id="spring-n" class="form-input" value="10"></div>
-          <div class="form-group"><label>Material</label><select id="spring-material" class="form-input material-dropdown"></select></div>
+      <div class="login-box" style="margin-bottom:20px;">
+        <div class="login-header"><span class="login-header-title">Shaft Torsion</span><span class="login-doc-ref">WZ-CALC / TOR</span></div>
+        <div class="login-body">
+          <div class="field-row">
+            <div class="form-group"><label class="form-label">Torque T (N·mm)</label><input type="number" id="torsion-T" class="form-input" value="15000"></div>
+            <div class="form-group"><label class="form-label">Shaft Ø d (mm)</label><input type="number" id="torsion-d" class="form-input" value="20"></div>
+            <div class="form-group"><label class="form-label">Length L (mm)</label><input type="number" id="torsion-L" class="form-input" value="300"></div>
+            <div class="form-group"><label class="form-label">Material</label><select id="torsion-material" class="form-input material-dropdown"></select></div>
+          </div>
+          <button class="btn btn-solid" onclick="calcTorsion()">Calculate</button>
+          <div class="spec-block" style="margin-top:12px;"><div class="spec-block-header">Result</div><div id="torsion-result"></div></div>
         </div>
-        <button class="btn btn-solid" onclick="calcSpring()">Calculate</button>
-        <div id="spring-result" style="margin-top:12px; font-size:0.8rem;"></div>
+      </div>
+
+      <div class="login-box" style="margin-bottom:20px;">
+        <div class="login-header"><span class="login-header-title">Column Buckling (Euler)</span><span class="login-doc-ref">WZ-CALC / BKL</span></div>
+        <div class="login-body">
+          <div class="field-row">
+            <div class="form-group"><label class="form-label">Material</label><select id="buckle-material" class="form-input material-dropdown"></select></div>
+            <div class="form-group"><label class="form-label">I (mm⁴)</label><input type="number" id="buckle-I" class="form-input" value="8333"></div>
+            <div class="form-group"><label class="form-label">Length L (mm)</label><input type="number" id="buckle-L" class="form-input" value="800"></div>
+            <div class="form-group"><label class="form-label">End Condition K</label>
+              <select id="buckle-K" class="form-input">
+                <option value="2">Fixed-Free (K=2)</option>
+                <option value="1" selected>Pinned-Pinned (K=1)</option>
+                <option value="0.7">Fixed-Pinned (K=0.7)</option>
+                <option value="0.5">Fixed-Fixed (K=0.5)</option>
+              </select>
+            </div>
+          </div>
+          <button class="btn btn-solid" onclick="calcBuckling()">Calculate</button>
+          <div class="spec-block" style="margin-top:12px;"><div class="spec-block-header">Result</div><div id="buckle-result"></div></div>
+        </div>
+      </div>
+
+      <div class="login-box">
+        <div class="login-header"><span class="login-header-title">Helical Spring Rate</span><span class="login-doc-ref">WZ-CALC / SPR</span></div>
+        <div class="login-body">
+          <div class="field-row">
+            <div class="form-group"><label class="form-label">Wire Ø d (mm)</label><input type="number" id="spring-d" class="form-input" value="2"></div>
+            <div class="form-group"><label class="form-label">Coil Ø D (mm)</label><input type="number" id="spring-D" class="form-input" value="18"></div>
+            <div class="form-group"><label class="form-label">Active Coils n</label><input type="number" id="spring-n" class="form-input" value="10"></div>
+            <div class="form-group"><label class="form-label">Material</label><select id="spring-material" class="form-input material-dropdown"></select></div>
+          </div>
+          <button class="btn btn-solid" onclick="calcSpring()">Calculate</button>
+          <div class="spec-block" style="margin-top:12px;"><div class="spec-block-header">Result</div><div id="spring-result"></div></div>
+        </div>
       </div>
     </div>
 
     <!-- TAB: CHEAT SHEET -->
     <div class="tab-panel" id="tab-cheat">
       <div class="cheat-section">
-        <h3>Stress &amp; Strain</h3>
+        <p class="cheat-section-title">Stress &amp; Strain</p>
         <table class="cheat-table">
           <tr><td class="eq">σ = F / A</td><td>Normal (axial) stress</td><td class="notes">A = cross-sectional area</td></tr>
           <tr><td class="eq">ε = δ / L</td><td>Normal strain</td><td class="notes">δ = elongation, L = original length</td></tr>
@@ -200,7 +267,7 @@
       </div>
 
       <div class="cheat-section">
-        <h3>Bending &amp; Beams</h3>
+        <p class="cheat-section-title">Bending &amp; Beams</p>
         <table class="cheat-table">
           <tr><td class="eq">σ = Mc / I</td><td>Bending stress</td><td class="notes">c = distance to outer fiber</td></tr>
           <tr><td class="eq">I_rect = bh³/12</td><td>Rectangular section</td><td class="notes">about centroidal axis</td></tr>
@@ -215,7 +282,7 @@
       </div>
 
       <div class="cheat-section">
-        <h3>Torsion</h3>
+        <p class="cheat-section-title">Torsion</p>
         <table class="cheat-table">
           <tr><td class="eq">τ = Tr / J</td><td>Shear stress in circular shaft</td><td class="notes">r = radius to point of interest</td></tr>
           <tr><td class="eq">θ = TL / GJ</td><td>Angle of twist</td><td class="notes">θ in radians</td></tr>
@@ -226,7 +293,7 @@
       </div>
 
       <div class="cheat-section">
-        <h3>Columns &amp; Buckling</h3>
+        <p class="cheat-section-title">Columns &amp; Buckling</p>
         <table class="cheat-table">
           <tr><td class="eq">P_cr = π²EI / (KL)²</td><td>Euler critical buckling load</td><td class="notes">K: 2 (fixed-free), 1 (pinned-pinned), 0.7 (fixed-pinned), 0.5 (fixed-fixed)</td></tr>
           <tr><td class="eq">σ_cr = π²E / (KL/r)²</td><td>Critical stress</td><td class="notes">r = radius of gyration = √(I/A)</td></tr>
@@ -234,7 +301,7 @@
       </div>
 
       <div class="cheat-section">
-        <h3>Pressure Vessels &amp; Fasteners</h3>
+        <p class="cheat-section-title">Pressure Vessels &amp; Fasteners</p>
         <table class="cheat-table">
           <tr><td class="eq">σ_hoop = Pr / t</td><td>Thin-wall hoop stress</td><td class="notes">valid for t &lt; r/10</td></tr>
           <tr><td class="eq">σ_long = Pr / 2t</td><td>Thin-wall longitudinal stress</td><td class="notes"></td></tr>
@@ -243,7 +310,7 @@
       </div>
 
       <div class="cheat-section">
-        <h3>Springs &amp; Dynamics</h3>
+        <p class="cheat-section-title">Springs &amp; Dynamics</p>
         <table class="cheat-table">
           <tr><td class="eq">k = Gd⁴ / 8D³n</td><td>Helical compression spring rate</td><td class="notes">D = mean coil diameter, n = active coils</td></tr>
           <tr><td class="eq">f_n = (1/2π)√(k/m)</td><td>Natural frequency, spring-mass</td><td class="notes">f_n in Hz</td></tr>
@@ -252,7 +319,7 @@
       </div>
 
       <div class="cheat-section">
-        <h3>Fluids</h3>
+        <p class="cheat-section-title">Fluids</p>
         <table class="cheat-table">
           <tr><td class="eq">Re = ρvD / μ</td><td>Reynolds number</td><td class="notes">Re &lt; 2300 laminar (pipe flow)</td></tr>
           <tr><td class="eq">ΔP = f(L/D)(ρv²/2)</td><td>Darcy-Weisbach pressure drop</td><td class="notes">f = friction factor</td></tr>
@@ -260,16 +327,39 @@
       </div>
     </div>
   </div>
+</main>
 
-  <script>
-    function switchTab(tab) {
-      document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
-      document.querySelectorAll('.tab-panel').forEach(p => p.classList.toggle('active', p.id === 'tab-' + tab));
-    }
-  </script>
+<footer>
+  <div class="title-block">
+    <div class="tb-cell"><span class="tb-key">Drawing No.</span><span class="tb-val">WZ-CALC-001-A</span></div>
+    <div class="tb-cell"><span class="tb-key">Title</span><span class="tb-val">Engineering Design Calculator</span></div>
+    <div class="tb-cell"><span class="tb-key">Drawn By</span><span class="tb-val">Wilson A. Zambrano</span></div>
+    <div class="tb-cell"><span class="tb-key">Rev</span><span class="tb-val">A — Beam Sim &amp; Reference Sheet</span></div>
+    <div class="tb-cell"><span class="tb-key">Year</span><span class="tb-val" id="footer-year"></span></div>
+  </div>
+</footer>
 
-  <!-- Load your existing auth and logic script -->
-  <script src="app.js"></script>
-  <script src="calc.js"></script>
+<div id="status-bar">
+  <div class="status-cell"><span class="status-dot" id="status-dot"></span><span id="status-text">System <strong>Active</strong></span></div>
+  <div class="status-cell">Mode: <strong id="status-mode">Materials</strong></div>
+  <div class="status-cell">Last Result: <strong id="status-result">—</strong></div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+  function switchTab(tab) {
+    document.querySelectorAll('.mode-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.toggle('active', p.id === 'tab-' + tab));
+    const labels = { materials: 'Materials', beam: 'Beam Simulator', calcs: 'Design Calcs', cheat: 'Cheat Sheet' };
+    document.getElementById('status-mode').textContent = labels[tab];
+  }
+  const fy = document.getElementById('footer-year');
+  if (fy && !fy.textContent) fy.textContent = new Date().getFullYear();
+</script>
+
+<!-- Load your existing auth and logic script -->
+<script src="app.js"></script>
+<script src="calc.js"></script>
 </body>
 </html>

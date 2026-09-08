@@ -1,0 +1,65 @@
+/* Calculator-specific additions — layers on top of blueprint.css.
+   Reuses .login-box, .spec-block, .input-mode-toggle/.mode-btn,
+   .form-group/.form-input from the core design system. */
+
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+
+.field-row {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 4px;
+}
+.field-row .form-group { flex: 1; min-width: 150px; }
+
+#material-specs, #beam-result, #stress-result, #torsion-result, #buckle-result, #spring-result {
+  padding: 10px 12px;
+  font-size: 0.65rem;
+  line-height: 1.9;
+  color: var(--ink);
+}
+#material-specs strong { color: var(--ink-dim); font-weight: 600; }
+
+.formula-line {
+  margin-top: 4px;
+  padding-top: 10px;
+  border-top: 1px solid var(--line);
+  font-size: 0.6rem;
+  color: var(--ink-dim);
+  letter-spacing: 0.02em;
+}
+
+#beam-svg-container { padding: 12px; }
+#beam-svg-container svg { width: 100%; height: auto; }
+
+/* ── CHEAT SHEET ── */
+.cheat-section { margin-bottom: 28px; }
+.cheat-section-title {
+  font-size: 0.55rem;
+  text-transform: uppercase;
+  letter-spacing: 0.25em;
+  color: var(--red);
+  margin-bottom: 10px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--line-bold);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.cheat-section-title::before { content: ''; display: inline-block; width: 16px; height: 1px; background: var(--red); }
+
+table.cheat-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.68rem;
+}
+table.cheat-table tr { border-bottom: 1px solid var(--line); }
+table.cheat-table tr:last-child { border-bottom: none; }
+table.cheat-table td { padding: 7px 10px; text-align: left; vertical-align: top; color: var(--ink-dim); }
+table.cheat-table td.eq { color: var(--ink); font-weight: 600; white-space: nowrap; letter-spacing: 0.02em; }
+table.cheat-table td.notes { color: var(--ink-faint); font-size: 0.6rem; }
+
+@media (max-width: 720px) {
+  table.cheat-table td.eq { white-space: normal; }
+}
