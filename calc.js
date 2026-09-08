@@ -313,6 +313,454 @@ function calcSpring() {
 }
 
 // ============================================================
+// GEAR / PULLEY POWER TRANSMISSION
+// ============================================================
+function onPTModeChange() {
+  const mode = document.getElementById('pt-mode').value;
+  document.getElementById('pt-gear-fields').style.display = mode === 'gear' ? 'flex' : 'none';
+  document.getElementById('pt-pulley-fields').style.display = mode === 'pulley' ? 'flex' : 'none';
+}
+
+function calcPowerTransmission() {
+  const mode = document.getElementById('pt-mode').value;
+  const rpmIn = parseFloat(document.getElementById('pt-rpm-in').value);
+  const torqueIn = parseFloat(document.getElementById('pt-torque-in').value); // N*m
+  const eff = parseFloat(document.getElementById('pt-eff').value) / 100;
+
+  let ratio, driverDesc;
+  if (mode === 'gear') {
+    const Nin = parseFloat(document.getElementById('pt-n-in').value);
+    const Nout = parseFloat(document.getElementById('pt-n-out').value);
+    ratio = Nout / Nin;
+    driverDesc = `${Nin}T → ${Nout}T (${(1/ratio).toFixed(2)}:1 speed reduction)`;
+  } else {
+    const Din = parseFloat(document.getElementById('pt-d-in').value);
+    const Dout = parseFloat(document.getElementById('pt-d-out').value);
+    ratio = Dout / Din;
+    driverDesc = `Ø${Din} → Ø${Dout} mm (${(1/ratio).toFixed(2)}:1 speed reduction)`;
+  }
+
+  const rpmOut = rpmIn / ratio;
+  const torqueOut = torqueIn * ratio * eff;
+  const omegaIn = (rpmIn * 2 * Math.PI) / 60;
+  const omegaOut = (rpmOut * 2 * Math.PI) / 60;
+  const powerIn = torqueIn * omegaIn; // W
+  const powerOut = torqueOut * omegaOut; // W
+
+  let belt = '';
+  if (mode === 'pulley') {
+    const Din = parseFloat(document.getElementById('pt-d-in').value);
+    const beltSpeed = omegaIn * (Din / 2 / 1000); // m/s
+    belt = `<div class="spec-row"><span class="spec-key">Belt Speed</span><span class="spec-val">${beltSpeed.toFixed(2)} m/s</span></div>`;
+  }
+
+  document.getElementById('pt-result').innerHTML = `
+    <div class="spec-row"><span class="spec-key">Train</span><span class="spec-val">${driverDesc}</span></div>
+    <div class="spec-row"><span class="spec-key">Output Speed</span><span class="spec-val">${rpmOut.toFixed(1)} RPM</span></div>
+    <div class="spec-row"><span class="spec-key">Output Torque</span><span class="spec-val">${torqueOut.toFixed(3)} N·m</span></div>
+    ${belt}
+    <div class="spec-row"><span class="spec-key">Power In / Out</span><span class="spec-val">${powerIn.toFixed(1)} W / ${powerOut.toFixed(1)} W</span></div>
+  `;
+  setStatusResult(`${rpmOut.toFixed(0)} RPM out`);
+}
+
+// ============================================================
+// PRESS FIT / INTERFERENCE FIT (thick-wall Lamé, same material)
+// ============================================================
+function calcPressFit() {
+  const matKey = document.getElementById('fit-material').value;
+  const mat = materials[matKey];
+  const E = mat.youngs_modulus * 1000; // MPa
+
+  const D = parseFloat(document.getElementById('fit-D').value);
+  const Do = parseFloat(document.getElementById('fit-Do').value);
+  const Di = parseFloat(document.getElementById('fit-Di').value);
+  const deltaD = parseFloat(document.getElementById('fit-delta').value);
+  const L = parseFloat(document.getElementById('fit-L').value);
+  const mu = parseFloat(document.getElementById('fit-mu').value);
+
+  const R = D / 2, b = Do / 2, a = Di / 2;
+  const delta = deltaD / 2; // radial interference
+
+  const p = ((E * delta) / (2 * R)) * ((b * b - R * R) * (R * R - a * a)) / (R * R * (b * b - a * a));
+  const sigmaHubInner = (p * (b * b + R * R)) / (b * b - R * R);
+  const sigmaShaftOuter = a === 0 ? -p : -(p * (R * R + a * a)) / (R * R - a * a);
+  const fosHub = mat.yield_strength / sigmaHubInner;
+  const Tmax = (2 * Math.PI * R * R * L * p * mu) / 1000; // N*m
+  const Faxial = 2 * Math.PI * R * L * p * mu; // N
+
+  const fosColor = fosHub < 1.2 ? 'var(--red)' : (fosHub < 2 ? 'var(--gold)' : 'var(--green)');
+  document.getElementById('fit-result').innerHTML = `
+    <div class="spec-row"><span class="spec-key">Contact Pressure p</span><span class="spec-val">${p.toFixed(2)} MPa</span></div>
+    <div class="spec-row"><span class="spec-key">Hub Hoop Stress (bore)</span><span class="spec-val">${sigmaHubInner.toFixed(1)} MPa</span></div>
+    <div class="spec-row"><span class="spec-key">Shaft Surface Stress</span><span class="spec-val">${sigmaShaftOuter.toFixed(1)} MPa (compressive)</span></div>
+    <div class="spec-row"><span class="spec-key">Hub FoS (yield)</span><span class="spec-val" style="color:${fosColor};">${fosHub.toFixed(2)}</span></div>
+    <div class="spec-row"><span class="spec-key">Max Transmissible Torque</span><span class="spec-val">${Tmax.toFixed(2)} N·m</span></div>
+    <div class="spec-row"><span class="spec-key">Axial Press/Pull Force</span><span class="spec-val">${(Faxial/1000).toFixed(2)} kN</span></div>
+    <div class="formula-line">p = Eδ(b²−R²)(R²−a²) / [2R³(b²−a²)] &nbsp;|&nbsp; T = 2πR²Lpμ &nbsp;|&nbsp; F = 2πRLpμ</div>
+  `;
+  setStatusResult(`p = ${p.toFixed(1)} MPa`);
+}
+
+// ============================================================
+// PLOTTING HELPER (shared by all graphs)
+// ============================================================
+function makePlot(xDomain, yDomain, opts = {}) {
+  const W = opts.width || 680, H = opts.height || 320;
+  const margin = opts.margin || { left: 55, right: 20, top: 20, bottom: 40 };
+  const pw = W - margin.left - margin.right;
+  const ph = H - margin.top - margin.bottom;
+  const logX = !!opts.logX, logY = !!opts.logY;
+  const fx = x => logX ? Math.log10(x) : x;
+  const fy = y => logY ? Math.log10(y) : y;
+  const x0 = fx(xDomain[0]), x1 = fx(xDomain[1]);
+  const y0 = fy(yDomain[0]), y1 = fy(yDomain[1]);
+  const sx = x => margin.left + ((fx(x) - x0) / (x1 - x0)) * pw;
+  const sy = y => margin.top + ph - ((fy(y) - y0) / (y1 - y0)) * ph;
+  const axes = `
+    <line x1="${margin.left}" y1="${margin.top + ph}" x2="${margin.left + pw}" y2="${margin.top + ph}" stroke="var(--ink)" stroke-width="1.5"/>
+    <line x1="${margin.left}" y1="${margin.top}" x2="${margin.left}" y2="${margin.top + ph}" stroke="var(--ink)" stroke-width="1.5"/>`;
+  return { W, H, margin, pw, ph, sx, sy, axes };
+}
+
+function svgWrap(W, H, inner) {
+  return `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" style="width:100%; height:auto; font-family:'IBM Plex Mono',monospace;">${inner}</svg>`;
+}
+
+function label(x, y, text, opts = {}) {
+  const size = opts.size || 10, color = opts.color || 'var(--ink)', anchor = opts.anchor || 'start';
+  return `<text x="${x}" y="${y}" font-size="${size}" fill="${color}" text-anchor="${anchor}">${text}</text>`;
+}
+
+// ============================================================
+// GRAPHS & DIAGRAMS
+// ============================================================
+function onGraphTypeChange() {
+  const type = document.getElementById('graph-type').value;
+  ['mohr', 'stress_strain', 'hardening', 'motor', 'fatigue'].forEach(t => {
+    document.getElementById(`graph-fields-${t}`).style.display = (t === type) ? 'flex' : 'none';
+  });
+}
+
+function drawGraph() {
+  const type = document.getElementById('graph-type').value;
+  const titles = {
+    mohr: "Mohr's Circle — Principal Stresses",
+    stress_strain: 'Stress-Strain Curve',
+    hardening: 'Steel Hardening Sequence (schematic — not to time/temp scale)',
+    motor: 'Motor Torque–Speed Curve',
+    fatigue: 'Fatigue (S-N) Curve — Estimated per Shigley Method'
+  };
+  document.getElementById('graph-title').textContent = titles[type];
+  ({ mohr: drawMohrCircle, stress_strain: drawStressStrain, hardening: drawHardening,
+     motor: drawMotorCurve, fatigue: drawFatigueCurve })[type]();
+}
+
+function drawMohrCircle() {
+  const sx = parseFloat(document.getElementById('mohr-sx').value);
+  const sy = parseFloat(document.getElementById('mohr-sy').value);
+  const txy = parseFloat(document.getElementById('mohr-txy').value);
+  const C = (sx + sy) / 2;
+  const R = Math.sqrt(Math.pow((sx - sy) / 2, 2) + txy * txy);
+  const s1 = C + R, s2 = C - R;
+  const thetaP = 0.5 * Math.atan2(2 * txy, sx - sy) * 180 / Math.PI;
+
+  const maxAbs = Math.max(Math.abs(s1), Math.abs(s2), Math.abs(txy), 1) * 1.35;
+  const plot = makePlot([-maxAbs, maxAbs], [-maxAbs, maxAbs], { width: 480, height: 480, margin: { left: 55, right: 25, top: 20, bottom: 40 } });
+  const rPx = plot.sx(C + R) - plot.sx(C);
+
+  const inner = `
+    ${plot.axes}
+    <circle cx="${plot.sx(C)}" cy="${plot.sy(0)}" r="${rPx}" fill="none" stroke="var(--red)" stroke-width="2"/>
+    <line x1="${plot.sx(sx)}" y1="${plot.sy(txy)}" x2="${plot.sx(sy)}" y2="${plot.sy(-txy)}" stroke="var(--blue)" stroke-width="1.5"/>
+    <circle cx="${plot.sx(sx)}" cy="${plot.sy(txy)}" r="3.5" fill="var(--blue)"/>
+    <circle cx="${plot.sx(sy)}" cy="${plot.sy(-txy)}" r="3.5" fill="var(--blue)"/>
+    <circle cx="${plot.sx(s1)}" cy="${plot.sy(0)}" r="4" fill="var(--red)"/>
+    <circle cx="${plot.sx(s2)}" cy="${plot.sy(0)}" r="4" fill="var(--red)"/>
+    ${label(plot.sx(sx) + 6, plot.sy(txy) - 6, 'X (σx,τxy)', { size: 9, color: 'var(--blue)' })}
+    ${label(plot.sx(sy) + 6, plot.sy(-txy) + 12, 'Y (σy,−τxy)', { size: 9, color: 'var(--blue)' })}
+    ${label(plot.sx(s1), plot.sy(0) - 10, `σ1=${s1.toFixed(1)}`, { size: 9, color: 'var(--red)', anchor: 'middle' })}
+    ${label(plot.sx(s2), plot.sy(0) - 10, `σ2=${s2.toFixed(1)}`, { size: 9, color: 'var(--red)', anchor: 'middle' })}
+    ${label(plot.margin.left + plot.pw, plot.margin.top + plot.ph + 16, 'σ (MPa)', { size: 10, anchor: 'end' })}
+    ${label(plot.margin.left, plot.margin.top + 10, 'τ (MPa)', { size: 10 })}
+  `;
+  document.getElementById('graph-svg-container').innerHTML = svgWrap(plot.W, plot.H, inner);
+  document.getElementById('graph-result').innerHTML = `
+    <div class="spec-row"><span class="spec-key">σ1 (max principal)</span><span class="spec-val">${s1.toFixed(2)} MPa</span></div>
+    <div class="spec-row"><span class="spec-key">σ2 (min principal)</span><span class="spec-val">${s2.toFixed(2)} MPa</span></div>
+    <div class="spec-row"><span class="spec-key">τmax (in-plane)</span><span class="spec-val">${R.toFixed(2)} MPa</span></div>
+    <div class="spec-row"><span class="spec-key">Principal angle θp</span><span class="spec-val">${thetaP.toFixed(1)}°</span></div>
+    <div class="formula-line">σ1,2 = (σx+σy)/2 ± √[((σx−σy)/2)² + τxy²] &nbsp;|&nbsp; θp = ½·atan2(2τxy, σx−σy)</div>
+  `;
+  setStatusResult(`σ1 ${s1.toFixed(0)} MPa`);
+}
+
+function drawStressStrain() {
+  const matKey = document.getElementById('ss-material').value;
+  const mat = materials[matKey];
+  const E = mat.youngs_modulus * 1000;
+  const sy = mat.yield_strength, suts = mat.uts;
+  const epsUTS = parseFloat(document.getElementById('ss-eps-uts').value) / 100;
+  const epsF = parseFloat(document.getElementById('ss-eps-f').value) / 100;
+  const epsY = sy / E;
+
+  const pts = [];
+  for (let i = 0; i <= 10; i++) { const e = (epsY * i) / 10; pts.push({ x: e, y: E * e }); }
+  for (let i = 1; i <= 30; i++) {
+    const t = i / 30, e = epsY + (epsUTS - epsY) * t;
+    pts.push({ x: e, y: sy + (suts - sy) * (1 - Math.pow(1 - t, 2)) });
+  }
+  const sFrac = suts * 0.85;
+  for (let i = 1; i <= 15; i++) {
+    const t = i / 15, e = epsUTS + (epsF - epsUTS) * t;
+    pts.push({ x: e, y: suts + (sFrac - suts) * t });
+  }
+
+  const plot = makePlot([0, epsF * 1.05], [0, suts * 1.15]);
+  const pathPts = pts.map(pt => `${plot.sx(pt.x).toFixed(1)},${plot.sy(pt.y).toFixed(1)}`).join(' ');
+  const inner = `
+    ${plot.axes}
+    <polyline points="${pathPts}" fill="none" stroke="var(--red)" stroke-width="2.5"/>
+    <circle cx="${plot.sx(epsY)}" cy="${plot.sy(sy)}" r="3.5" fill="var(--blue)"/>
+    <circle cx="${plot.sx(epsUTS)}" cy="${plot.sy(suts)}" r="3.5" fill="var(--blue)"/>
+    <circle cx="${plot.sx(epsF)}" cy="${plot.sy(sFrac)}" r="3.5" fill="var(--ink)"/>
+    ${label(plot.sx(epsY) + 6, plot.sy(sy) - 6, 'Yield', { size: 9, color: 'var(--blue)' })}
+    ${label(plot.sx(epsUTS) + 6, plot.sy(suts) - 6, 'UTS', { size: 9, color: 'var(--blue)' })}
+    ${label(plot.sx(epsF) - 6, plot.sy(sFrac) + 14, 'Fracture', { size: 9, anchor: 'end' })}
+    ${label(plot.margin.left + plot.pw, plot.margin.top + plot.ph + 16, 'strain ε', { size: 10, anchor: 'end' })}
+    ${label(plot.margin.left, plot.margin.top + 10, 'σ (MPa)', { size: 10 })}
+  `;
+  document.getElementById('graph-svg-container').innerHTML = svgWrap(plot.W, plot.H, inner);
+  document.getElementById('graph-result').innerHTML = `
+    <div class="spec-row"><span class="spec-key">Material</span><span class="spec-val">${mat.name}</span></div>
+    <div class="spec-row"><span class="spec-key">Yield Strain εy</span><span class="spec-val">${(epsY * 100).toFixed(3)}%</span></div>
+    <div class="spec-row"><span class="spec-key">Elastic Modulus E</span><span class="spec-val">${mat.youngs_modulus} GPa</span></div>
+    <div class="formula-line">Elastic region: σ=Eε. Plastic region beyond εy is an idealized ease-out curve to UTS, then to fracture — illustrative, not measured data.</div>
+  `;
+  setStatusResult(`εy ${(epsY*100).toFixed(2)}%`);
+}
+
+function drawHardening() {
+  const Ta = parseFloat(document.getElementById('hard-aust').value);
+  const Tq = parseFloat(document.getElementById('hard-quench').value);
+  const Tt = parseFloat(document.getElementById('hard-temper').value);
+  const room = 25;
+  const pts = [
+    { x: 0, y: room }, { x: 0.6, y: Ta }, { x: 2.2, y: Ta },
+    { x: 2.5, y: Tq }, { x: 3.6, y: Tq },
+    { x: 4.0, y: Tt }, { x: 6.0, y: Tt }, { x: 6.6, y: room }
+  ];
+  const plot = makePlot([0, 7], [Math.min(room, Tq) - 20, Ta * 1.1]);
+  const pathPts = pts.map(pt => `${plot.sx(pt.x).toFixed(1)},${plot.sy(pt.y).toFixed(1)}`).join(' ');
+  const marks = [
+    { x: 1.4, y: Ta, t: 'Austenitize & Soak' },
+    { x: 3.0, y: Tq, t: 'Quench' },
+    { x: 5.0, y: Tt, t: 'Temper & Soak' },
+    { x: 6.6, y: room, t: 'Air Cool' }
+  ];
+  const markSvg = marks.map(m => `
+    <circle cx="${plot.sx(m.x)}" cy="${plot.sy(m.y)}" r="3" fill="var(--red)"/>
+    ${label(plot.sx(m.x), plot.sy(m.y) - 10, m.t, { size: 9, anchor: 'middle', color: 'var(--red)' })}
+  `).join('');
+  const inner = `
+    ${plot.axes}
+    <polyline points="${pathPts}" fill="none" stroke="var(--blue)" stroke-width="2.5"/>
+    ${markSvg}
+    ${label(plot.margin.left + plot.pw, plot.margin.top + plot.ph + 16, 'time (schematic)', { size: 10, anchor: 'end' })}
+    ${label(plot.margin.left, plot.margin.top + 10, 'Temp (°C)', { size: 10 })}
+  `;
+  document.getElementById('graph-svg-container').innerHTML = svgWrap(plot.W, plot.H, inner);
+  document.getElementById('graph-result').innerHTML = `
+    <div class="spec-row"><span class="spec-key">Austenitize</span><span class="spec-val">${Ta} °C</span></div>
+    <div class="spec-row"><span class="spec-key">Quench To</span><span class="spec-val">${Tq} °C</span></div>
+    <div class="spec-row"><span class="spec-key">Temper At</span><span class="spec-val">${Tt} °C</span></div>
+    <div class="formula-line">Schematic process cycle only — real hardening curves (CCT/TTT) are alloy-specific and depend on cooling rate, not shown here.</div>
+  `;
+  setStatusResult(`Temper ${Tt}°C`);
+}
+
+function drawMotorCurve() {
+  const Tstall = parseFloat(document.getElementById('motor-tstall').value);
+  const rpmNL = parseFloat(document.getElementById('motor-rpm').value);
+  const n = 40;
+  const torquePts = [], powerPts = [];
+  let Pmax = 0;
+  for (let i = 0; i <= n; i++) {
+    const rpm = (rpmNL * i) / n;
+    const T = Tstall * (1 - rpm / rpmNL);
+    const omega = (rpm * 2 * Math.PI) / 60;
+    const P = T * omega;
+    if (P > Pmax) Pmax = P;
+    torquePts.push({ x: rpm, y: T });
+    powerPts.push({ x: rpm, y: P });
+  }
+  const powerScaled = powerPts.map(p => ({ x: p.x, y: (p.y / Pmax) * Tstall }));
+
+  const plot = makePlot([0, rpmNL], [0, Tstall * 1.1]);
+  const tPath = torquePts.map(p => `${plot.sx(p.x).toFixed(1)},${plot.sy(p.y).toFixed(1)}`).join(' ');
+  const pPath = powerScaled.map(p => `${plot.sx(p.x).toFixed(1)},${plot.sy(p.y).toFixed(1)}`).join(' ');
+  const inner = `
+    ${plot.axes}
+    <polyline points="${tPath}" fill="none" stroke="var(--red)" stroke-width="2.5"/>
+    <polyline points="${pPath}" fill="none" stroke="var(--blue)" stroke-width="2" stroke-dasharray="5,4"/>
+    ${label(plot.sx(rpmNL * 0.15), plot.sy(Tstall * 0.85), 'Torque', { size: 10, color: 'var(--red)' })}
+    ${label(plot.sx(rpmNL * 0.55), plot.sy(Tstall * 0.55), 'Power (scaled)', { size: 10, color: 'var(--blue)' })}
+    ${label(plot.margin.left + plot.pw, plot.margin.top + plot.ph + 16, 'Speed (RPM)', { size: 10, anchor: 'end' })}
+    ${label(plot.margin.left, plot.margin.top + 10, 'Torque (N·m)', { size: 10 })}
+  `;
+  document.getElementById('graph-svg-container').innerHTML = svgWrap(plot.W, plot.H, inner);
+  document.getElementById('graph-result').innerHTML = `
+    <div class="spec-row"><span class="spec-key">Stall Torque</span><span class="spec-val">${Tstall} N·m at 0 RPM</span></div>
+    <div class="spec-row"><span class="spec-key">No-Load Speed</span><span class="spec-val">${rpmNL} RPM at 0 N·m</span></div>
+    <div class="spec-row"><span class="spec-key">Peak Power</span><span class="spec-val">${Pmax.toFixed(1)} W at ${(rpmNL/2).toFixed(0)} RPM / ${(Tstall/2).toFixed(2)} N·m</span></div>
+    <div class="formula-line">T(ω) = T_stall(1 − ω/ω_NL) &nbsp;|&nbsp; P = Tω, peaks at half stall torque &amp; half no-load speed (linear DC motor model)</div>
+  `;
+  setStatusResult(`Pmax ${Pmax.toFixed(0)} W`);
+}
+
+function drawFatigueCurve() {
+  const matKey = document.getElementById('fatigue-material').value;
+  const mat = materials[matKey];
+  const Sut = mat.uts;
+  const Se = Sut < 1400 ? 0.5 * Sut : 700;
+  const S1000 = 0.9 * Sut;
+
+  const plot = makePlot([1e3, 1e8], [Se * 0.5, S1000 * 1.15], { logX: true });
+  const pts = [{ x: 1e3, y: S1000 }, { x: 1e6, y: Se }, { x: 1e8, y: Se }];
+  const pathPts = pts.map(p => `${plot.sx(p.x).toFixed(1)},${plot.sy(p.y).toFixed(1)}`).join(' ');
+  const ticks = [1e3, 1e4, 1e5, 1e6, 1e7, 1e8];
+  const tickSvg = ticks.map(t => `
+    <line x1="${plot.sx(t)}" y1="${plot.margin.top + plot.ph}" x2="${plot.sx(t)}" y2="${plot.margin.top + plot.ph + 4}" stroke="var(--ink)"/>
+    ${label(plot.sx(t), plot.margin.top + plot.ph + 16, `10^${Math.log10(t)}`, { size: 9, anchor: 'middle' })}
+  `).join('');
+  const inner = `
+    ${plot.axes}
+    ${tickSvg}
+    <polyline points="${pathPts}" fill="none" stroke="var(--red)" stroke-width="2.5"/>
+    <circle cx="${plot.sx(1e6)}" cy="${plot.sy(Se)}" r="3.5" fill="var(--blue)"/>
+    ${label(plot.sx(1e6) + 8, plot.sy(Se) - 8, `Se ≈ ${Se.toFixed(0)} MPa`, { size: 9, color: 'var(--blue)' })}
+    ${label(plot.margin.left, plot.margin.top + 10, 'S (MPa)', { size: 10 })}
+  `;
+  document.getElementById('graph-svg-container').innerHTML = svgWrap(plot.W, plot.H, inner);
+  document.getElementById('graph-result').innerHTML = `
+    <div class="spec-row"><span class="spec-key">UTS</span><span class="spec-val">${Sut} MPa</span></div>
+    <div class="spec-row"><span class="spec-key">Estimated Endurance Limit Se</span><span class="spec-val">${Se.toFixed(0)} MPa</span></div>
+    <div class="spec-row"><span class="spec-key">Strength at 10³ cycles</span><span class="spec-val">${S1000.toFixed(0)} MPa</span></div>
+    <div class="formula-line">Se ≈ 0.5·Sut (Sut&lt;1400 MPa, else 700 MPa cap) &nbsp;|&nbsp; S(10³)≈0.9·Sut — Shigley rule-of-thumb estimate, not test data.</div>
+  `;
+  setStatusResult(`Se ${Se.toFixed(0)} MPa`);
+}
+
+// ============================================================
+// DIFFERENTIAL EQUATION SOLVERS
+// ============================================================
+function solveLinearODE2() {
+  const a = parseFloat(document.getElementById('ode1-a').value);
+  const b = parseFloat(document.getElementById('ode1-b').value);
+  const c = parseFloat(document.getElementById('ode1-c').value);
+  const y0 = parseFloat(document.getElementById('ode1-y0').value);
+  const v0 = parseFloat(document.getElementById('ode1-v0').value);
+  const tmax = parseFloat(document.getElementById('ode1-tmax').value);
+
+  const disc = b * b - 4 * a * c;
+  let y, formula, caseDesc;
+
+  if (disc > 1e-9) {
+    const r1 = (-b + Math.sqrt(disc)) / (2 * a);
+    const r2 = (-b - Math.sqrt(disc)) / (2 * a);
+    const C2 = (v0 - r1 * y0) / (r2 - r1);
+    const C1 = y0 - C2;
+    y = t => C1 * Math.exp(r1 * t) + C2 * Math.exp(r2 * t);
+    formula = `y(t) = ${C1.toFixed(3)}·e^(${r1.toFixed(3)}t) + ${C2.toFixed(3)}·e^(${r2.toFixed(3)}t)`;
+    caseDesc = `Overdamped — real distinct roots r₁=${r1.toFixed(3)}, r₂=${r2.toFixed(3)}`;
+  } else if (Math.abs(disc) <= 1e-9) {
+    const r = -b / (2 * a);
+    const C1 = y0, C2 = v0 - r * y0;
+    y = t => (C1 + C2 * t) * Math.exp(r * t);
+    formula = `y(t) = (${C1.toFixed(3)} + ${C2.toFixed(3)}t)·e^(${r.toFixed(3)}t)`;
+    caseDesc = `Critically damped — repeated root r=${r.toFixed(3)}`;
+  } else {
+    const alpha = -b / (2 * a);
+    const beta = Math.sqrt(-disc) / (2 * a);
+    const C1 = y0, C2 = (v0 - alpha * y0) / beta;
+    y = t => Math.exp(alpha * t) * (C1 * Math.cos(beta * t) + C2 * Math.sin(beta * t));
+    formula = `y(t) = e^(${alpha.toFixed(3)}t)·[${C1.toFixed(3)}cos(${beta.toFixed(3)}t) + ${C2.toFixed(3)}sin(${beta.toFixed(3)}t)]`;
+    caseDesc = `Underdamped — complex roots ${alpha.toFixed(3)} ± ${beta.toFixed(3)}i`;
+  }
+
+  const n = 100, pts = [];
+  for (let i = 0; i <= n; i++) { const t = (tmax * i) / n; pts.push({ x: t, y: y(t) }); }
+  const yVals = pts.map(p => p.y);
+  const yMax = Math.max(...yVals, 0.01), yMin = Math.min(...yVals, -0.01);
+  const pad = (yMax - yMin) * 0.15 || 1;
+  const plot = makePlot([0, tmax], [yMin - pad, yMax + pad], { width: 680, height: 260 });
+  const pathPts = pts.map(p => `${plot.sx(p.x).toFixed(1)},${plot.sy(p.y).toFixed(1)}`).join(' ');
+  document.getElementById('ode1-svg-container').innerHTML = svgWrap(plot.W, plot.H, `
+    ${plot.axes}
+    <polyline points="${pathPts}" fill="none" stroke="var(--red)" stroke-width="2.5"/>
+    ${label(plot.margin.left + plot.pw, plot.margin.top + plot.ph + 16, 't', { size: 10, anchor: 'end' })}
+    ${label(plot.margin.left, plot.margin.top + 10, 'y(t)', { size: 10 })}
+  `);
+  document.getElementById('ode1-result').innerHTML = `
+    <div class="spec-row"><span class="spec-key">Case</span><span class="spec-val">${caseDesc}</span></div>
+    <div class="spec-row"><span class="spec-key">Solution</span><span class="spec-val">${formula}</span></div>
+  `;
+  setStatusResult(caseDesc.split(' — ')[0]);
+}
+
+function evalExpr(expr, x, y) {
+  const safe = expr.replace(/\^/g, '**');
+  const fn = new Function('x', 'y', 'sin', 'cos', 'tan', 'exp', 'sqrt', 'log', 'abs', 'PI',
+    `return ${safe};`);
+  return fn(x, y, Math.sin, Math.cos, Math.tan, Math.exp, Math.sqrt, Math.log, Math.abs, Math.PI);
+}
+
+function solveODENumeric() {
+  const fnStr = document.getElementById('ode2-fn').value;
+  const x0 = parseFloat(document.getElementById('ode2-x0').value);
+  const y0 = parseFloat(document.getElementById('ode2-y0').value);
+  const xf = parseFloat(document.getElementById('ode2-xf').value);
+  const steps = parseInt(document.getElementById('ode2-steps').value, 10);
+  const h = (xf - x0) / steps;
+
+  let x = x0, y = y0;
+  const pts = [{ x, y }];
+  try {
+    for (let i = 0; i < steps; i++) {
+      const f = (xx, yy) => evalExpr(fnStr, xx, yy);
+      const k1 = f(x, y);
+      const k2 = f(x + h / 2, y + (h / 2) * k1);
+      const k3 = f(x + h / 2, y + (h / 2) * k2);
+      const k4 = f(x + h, y + h * k3);
+      y = y + (h / 6) * (k1 + 2 * k2 + 2 * k3 + k4);
+      x = x + h;
+      pts.push({ x, y });
+    }
+  } catch (e) {
+    document.getElementById('ode2-result').innerHTML = `<div class="spec-row"><span class="spec-key">Error</span><span class="spec-val" style="color:var(--red);">Could not parse f(x,y) — check syntax</span></div>`;
+    return;
+  }
+
+  const yVals = pts.map(p => p.y);
+  const yMax = Math.max(...yVals), yMin = Math.min(...yVals);
+  const pad = (yMax - yMin) * 0.15 || 1;
+  const plot = makePlot([x0, xf], [yMin - pad, yMax + pad], { width: 680, height: 260 });
+  const pathPts = pts.map(p => `${plot.sx(p.x).toFixed(1)},${plot.sy(p.y).toFixed(1)}`).join(' ');
+  document.getElementById('ode2-svg-container').innerHTML = svgWrap(plot.W, plot.H, `
+    ${plot.axes}
+    <polyline points="${pathPts}" fill="none" stroke="var(--blue)" stroke-width="2.5"/>
+    ${label(plot.margin.left + plot.pw, plot.margin.top + plot.ph + 16, 'x', { size: 10, anchor: 'end' })}
+    ${label(plot.margin.left, plot.margin.top + 10, 'y', { size: 10 })}
+  `);
+  document.getElementById('ode2-result').innerHTML = `
+    <div class="spec-row"><span class="spec-key">y(x final)</span><span class="spec-val">${y.toFixed(5)}</span></div>
+    <div class="spec-row"><span class="spec-key">Step size h</span><span class="spec-val">${h.toFixed(4)}</span></div>
+    <div class="formula-line">4th-order Runge-Kutta — works for any f(x,y), linear or nonlinear.</div>
+  `;
+  setStatusResult(`y(${xf})=${y.toFixed(3)}`);
+}
+
+// ============================================================
 // INIT
 // ============================================================
 document.addEventListener('DOMContentLoaded', () => {
@@ -320,4 +768,6 @@ document.addEventListener('DOMContentLoaded', () => {
   updateMaterial();
   onBeamTypeChange();
   onSectionChange();
+  onPTModeChange();
+  onGraphTypeChange();
 });

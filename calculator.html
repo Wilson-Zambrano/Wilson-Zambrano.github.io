@@ -81,6 +81,9 @@
       <button class="mode-btn active" data-tab="materials" onclick="switchTab('materials')">Materials</button>
       <button class="mode-btn" data-tab="beam" onclick="switchTab('beam')">Beam Simulator</button>
       <button class="mode-btn" data-tab="calcs" onclick="switchTab('calcs')">Design Calcs</button>
+      <button class="mode-btn" data-tab="power" onclick="switchTab('power')">Power Transmission</button>
+      <button class="mode-btn" data-tab="graphs" onclick="switchTab('graphs')">Graphs</button>
+      <button class="mode-btn" data-tab="diffeq" onclick="switchTab('diffeq')">Diff Eq / Laplace</button>
       <button class="mode-btn" data-tab="cheat" onclick="switchTab('cheat')">Cheat Sheet</button>
     </div>
 
@@ -247,6 +250,187 @@
           </div>
           <button class="btn btn-solid" onclick="calcSpring()">Calculate</button>
           <div class="spec-block" style="margin-top:12px;"><div class="spec-block-header">Result</div><div id="spring-result"></div></div>
+        </div>
+      </div>
+
+      <div class="login-box" style="margin-top:20px;">
+        <div class="login-header"><span class="login-header-title">Press Fit / Interference Fit</span><span class="login-doc-ref">WZ-CALC / FIT</span></div>
+        <div class="login-body">
+          <p class="cheat-note" style="padding-top:0;">Thick-wall (Lamé) interference fit — assumes shaft and hub are the same material.</p>
+          <div class="field-row">
+            <div class="form-group"><label class="form-label">Material</label><select id="fit-material" class="form-input material-dropdown"></select></div>
+            <div class="form-group"><label class="form-label">Interface Ø, D (mm)</label><input type="number" id="fit-D" class="form-input" value="30"></div>
+            <div class="form-group"><label class="form-label">Hub Outer Ø, Do (mm)</label><input type="number" id="fit-Do" class="form-input" value="60"></div>
+          </div>
+          <div class="field-row">
+            <div class="form-group"><label class="form-label">Shaft Bore Ø, Di (0=solid)</label><input type="number" id="fit-Di" class="form-input" value="0"></div>
+            <div class="form-group"><label class="form-label">Diametral Interference Δ (mm)</label><input type="number" id="fit-delta" class="form-input" value="0.03"></div>
+            <div class="form-group"><label class="form-label">Engagement Length L (mm)</label><input type="number" id="fit-L" class="form-input" value="40"></div>
+            <div class="form-group"><label class="form-label">Friction Coeff. μ</label><input type="number" id="fit-mu" class="form-input" value="0.15"></div>
+          </div>
+          <button class="btn btn-solid" onclick="calcPressFit()">Calculate</button>
+          <div class="spec-block" style="margin-top:12px;"><div class="spec-block-header">Result</div><div id="fit-result"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB: POWER TRANSMISSION -->
+    <div class="tab-panel" id="tab-power">
+      <div class="login-box">
+        <div class="login-header"><span class="login-header-title">Gear / Pulley Train</span><span class="login-doc-ref">WZ-CALC / PWR</span></div>
+        <div class="login-body">
+          <div class="field-row">
+            <div class="form-group">
+              <label class="form-label">Type</label>
+              <select id="pt-mode" class="form-input" onchange="onPTModeChange()">
+                <option value="gear">Gear Train (tooth count)</option>
+                <option value="pulley">Pulley / Belt (diameter)</option>
+              </select>
+            </div>
+            <div class="form-group"><label class="form-label">Efficiency (%)</label><input type="number" id="pt-eff" class="form-input" value="95"></div>
+          </div>
+          <div class="field-row" id="pt-gear-fields">
+            <div class="form-group"><label class="form-label">Input Teeth N₁</label><input type="number" id="pt-n-in" class="form-input" value="20"></div>
+            <div class="form-group"><label class="form-label">Output Teeth N₂</label><input type="number" id="pt-n-out" class="form-input" value="60"></div>
+          </div>
+          <div class="field-row" id="pt-pulley-fields" style="display:none;">
+            <div class="form-group"><label class="form-label">Input Pulley Ø (mm)</label><input type="number" id="pt-d-in" class="form-input" value="50"></div>
+            <div class="form-group"><label class="form-label">Output Pulley Ø (mm)</label><input type="number" id="pt-d-out" class="form-input" value="150"></div>
+          </div>
+          <div class="field-row">
+            <div class="form-group"><label class="form-label">Input Speed (RPM)</label><input type="number" id="pt-rpm-in" class="form-input" value="1750"></div>
+            <div class="form-group"><label class="form-label">Input Torque (N·m)</label><input type="number" id="pt-torque-in" class="form-input" value="2.5"></div>
+          </div>
+          <button class="btn btn-solid" onclick="calcPowerTransmission()">Calculate</button>
+          <div class="spec-block" style="margin-top:12px;"><div class="spec-block-header">Result</div><div id="pt-result"></div></div>
+          <div class="formula-line">Gears: ω₁N₁ = ω₂N₂, T₂ = T₁(N₂/N₁)η &nbsp;|&nbsp; Pulleys: ω₁D₁ = ω₂D₂ (no-slip belt), belt speed v = ωr &nbsp;|&nbsp; P = Tω</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB: GRAPHS -->
+    <div class="tab-panel" id="tab-graphs">
+      <div class="login-box">
+        <div class="login-header"><span class="login-header-title">Graphs &amp; Diagrams</span><span class="login-doc-ref">WZ-CALC / GRPH</span></div>
+        <div class="login-body">
+          <div class="field-row">
+            <div class="form-group">
+              <label class="form-label">Graph Type</label>
+              <select id="graph-type" class="form-input" onchange="onGraphTypeChange()">
+                <option value="mohr">Mohr's Circle — Principal Stresses</option>
+                <option value="stress_strain">Stress-Strain Curve</option>
+                <option value="hardening">Steel Hardening Sequence (schematic)</option>
+                <option value="motor">Motor Torque–Speed Curve</option>
+                <option value="fatigue">Fatigue (S-N) Curve — Estimate</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="field-row" id="graph-fields-mohr">
+            <div class="form-group"><label class="form-label">σx (MPa)</label><input type="number" id="mohr-sx" class="form-input" value="80"></div>
+            <div class="form-group"><label class="form-label">σy (MPa)</label><input type="number" id="mohr-sy" class="form-input" value="20"></div>
+            <div class="form-group"><label class="form-label">τxy (MPa)</label><input type="number" id="mohr-txy" class="form-input" value="30"></div>
+          </div>
+
+          <div class="field-row" id="graph-fields-stress_strain" style="display:none;">
+            <div class="form-group"><label class="form-label">Material</label><select id="ss-material" class="form-input material-dropdown"></select></div>
+            <div class="form-group"><label class="form-label">Strain at UTS (%)</label><input type="number" id="ss-eps-uts" class="form-input" value="12"></div>
+            <div class="form-group"><label class="form-label">Fracture Strain (%)</label><input type="number" id="ss-eps-f" class="form-input" value="20"></div>
+          </div>
+
+          <div class="field-row" id="graph-fields-hardening" style="display:none;">
+            <div class="form-group"><label class="form-label">Austenitizing Temp (°C)</label><input type="number" id="hard-aust" class="form-input" value="850"></div>
+            <div class="form-group"><label class="form-label">Quench Temp (°C)</label><input type="number" id="hard-quench" class="form-input" value="25"></div>
+            <div class="form-group"><label class="form-label">Temper Temp (°C)</label><input type="number" id="hard-temper" class="form-input" value="400"></div>
+          </div>
+
+          <div class="field-row" id="graph-fields-motor" style="display:none;">
+            <div class="form-group"><label class="form-label">Stall Torque (N·m)</label><input type="number" id="motor-tstall" class="form-input" value="5"></div>
+            <div class="form-group"><label class="form-label">No-Load Speed (RPM)</label><input type="number" id="motor-rpm" class="form-input" value="4000"></div>
+          </div>
+
+          <div class="field-row" id="graph-fields-fatigue" style="display:none;">
+            <div class="form-group"><label class="form-label">Material</label><select id="fatigue-material" class="form-input material-dropdown"></select></div>
+          </div>
+
+          <button class="btn btn-solid" onclick="drawGraph()">Draw Graph</button>
+
+          <div class="spec-block" style="margin-top:16px;">
+            <div class="spec-block-header" id="graph-title">Plot</div>
+            <div id="graph-svg-container"></div>
+          </div>
+          <div class="spec-block" style="margin-top:12px;"><div class="spec-block-header">Result</div><div id="graph-result"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB: DIFF EQ / LAPLACE -->
+    <div class="tab-panel" id="tab-diffeq">
+      <div class="cheat-section">
+        <p class="cheat-section-title">Laplace Transform Pairs</p>
+        <table class="cheat-table">
+          <tr><td class="eq">1</td><td>1/s</td><td class="notes">s &gt; 0</td></tr>
+          <tr><td class="eq">t</td><td>1/s²</td><td class="notes"></td></tr>
+          <tr><td class="eq">tⁿ</td><td>n!/s^(n+1)</td><td class="notes"></td></tr>
+          <tr><td class="eq">e^(at)</td><td>1/(s−a)</td><td class="notes"></td></tr>
+          <tr><td class="eq">sin(ωt)</td><td>ω/(s²+ω²)</td><td class="notes"></td></tr>
+          <tr><td class="eq">cos(ωt)</td><td>s/(s²+ω²)</td><td class="notes"></td></tr>
+          <tr><td class="eq">e^(at)sin(ωt)</td><td>ω/((s−a)²+ω²)</td><td class="notes"></td></tr>
+          <tr><td class="eq">e^(at)cos(ωt)</td><td>(s−a)/((s−a)²+ω²)</td><td class="notes"></td></tr>
+          <tr><td class="eq">u(t−a)</td><td>e^(−as)/s</td><td class="notes">unit step</td></tr>
+          <tr><td class="eq">δ(t−a)</td><td>e^(−as)</td><td class="notes">unit impulse</td></tr>
+        </table>
+      </div>
+      <div class="cheat-section">
+        <p class="cheat-section-title">Properties</p>
+        <table class="cheat-table">
+          <tr><td class="eq">L{f'(t)}</td><td>sF(s) − f(0)</td><td class="notes"></td></tr>
+          <tr><td class="eq">L{f''(t)}</td><td>s²F(s) − sf(0) − f'(0)</td><td class="notes"></td></tr>
+          <tr><td class="eq">L{e^(at)f(t)}</td><td>F(s−a)</td><td class="notes">s-shift</td></tr>
+          <tr><td class="eq">L{f(t−a)u(t−a)}</td><td>e^(−as)F(s)</td><td class="notes">time shift</td></tr>
+          <tr><td class="eq">L{f*g}</td><td>F(s)·G(s)</td><td class="notes">convolution</td></tr>
+          <tr><td class="eq">lim(t→0) f(t)</td><td>lim(s→∞) sF(s)</td><td class="notes">initial value theorem</td></tr>
+          <tr><td class="eq">lim(t→∞) f(t)</td><td>lim(s→0) sF(s)</td><td class="notes">final value theorem — poles in LHP only</td></tr>
+        </table>
+      </div>
+      <p class="cheat-note"><strong>Does Laplace solve every ODE?</strong> No. Laplace turns d/dt into multiplication by s, which only works cleanly on linear terms — nonlinear terms (y², y·y′, sin y, …) don't reduce to simple algebra. It's a tool for linear ODEs (constant, and some variable, coefficients), not a universal solver. For nonlinear equations you're generally looking at numerical integration, phase-plane analysis, or perturbation methods. The two solvers below reflect that split.</p>
+
+      <div class="login-box" style="margin-top:12px;">
+        <div class="login-header"><span class="login-header-title">Linear 2nd-Order ODE Solver</span><span class="login-doc-ref">WZ-CALC / ODE-1</span></div>
+        <div class="login-body">
+          <p class="cheat-note" style="padding-top:0;">a·y″ + b·y′ + c·y = 0, &nbsp; y(0) = y₀, &nbsp; y′(0) = v₀ — closed-form via characteristic equation.</p>
+          <div class="field-row">
+            <div class="form-group"><label class="form-label">a</label><input type="number" id="ode1-a" class="form-input" value="1"></div>
+            <div class="form-group"><label class="form-label">b</label><input type="number" id="ode1-b" class="form-input" value="3"></div>
+            <div class="form-group"><label class="form-label">c</label><input type="number" id="ode1-c" class="form-input" value="2"></div>
+          </div>
+          <div class="field-row">
+            <div class="form-group"><label class="form-label">y(0)</label><input type="number" id="ode1-y0" class="form-input" value="1"></div>
+            <div class="form-group"><label class="form-label">y'(0)</label><input type="number" id="ode1-v0" class="form-input" value="0"></div>
+            <div class="form-group"><label class="form-label">t max</label><input type="number" id="ode1-tmax" class="form-input" value="5"></div>
+          </div>
+          <button class="btn btn-solid" onclick="solveLinearODE2()">Solve</button>
+          <div class="spec-block" style="margin-top:12px;"><div class="spec-block-header">Solution</div><div id="ode1-result"></div></div>
+          <div id="ode1-svg-container" style="margin-top:12px;"></div>
+        </div>
+      </div>
+
+      <div class="login-box" style="margin-top:20px;">
+        <div class="login-header"><span class="login-header-title">First-Order ODE Solver (Numeric, RK4)</span><span class="login-doc-ref">WZ-CALC / ODE-2</span></div>
+        <div class="login-body">
+          <p class="cheat-note" style="padding-top:0;">dy/dx = f(x, y) — handles linear <em>or</em> nonlinear f. Syntax: + − * / ^, sin, cos, exp, sqrt — e.g. <code>y - x*x + 1</code></p>
+          <div class="field-row">
+            <div class="form-group" style="flex:2;"><label class="form-label">f(x, y) =</label><input type="text" id="ode2-fn" class="form-input" value="y - x*x + 1"></div>
+          </div>
+          <div class="field-row">
+            <div class="form-group"><label class="form-label">x₀</label><input type="number" id="ode2-x0" class="form-input" value="0"></div>
+            <div class="form-group"><label class="form-label">y(x₀)</label><input type="number" id="ode2-y0" class="form-input" value="0.5"></div>
+            <div class="form-group"><label class="form-label">x final</label><input type="number" id="ode2-xf" class="form-input" value="4"></div>
+            <div class="form-group"><label class="form-label">Steps</label><input type="number" id="ode2-steps" class="form-input" value="80"></div>
+          </div>
+          <button class="btn btn-solid" onclick="solveODENumeric()">Solve</button>
+          <div class="spec-block" style="margin-top:12px;"><div class="spec-block-header">Result</div><div id="ode2-result"></div></div>
+          <div id="ode2-svg-container" style="margin-top:12px;"></div>
         </div>
       </div>
     </div>
@@ -418,7 +602,7 @@
   function switchTab(tab) {
     document.querySelectorAll('.mode-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
     document.querySelectorAll('.tab-panel').forEach(p => p.classList.toggle('active', p.id === 'tab-' + tab));
-    const labels = { materials: 'Materials', beam: 'Beam Simulator', calcs: 'Design Calcs', cheat: 'Cheat Sheet' };
+    const labels = { materials: 'Materials', beam: 'Beam Simulator', calcs: 'Design Calcs', power: 'Power Transmission', graphs: 'Graphs', diffeq: 'Diff Eq / Laplace', cheat: 'Cheat Sheet' };
     document.getElementById('status-mode').textContent = labels[tab];
   }
   const fy = document.getElementById('footer-year');
