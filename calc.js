@@ -149,7 +149,7 @@ function runBeamSimulation() {
   const bc = beamCases[beamType];
   const result = beamType === 'ss_point_offset' ? bc.compute(L, E, I, loadVal, posA) : bc.compute(L, E, I, loadVal);
 
-  const N = 60;
+  const N = 150;
   const xs = [], ys = [], Ms = [];
   for (let i = 0; i <= N; i++) {
     const x = (L * i) / N;
@@ -226,15 +226,19 @@ function drawBeamSVG(diagramType, xs, ys, L, yMaxAbs, beamType, posA) {
     }
   }
 
+  const posTicks = niceTicks(0, L, 4).map(t => `
+    <line x1="${scaleX(t).toFixed(1)}" y1="${baseY - 3}" x2="${scaleX(t).toFixed(1)}" y2="${baseY + 3}" stroke="var(--ink)" stroke-width="1" opacity="0.5"/>
+    ${label(scaleX(t), baseY + 34, `${t.toFixed(0)}mm`, { size: 8, anchor: 'middle', color: 'var(--ink-dim)' })}
+  `).join('');
+
   const svg = `
   <svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" style="width:100%; height:auto; font-family:'IBM Plex Mono',monospace;">
     <line x1="${xMargin}" y1="${baseY}" x2="${W - xMargin}" y2="${baseY}" stroke="var(--ink)" stroke-width="1" stroke-dasharray="4,3" opacity="0.4"/>
+    ${posTicks}
     ${supports}
     ${loadArrows}
     <polyline points="${pathPts}" fill="none" stroke="var(--red)" stroke-width="2.5"/>
-    <text x="${xMargin}" y="${H - 15}" font-size="11" fill="var(--ink)">0</text>
-    <text x="${W - xMargin - 30}" y="${H - 15}" font-size="11" fill="var(--ink)">L = ${L} mm</text>
-    <text x="${W/2 - 60}" y="${H - 15}" font-size="11" fill="var(--red)">deflection ×${exaggeration.toFixed(0)} (exaggerated)</text>
+    <text x="${W/2 - 70}" y="${H - 10}" font-size="11" fill="var(--red)">deflection ×${exaggeration.toFixed(0)} (exaggerated)</text>
   </svg>`;
   document.getElementById('beam-svg-container').innerHTML = svg;
 }
@@ -268,7 +272,7 @@ function calcStress() {
   const sigma = F / A;
   const fos = mat.yield_strength / sigma;
   document.getElementById('stress-result').innerHTML =
-    `<div class="spec-row"><span class="spec-key">Stress σ</span><span class="spec-val">${sigma.toFixed(2)} MPa</span></div>
+    `<div class="eq-live">σ = F/A = ${F}/${A} = <strong>${sigma.toFixed(2)} MPa</strong></div>
      <div class="spec-row"><span class="spec-key">Factor of Safety</span><span class="spec-val">${fos.toFixed(2)}</span></div>`;
   setStatusResult(`σ ${sigma.toFixed(1)} MPa`);
 }
@@ -284,7 +288,7 @@ function calcTorsion() {
   const tau = (T * (d / 2)) / J;
   const theta = (T * Lg) / (G * J); // radians
   document.getElementById('torsion-result').innerHTML =
-    `<div class="spec-row"><span class="spec-key">Shear Stress τ</span><span class="spec-val">${tau.toFixed(2)} MPa</span></div>
+    `<div class="eq-live">τ = Tr/J = ${T}×${(d/2).toFixed(1)}/${J.toFixed(0)} = <strong>${tau.toFixed(2)} MPa</strong></div>
      <div class="spec-row"><span class="spec-key">Angle of Twist</span><span class="spec-val">${(theta * 180 / Math.PI).toFixed(3)}° over ${Lg} mm</span></div>`;
   setStatusResult(`τ ${tau.toFixed(1)} MPa`);
 }
@@ -296,7 +300,7 @@ function calcBuckling() {
   const K = parseFloat(document.getElementById('buckle-K').value);
   const Pcr = (Math.PI ** 2 * E * I) / Math.pow(K * Lg, 2);
   document.getElementById('buckle-result').innerHTML =
-    `<div class="spec-row"><span class="spec-key">Critical Load</span><span class="spec-val">${Pcr.toFixed(1)} N (${(Pcr/1000).toFixed(2)} kN)</span></div>`;
+    `<div class="eq-live">P_cr = π²EI/(KL)² = <strong>${Pcr.toFixed(1)} N</strong> (${(Pcr/1000).toFixed(2)} kN)</div>`;
   setStatusResult(`P_cr ${(Pcr/1000).toFixed(2)} kN`);
 }
 
@@ -308,7 +312,7 @@ function calcSpring() {
   const n = parseFloat(document.getElementById('spring-n').value);
   const k = (G * Math.pow(d, 4)) / (8 * Math.pow(D, 3) * n);
   document.getElementById('spring-result').innerHTML =
-    `<div class="spec-row"><span class="spec-key">Spring Rate k</span><span class="spec-val">${k.toFixed(2)} N/mm</span></div>`;
+    `<div class="eq-live">k = Gd⁴/8D³n = <strong>${k.toFixed(2)} N/mm</strong></div>`;
   setStatusResult(`k ${k.toFixed(2)} N/mm`);
 }
 
@@ -355,8 +359,8 @@ function calcPowerTransmission() {
   }
 
   document.getElementById('pt-result').innerHTML = `
+    <div class="eq-live">ω₂ = ω₁ / ratio = ${rpmIn}/${ratio.toFixed(3)} = <strong>${rpmOut.toFixed(1)} RPM</strong></div>
     <div class="spec-row"><span class="spec-key">Train</span><span class="spec-val">${driverDesc}</span></div>
-    <div class="spec-row"><span class="spec-key">Output Speed</span><span class="spec-val">${rpmOut.toFixed(1)} RPM</span></div>
     <div class="spec-row"><span class="spec-key">Output Torque</span><span class="spec-val">${torqueOut.toFixed(3)} N·m</span></div>
     ${belt}
     <div class="spec-row"><span class="spec-key">Power In / Out</span><span class="spec-val">${powerIn.toFixed(1)} W / ${powerOut.toFixed(1)} W</span></div>
@@ -403,6 +407,98 @@ function calcPressFit() {
 }
 
 // ============================================================
+// GENERAL MACHINE DESIGN — WELDS, BOLTS, KEYS, BEARINGS
+// ============================================================
+function calcWeld() {
+  const P = parseFloat(document.getElementById('weld-P').value);
+  const leg = parseFloat(document.getElementById('weld-leg').value);
+  const L = parseFloat(document.getElementById('weld-L').value);
+  const mat = materials[document.getElementById('weld-material').value];
+
+  const throat = 0.707 * leg;
+  const tau = P / (throat * L);
+  const allow = 0.3 * mat.uts;
+  const fos = allow / tau;
+  const fosColor = fos < 1.2 ? 'var(--red)' : (fos < 2 ? 'var(--gold)' : 'var(--green)');
+
+  document.getElementById('weld-result').innerHTML = `
+    <div class="eq-live">τ = P/(0.707·leg·L) = ${P}/(0.707×${leg}×${L}) = <strong>${tau.toFixed(2)} MPa</strong></div>
+    <div class="spec-row"><span class="spec-key">Throat Thickness</span><span class="spec-val">${throat.toFixed(2)} mm</span></div>
+    <div class="spec-row"><span class="spec-key">Allowable Shear (≈0.3×UTS)</span><span class="spec-val">${allow.toFixed(1)} MPa</span></div>
+    <div class="spec-row"><span class="spec-key">Factor of Safety</span><span class="spec-val" style="color:${fosColor};">${fos.toFixed(2)}</span></div>
+  `;
+  setStatusResult(`τ_weld ${tau.toFixed(1)} MPa`);
+}
+
+function calcBoltPattern() {
+  const n = parseInt(document.getElementById('bolt-n').value, 10);
+  const R = parseFloat(document.getElementById('bolt-R').value);
+  const d = parseFloat(document.getElementById('bolt-d').value);
+  const V = parseFloat(document.getElementById('bolt-V').value);
+  const M = parseFloat(document.getElementById('bolt-M').value);
+  const mat = materials[document.getElementById('bolt-material').value];
+
+  const Fdirect = V / n;
+  const Fmoment = M / (n * R);
+  const Fmax = Fdirect + Fmoment;
+  const area = (Math.PI * d * d) / 4;
+  const tau = Fmax / area;
+  const allowShear = 0.577 * mat.yield_strength; // von Mises shear yield
+  const fos = allowShear / tau;
+  const fosColor = fos < 1.2 ? 'var(--red)' : (fos < 2 ? 'var(--gold)' : 'var(--green)');
+
+  document.getElementById('bolt-result').innerHTML = `
+    <div class="eq-live">F_max = V/n + M/(nR) = ${V}/${n} + ${M}/(${n}×${R}) = <strong>${Fmax.toFixed(1)} N</strong></div>
+    <div class="spec-row"><span class="spec-key">Direct Shear / Bolt</span><span class="spec-val">${Fdirect.toFixed(1)} N</span></div>
+    <div class="spec-row"><span class="spec-key">Moment Shear / Bolt (worst-case)</span><span class="spec-val">${Fmoment.toFixed(1)} N</span></div>
+    <div class="spec-row"><span class="spec-key">Bolt Shear Stress</span><span class="spec-val">${tau.toFixed(1)} MPa</span></div>
+    <div class="spec-row"><span class="spec-key">Factor of Safety (0.577·Sy)</span><span class="spec-val" style="color:${fosColor};">${fos.toFixed(2)}</span></div>
+  `;
+  setStatusResult(`FoS_bolt ${fos.toFixed(2)}`);
+}
+
+function calcKey() {
+  const T = parseFloat(document.getElementById('key-T').value);
+  const d = parseFloat(document.getElementById('key-d').value);
+  const w = parseFloat(document.getElementById('key-w').value);
+  const h = parseFloat(document.getElementById('key-h').value);
+  const L = parseFloat(document.getElementById('key-L').value);
+  const mat = materials[document.getElementById('key-material').value];
+
+  const F = (2 * T) / d;
+  const tau = F / (w * L);
+  const sigmaB = (2 * F) / (h * L);
+  const fosShear = (0.577 * mat.yield_strength) / tau;
+  const fosBearing = mat.yield_strength / sigmaB;
+  const worstFos = Math.min(fosShear, fosBearing);
+  const fosColor = worstFos < 1.2 ? 'var(--red)' : (worstFos < 2 ? 'var(--gold)' : 'var(--green)');
+
+  document.getElementById('key-result').innerHTML = `
+    <div class="eq-live">F = 2T/d = 2×${T}/${d} = <strong>${F.toFixed(1)} N</strong></div>
+    <div class="spec-row"><span class="spec-key">Shear Stress τ</span><span class="spec-val">${tau.toFixed(2)} MPa (FoS ${fosShear.toFixed(2)})</span></div>
+    <div class="spec-row"><span class="spec-key">Bearing Stress σ_b</span><span class="spec-val">${sigmaB.toFixed(2)} MPa (FoS ${fosBearing.toFixed(2)})</span></div>
+    <div class="spec-row"><span class="spec-key">Governing Factor of Safety</span><span class="spec-val" style="color:${fosColor};">${worstFos.toFixed(2)}</span></div>
+  `;
+  setStatusResult(`FoS_key ${worstFos.toFixed(2)}`);
+}
+
+function calcBearingLife() {
+  const C = parseFloat(document.getElementById('brg-C').value);
+  const P = parseFloat(document.getElementById('brg-P').value);
+  const k = parseFloat(document.getElementById('brg-type').value);
+  const rpm = parseFloat(document.getElementById('brg-rpm').value);
+
+  const L10 = Math.pow(C / P, k); // millions of revolutions
+  const L10h = (L10 * 1e6) / (60 * rpm);
+
+  document.getElementById('brg-result').innerHTML = `
+    <div class="eq-live">L10 = (C/P)^k = (${C}/${P})^${k.toFixed(2)} = <strong>${L10.toFixed(2)} million rev</strong></div>
+    <div class="spec-row"><span class="spec-key">Life in Hours</span><span class="spec-val">${L10h.toFixed(0)} hrs (${(L10h/8760).toFixed(2)} yrs continuous)</span></div>
+  `;
+  setStatusResult(`L10 ${L10h.toFixed(0)} hrs`);
+}
+
+// ============================================================
 // PLOTTING HELPER (shared by all graphs)
 // ============================================================
 function makePlot(xDomain, yDomain, opts = {}) {
@@ -430,6 +526,38 @@ function svgWrap(W, H, inner) {
 function label(x, y, text, opts = {}) {
   const size = opts.size || 10, color = opts.color || 'var(--ink)', anchor = opts.anchor || 'start';
   return `<text x="${x}" y="${y}" font-size="${size}" fill="${color}" text-anchor="${anchor}">${text}</text>`;
+}
+
+function niceTicks(min, max, count = 5) {
+  const ticks = [];
+  for (let i = 0; i <= count; i++) ticks.push(min + ((max - min) * i) / count);
+  return ticks;
+}
+
+function tickMarks(plot, xTicks, yTicks, xFmt, yFmt) {
+  xFmt = xFmt || (v => v.toFixed(0));
+  yFmt = yFmt || (v => v.toFixed(0));
+  let s = '';
+  xTicks.forEach(t => {
+    const px = plot.sx(t);
+    s += `<line x1="${px.toFixed(1)}" y1="${plot.margin.top}" x2="${px.toFixed(1)}" y2="${plot.margin.top + plot.ph}" stroke="var(--line)" stroke-width="1" opacity="0.4"/>`;
+    s += `<line x1="${px.toFixed(1)}" y1="${plot.margin.top + plot.ph}" x2="${px.toFixed(1)}" y2="${plot.margin.top + plot.ph + 4}" stroke="var(--ink)"/>`;
+    s += label(px, plot.margin.top + plot.ph + 16, xFmt(t), { size: 8, anchor: 'middle', color: 'var(--ink-dim)' });
+  });
+  yTicks.forEach(t => {
+    const py = plot.sy(t);
+    s += `<line x1="${plot.margin.left}" y1="${py.toFixed(1)}" x2="${plot.margin.left + plot.pw}" y2="${py.toFixed(1)}" stroke="var(--line)" stroke-width="1" opacity="0.4"/>`;
+    s += `<line x1="${plot.margin.left - 4}" y1="${py.toFixed(1)}" x2="${plot.margin.left}" y2="${py.toFixed(1)}" stroke="var(--ink)"/>`;
+    s += label(plot.margin.left - 8, py + 3, yFmt(t), { size: 8, anchor: 'end', color: 'var(--ink-dim)' });
+  });
+  return s;
+}
+
+const OVERLAY_COLORS = ['var(--red)', 'var(--blue)', 'var(--gold)', 'var(--green)'];
+
+function selectedMaterials(selectId, max = 4) {
+  const opts = Array.from(document.getElementById(selectId).selectedOptions).map(o => o.value);
+  return (opts.length ? opts : [document.getElementById(selectId).options[0]?.value]).filter(Boolean).slice(0, max);
 }
 
 // ============================================================
@@ -468,9 +596,11 @@ function drawMohrCircle() {
   const maxAbs = Math.max(Math.abs(s1), Math.abs(s2), Math.abs(txy), 1) * 1.35;
   const plot = makePlot([-maxAbs, maxAbs], [-maxAbs, maxAbs], { width: 480, height: 480, margin: { left: 55, right: 25, top: 20, bottom: 40 } });
   const rPx = plot.sx(C + R) - plot.sx(C);
+  const ticks = niceTicks(-maxAbs, maxAbs, 6);
 
   const inner = `
     ${plot.axes}
+    ${tickMarks(plot, ticks, ticks, v => v.toFixed(0), v => v.toFixed(0))}
     <circle cx="${plot.sx(C)}" cy="${plot.sy(0)}" r="${rPx}" fill="none" stroke="var(--red)" stroke-width="2"/>
     <line x1="${plot.sx(sx)}" y1="${plot.sy(txy)}" x2="${plot.sx(sy)}" y2="${plot.sy(-txy)}" stroke="var(--blue)" stroke-width="1.5"/>
     <circle cx="${plot.sx(sx)}" cy="${plot.sy(txy)}" r="3.5" fill="var(--blue)"/>
@@ -481,7 +611,7 @@ function drawMohrCircle() {
     ${label(plot.sx(sy) + 6, plot.sy(-txy) + 12, 'Y (σy,−τxy)', { size: 9, color: 'var(--blue)' })}
     ${label(plot.sx(s1), plot.sy(0) - 10, `σ1=${s1.toFixed(1)}`, { size: 9, color: 'var(--red)', anchor: 'middle' })}
     ${label(plot.sx(s2), plot.sy(0) - 10, `σ2=${s2.toFixed(1)}`, { size: 9, color: 'var(--red)', anchor: 'middle' })}
-    ${label(plot.margin.left + plot.pw, plot.margin.top + plot.ph + 16, 'σ (MPa)', { size: 10, anchor: 'end' })}
+    ${label(plot.margin.left + plot.pw, plot.margin.top + plot.ph + 30, 'σ (MPa)', { size: 10, anchor: 'end' })}
     ${label(plot.margin.left, plot.margin.top + 10, 'τ (MPa)', { size: 10 })}
   `;
   document.getElementById('graph-svg-container').innerHTML = svgWrap(plot.W, plot.H, inner);
@@ -496,48 +626,56 @@ function drawMohrCircle() {
 }
 
 function drawStressStrain() {
-  const matKey = document.getElementById('ss-material').value;
-  const mat = materials[matKey];
-  const E = mat.youngs_modulus * 1000;
-  const sy = mat.yield_strength, suts = mat.uts;
+  const matKeys = selectedMaterials('ss-material');
   const epsUTS = parseFloat(document.getElementById('ss-eps-uts').value) / 100;
   const epsF = parseFloat(document.getElementById('ss-eps-f').value) / 100;
-  const epsY = sy / E;
 
-  const pts = [];
-  for (let i = 0; i <= 10; i++) { const e = (epsY * i) / 10; pts.push({ x: e, y: E * e }); }
-  for (let i = 1; i <= 30; i++) {
-    const t = i / 30, e = epsY + (epsUTS - epsY) * t;
-    pts.push({ x: e, y: sy + (suts - sy) * (1 - Math.pow(1 - t, 2)) });
-  }
-  const sFrac = suts * 0.85;
-  for (let i = 1; i <= 15; i++) {
-    const t = i / 15, e = epsUTS + (epsF - epsUTS) * t;
-    pts.push({ x: e, y: suts + (sFrac - suts) * t });
-  }
+  const curves = matKeys.map((key, idx) => {
+    const mat = materials[key];
+    const E = mat.youngs_modulus * 1000;
+    const sy = mat.yield_strength, suts = mat.uts;
+    const epsY = sy / E;
+    const pts = [];
+    for (let i = 0; i <= 20; i++) { const e = (epsY * i) / 20; pts.push({ x: e, y: E * e }); }
+    for (let i = 1; i <= 60; i++) {
+      const t = i / 60, e = epsY + (epsUTS - epsY) * t;
+      pts.push({ x: e, y: sy + (suts - sy) * (1 - Math.pow(1 - t, 2)) });
+    }
+    const sFrac = suts * 0.85;
+    for (let i = 1; i <= 30; i++) {
+      const t = i / 30, e = epsUTS + (epsF - epsUTS) * t;
+      pts.push({ x: e, y: suts + (sFrac - suts) * t });
+    }
+    return { mat, pts, epsY, sy, suts, color: OVERLAY_COLORS[idx % OVERLAY_COLORS.length] };
+  });
 
-  const plot = makePlot([0, epsF * 1.05], [0, suts * 1.15]);
-  const pathPts = pts.map(pt => `${plot.sx(pt.x).toFixed(1)},${plot.sy(pt.y).toFixed(1)}`).join(' ');
+  const yMax = Math.max(...curves.map(c => c.suts)) * 1.15;
+  const plot = makePlot([0, epsF * 1.05], [0, yMax]);
+  const xTicks = niceTicks(0, epsF * 1.05, 6);
+  const yTicks = niceTicks(0, yMax, 6);
+
+  const curveSvg = curves.map(c => {
+    const pathPts = c.pts.map(pt => `${plot.sx(pt.x).toFixed(1)},${plot.sy(pt.y).toFixed(1)}`).join(' ');
+    return `<polyline points="${pathPts}" fill="none" stroke="${c.color}" stroke-width="2.5"/>
+      <circle cx="${plot.sx(c.epsY).toFixed(1)}" cy="${plot.sy(c.sy).toFixed(1)}" r="3" fill="${c.color}"/>
+      <circle cx="${plot.sx(c.epsY + (epsUTS-c.epsY)).toFixed(1)}" cy="${plot.sy(c.suts).toFixed(1)}" r="3" fill="${c.color}"/>`;
+  }).join('');
+
   const inner = `
     ${plot.axes}
-    <polyline points="${pathPts}" fill="none" stroke="var(--red)" stroke-width="2.5"/>
-    <circle cx="${plot.sx(epsY)}" cy="${plot.sy(sy)}" r="3.5" fill="var(--blue)"/>
-    <circle cx="${plot.sx(epsUTS)}" cy="${plot.sy(suts)}" r="3.5" fill="var(--blue)"/>
-    <circle cx="${plot.sx(epsF)}" cy="${plot.sy(sFrac)}" r="3.5" fill="var(--ink)"/>
-    ${label(plot.sx(epsY) + 6, plot.sy(sy) - 6, 'Yield', { size: 9, color: 'var(--blue)' })}
-    ${label(plot.sx(epsUTS) + 6, plot.sy(suts) - 6, 'UTS', { size: 9, color: 'var(--blue)' })}
-    ${label(plot.sx(epsF) - 6, plot.sy(sFrac) + 14, 'Fracture', { size: 9, anchor: 'end' })}
-    ${label(plot.margin.left + plot.pw, plot.margin.top + plot.ph + 16, 'strain ε', { size: 10, anchor: 'end' })}
+    ${tickMarks(plot, xTicks, yTicks, v => (v*100).toFixed(1)+'%', v => v.toFixed(0))}
+    ${curveSvg}
+    ${label(plot.margin.left + plot.pw, plot.margin.top + plot.ph + 30, 'strain ε', { size: 10, anchor: 'end' })}
     ${label(plot.margin.left, plot.margin.top + 10, 'σ (MPa)', { size: 10 })}
   `;
   document.getElementById('graph-svg-container').innerHTML = svgWrap(plot.W, plot.H, inner);
+
+  const legend = curves.map(c => `<span><span class="legend-swatch" style="background:${c.color};"></span>${c.mat.name} — εy=${(c.epsY*100).toFixed(2)}%, UTS=${c.suts} MPa</span>`).join('');
   document.getElementById('graph-result').innerHTML = `
-    <div class="spec-row"><span class="spec-key">Material</span><span class="spec-val">${mat.name}</span></div>
-    <div class="spec-row"><span class="spec-key">Yield Strain εy</span><span class="spec-val">${(epsY * 100).toFixed(3)}%</span></div>
-    <div class="spec-row"><span class="spec-key">Elastic Modulus E</span><span class="spec-val">${mat.youngs_modulus} GPa</span></div>
+    <div class="legend-row">${legend}</div>
     <div class="formula-line">Elastic region: σ=Eε. Plastic region beyond εy is an idealized ease-out curve to UTS, then to fracture — illustrative, not measured data.</div>
   `;
-  setStatusResult(`εy ${(epsY*100).toFixed(2)}%`);
+  setStatusResult(`${curves.length} material(s)`);
 }
 
 function drawHardening() {
@@ -550,7 +688,8 @@ function drawHardening() {
     { x: 2.5, y: Tq }, { x: 3.6, y: Tq },
     { x: 4.0, y: Tt }, { x: 6.0, y: Tt }, { x: 6.6, y: room }
   ];
-  const plot = makePlot([0, 7], [Math.min(room, Tq) - 20, Ta * 1.1]);
+  const yMin = Math.min(room, Tq) - 20, yMax = Ta * 1.1;
+  const plot = makePlot([0, 7], [yMin, yMax]);
   const pathPts = pts.map(pt => `${plot.sx(pt.x).toFixed(1)},${plot.sy(pt.y).toFixed(1)}`).join(' ');
   const marks = [
     { x: 1.4, y: Ta, t: 'Austenitize & Soak' },
@@ -564,9 +703,10 @@ function drawHardening() {
   `).join('');
   const inner = `
     ${plot.axes}
+    ${tickMarks(plot, niceTicks(0, 7, 7), niceTicks(yMin, yMax, 6), v => v.toFixed(1), v => v.toFixed(0))}
     <polyline points="${pathPts}" fill="none" stroke="var(--blue)" stroke-width="2.5"/>
     ${markSvg}
-    ${label(plot.margin.left + plot.pw, plot.margin.top + plot.ph + 16, 'time (schematic)', { size: 10, anchor: 'end' })}
+    ${label(plot.margin.left + plot.pw, plot.margin.top + plot.ph + 30, 'time (schematic)', { size: 10, anchor: 'end' })}
     ${label(plot.margin.left, plot.margin.top + 10, 'Temp (°C)', { size: 10 })}
   `;
   document.getElementById('graph-svg-container').innerHTML = svgWrap(plot.W, plot.H, inner);
@@ -582,7 +722,7 @@ function drawHardening() {
 function drawMotorCurve() {
   const Tstall = parseFloat(document.getElementById('motor-tstall').value);
   const rpmNL = parseFloat(document.getElementById('motor-rpm').value);
-  const n = 40;
+  const n = 100;
   const torquePts = [], powerPts = [];
   let Pmax = 0;
   for (let i = 0; i <= n; i++) {
@@ -601,11 +741,12 @@ function drawMotorCurve() {
   const pPath = powerScaled.map(p => `${plot.sx(p.x).toFixed(1)},${plot.sy(p.y).toFixed(1)}`).join(' ');
   const inner = `
     ${plot.axes}
+    ${tickMarks(plot, niceTicks(0, rpmNL, 6), niceTicks(0, Tstall * 1.1, 5), v => v.toFixed(0), v => v.toFixed(2))}
     <polyline points="${tPath}" fill="none" stroke="var(--red)" stroke-width="2.5"/>
     <polyline points="${pPath}" fill="none" stroke="var(--blue)" stroke-width="2" stroke-dasharray="5,4"/>
     ${label(plot.sx(rpmNL * 0.15), plot.sy(Tstall * 0.85), 'Torque', { size: 10, color: 'var(--red)' })}
     ${label(plot.sx(rpmNL * 0.55), plot.sy(Tstall * 0.55), 'Power (scaled)', { size: 10, color: 'var(--blue)' })}
-    ${label(plot.margin.left + plot.pw, plot.margin.top + plot.ph + 16, 'Speed (RPM)', { size: 10, anchor: 'end' })}
+    ${label(plot.margin.left + plot.pw, plot.margin.top + plot.ph + 30, 'Speed (RPM)', { size: 10, anchor: 'end' })}
     ${label(plot.margin.left, plot.margin.top + 10, 'Torque (N·m)', { size: 10 })}
   `;
   document.getElementById('graph-svg-container').innerHTML = svgWrap(plot.W, plot.H, inner);
@@ -619,36 +760,51 @@ function drawMotorCurve() {
 }
 
 function drawFatigueCurve() {
-  const matKey = document.getElementById('fatigue-material').value;
-  const mat = materials[matKey];
-  const Sut = mat.uts;
-  const Se = Sut < 1400 ? 0.5 * Sut : 700;
-  const S1000 = 0.9 * Sut;
+  const matKeys = selectedMaterials('fatigue-material');
+  const curves = matKeys.map((key, idx) => {
+    const mat = materials[key];
+    const Sut = mat.uts;
+    const Se = Sut < 1400 ? 0.5 * Sut : 700;
+    const S1000 = 0.9 * Sut;
+    return { mat, Sut, Se, S1000, color: OVERLAY_COLORS[idx % OVERLAY_COLORS.length] };
+  });
+  const maxS1000 = Math.max(...curves.map(c => c.S1000));
+  const minSe = Math.min(...curves.map(c => c.Se));
 
-  const plot = makePlot([1e3, 1e8], [Se * 0.5, S1000 * 1.15], { logX: true });
-  const pts = [{ x: 1e3, y: S1000 }, { x: 1e6, y: Se }, { x: 1e8, y: Se }];
-  const pathPts = pts.map(p => `${plot.sx(p.x).toFixed(1)},${plot.sy(p.y).toFixed(1)}`).join(' ');
+  const plot = makePlot([1e3, 1e8], [minSe * 0.5, maxS1000 * 1.15], { logX: true });
   const ticks = [1e3, 1e4, 1e5, 1e6, 1e7, 1e8];
   const tickSvg = ticks.map(t => `
+    <line x1="${plot.sx(t)}" y1="${plot.margin.top}" x2="${plot.sx(t)}" y2="${plot.margin.top + plot.ph}" stroke="var(--line)" stroke-width="1" opacity="0.4"/>
     <line x1="${plot.sx(t)}" y1="${plot.margin.top + plot.ph}" x2="${plot.sx(t)}" y2="${plot.margin.top + plot.ph + 4}" stroke="var(--ink)"/>
     ${label(plot.sx(t), plot.margin.top + plot.ph + 16, `10^${Math.log10(t)}`, { size: 9, anchor: 'middle' })}
   `).join('');
+  const yTicks = niceTicks(minSe * 0.5, maxS1000 * 1.15, 5);
+  const yTickSvg = yTicks.map(t => `
+    <line x1="${plot.margin.left}" y1="${plot.sy(t).toFixed(1)}" x2="${plot.margin.left + plot.pw}" y2="${plot.sy(t).toFixed(1)}" stroke="var(--line)" stroke-width="1" opacity="0.4"/>
+    ${label(plot.margin.left - 8, plot.sy(t) + 3, t.toFixed(0), { size: 8, anchor: 'end', color: 'var(--ink-dim)' })}
+  `).join('');
+
+  const curveSvg = curves.map(c => {
+    const pts = [{ x: 1e3, y: c.S1000 }, { x: 1e6, y: c.Se }, { x: 1e8, y: c.Se }];
+    const pathPts = pts.map(p => `${plot.sx(p.x).toFixed(1)},${plot.sy(p.y).toFixed(1)}`).join(' ');
+    return `<polyline points="${pathPts}" fill="none" stroke="${c.color}" stroke-width="2.5"/>
+      <circle cx="${plot.sx(1e6).toFixed(1)}" cy="${plot.sy(c.Se).toFixed(1)}" r="3.5" fill="${c.color}"/>`;
+  }).join('');
+
   const inner = `
     ${plot.axes}
-    ${tickSvg}
-    <polyline points="${pathPts}" fill="none" stroke="var(--red)" stroke-width="2.5"/>
-    <circle cx="${plot.sx(1e6)}" cy="${plot.sy(Se)}" r="3.5" fill="var(--blue)"/>
-    ${label(plot.sx(1e6) + 8, plot.sy(Se) - 8, `Se ≈ ${Se.toFixed(0)} MPa`, { size: 9, color: 'var(--blue)' })}
+    ${tickSvg}${yTickSvg}
+    ${curveSvg}
     ${label(plot.margin.left, plot.margin.top + 10, 'S (MPa)', { size: 10 })}
   `;
   document.getElementById('graph-svg-container').innerHTML = svgWrap(plot.W, plot.H, inner);
+
+  const legend = curves.map(c => `<span><span class="legend-swatch" style="background:${c.color};"></span>${c.mat.name} — Se≈${c.Se.toFixed(0)} MPa</span>`).join('');
   document.getElementById('graph-result').innerHTML = `
-    <div class="spec-row"><span class="spec-key">UTS</span><span class="spec-val">${Sut} MPa</span></div>
-    <div class="spec-row"><span class="spec-key">Estimated Endurance Limit Se</span><span class="spec-val">${Se.toFixed(0)} MPa</span></div>
-    <div class="spec-row"><span class="spec-key">Strength at 10³ cycles</span><span class="spec-val">${S1000.toFixed(0)} MPa</span></div>
+    <div class="legend-row">${legend}</div>
     <div class="formula-line">Se ≈ 0.5·Sut (Sut&lt;1400 MPa, else 700 MPa cap) &nbsp;|&nbsp; S(10³)≈0.9·Sut — Shigley rule-of-thumb estimate, not test data.</div>
   `;
-  setStatusResult(`Se ${Se.toFixed(0)} MPa`);
+  setStatusResult(`${curves.length} material(s)`);
 }
 
 // ============================================================

@@ -81,6 +81,7 @@
       <button class="mode-btn active" data-tab="materials" onclick="switchTab('materials')">Materials</button>
       <button class="mode-btn" data-tab="beam" onclick="switchTab('beam')">Beam Simulator</button>
       <button class="mode-btn" data-tab="calcs" onclick="switchTab('calcs')">Design Calcs</button>
+      <button class="mode-btn" data-tab="machine" onclick="switchTab('machine')">Machine Design</button>
       <button class="mode-btn" data-tab="power" onclick="switchTab('power')">Power Transmission</button>
       <button class="mode-btn" data-tab="graphs" onclick="switchTab('graphs')">Graphs</button>
       <button class="mode-btn" data-tab="diffeq" onclick="switchTab('diffeq')">Diff Eq / Laplace</button>
@@ -194,12 +195,12 @@
       <div class="login-box" style="margin-bottom:20px;">
         <div class="login-header"><span class="login-header-title">Axial Stress &amp; Factor of Safety</span><span class="login-doc-ref">WZ-CALC / AXL</span></div>
         <div class="login-body">
+          <div class="eq-display">σ = F / A</div>
           <div class="field-row">
-            <div class="form-group"><label class="form-label">Force F (N)</label><input type="number" id="stress-F" class="form-input" value="5000"></div>
-            <div class="form-group"><label class="form-label">Area A (mm²)</label><input type="number" id="stress-A" class="form-input" value="100"></div>
-            <div class="form-group"><label class="form-label">Material</label><select id="stress-material" class="form-input material-dropdown"></select></div>
+            <div class="form-group"><label class="form-label">Force F (N)</label><input type="number" id="stress-F" class="form-input" value="5000" oninput="calcStress()"></div>
+            <div class="form-group"><label class="form-label">Area A (mm²)</label><input type="number" id="stress-A" class="form-input" value="100" oninput="calcStress()"></div>
+            <div class="form-group"><label class="form-label">Material</label><select id="stress-material" class="form-input material-dropdown" onchange="calcStress()"></select></div>
           </div>
-          <button class="btn btn-solid" onclick="calcStress()">Calculate</button>
           <div class="spec-block" style="margin-top:12px;"><div class="spec-block-header">Result</div><div id="stress-result"></div></div>
         </div>
       </div>
@@ -207,13 +208,13 @@
       <div class="login-box" style="margin-bottom:20px;">
         <div class="login-header"><span class="login-header-title">Shaft Torsion</span><span class="login-doc-ref">WZ-CALC / TOR</span></div>
         <div class="login-body">
+          <div class="eq-display">τ = Tr / J <span class="eq-sub">θ = TL / GJ &nbsp;|&nbsp; J = πd⁴/32 (solid shaft)</span></div>
           <div class="field-row">
-            <div class="form-group"><label class="form-label">Torque T (N·mm)</label><input type="number" id="torsion-T" class="form-input" value="15000"></div>
-            <div class="form-group"><label class="form-label">Shaft Ø d (mm)</label><input type="number" id="torsion-d" class="form-input" value="20"></div>
-            <div class="form-group"><label class="form-label">Length L (mm)</label><input type="number" id="torsion-L" class="form-input" value="300"></div>
-            <div class="form-group"><label class="form-label">Material</label><select id="torsion-material" class="form-input material-dropdown"></select></div>
+            <div class="form-group"><label class="form-label">Torque T (N·mm)</label><input type="number" id="torsion-T" class="form-input" value="15000" oninput="calcTorsion()"></div>
+            <div class="form-group"><label class="form-label">Shaft Ø d (mm)</label><input type="number" id="torsion-d" class="form-input" value="20" oninput="calcTorsion()"></div>
+            <div class="form-group"><label class="form-label">Length L (mm)</label><input type="number" id="torsion-L" class="form-input" value="300" oninput="calcTorsion()"></div>
+            <div class="form-group"><label class="form-label">Material</label><select id="torsion-material" class="form-input material-dropdown" onchange="calcTorsion()"></select></div>
           </div>
-          <button class="btn btn-solid" onclick="calcTorsion()">Calculate</button>
           <div class="spec-block" style="margin-top:12px;"><div class="spec-block-header">Result</div><div id="torsion-result"></div></div>
         </div>
       </div>
@@ -221,12 +222,13 @@
       <div class="login-box" style="margin-bottom:20px;">
         <div class="login-header"><span class="login-header-title">Column Buckling (Euler)</span><span class="login-doc-ref">WZ-CALC / BKL</span></div>
         <div class="login-body">
+          <div class="eq-display">P_cr = π²EI / (KL)²</div>
           <div class="field-row">
-            <div class="form-group"><label class="form-label">Material</label><select id="buckle-material" class="form-input material-dropdown"></select></div>
-            <div class="form-group"><label class="form-label">I (mm⁴)</label><input type="number" id="buckle-I" class="form-input" value="8333"></div>
-            <div class="form-group"><label class="form-label">Length L (mm)</label><input type="number" id="buckle-L" class="form-input" value="800"></div>
+            <div class="form-group"><label class="form-label">Material</label><select id="buckle-material" class="form-input material-dropdown" onchange="calcBuckling()"></select></div>
+            <div class="form-group"><label class="form-label">I (mm⁴)</label><input type="number" id="buckle-I" class="form-input" value="8333" oninput="calcBuckling()"></div>
+            <div class="form-group"><label class="form-label">Length L (mm)</label><input type="number" id="buckle-L" class="form-input" value="800" oninput="calcBuckling()"></div>
             <div class="form-group"><label class="form-label">End Condition K</label>
-              <select id="buckle-K" class="form-input">
+              <select id="buckle-K" class="form-input" onchange="calcBuckling()">
                 <option value="2">Fixed-Free (K=2)</option>
                 <option value="1" selected>Pinned-Pinned (K=1)</option>
                 <option value="0.7">Fixed-Pinned (K=0.7)</option>
@@ -234,7 +236,6 @@
               </select>
             </div>
           </div>
-          <button class="btn btn-solid" onclick="calcBuckling()">Calculate</button>
           <div class="spec-block" style="margin-top:12px;"><div class="spec-block-header">Result</div><div id="buckle-result"></div></div>
         </div>
       </div>
@@ -242,13 +243,13 @@
       <div class="login-box">
         <div class="login-header"><span class="login-header-title">Helical Spring Rate</span><span class="login-doc-ref">WZ-CALC / SPR</span></div>
         <div class="login-body">
+          <div class="eq-display">k = Gd⁴ / 8D³n</div>
           <div class="field-row">
-            <div class="form-group"><label class="form-label">Wire Ø d (mm)</label><input type="number" id="spring-d" class="form-input" value="2"></div>
-            <div class="form-group"><label class="form-label">Coil Ø D (mm)</label><input type="number" id="spring-D" class="form-input" value="18"></div>
-            <div class="form-group"><label class="form-label">Active Coils n</label><input type="number" id="spring-n" class="form-input" value="10"></div>
-            <div class="form-group"><label class="form-label">Material</label><select id="spring-material" class="form-input material-dropdown"></select></div>
+            <div class="form-group"><label class="form-label">Wire Ø d (mm)</label><input type="number" id="spring-d" class="form-input" value="2" oninput="calcSpring()"></div>
+            <div class="form-group"><label class="form-label">Coil Ø D (mm)</label><input type="number" id="spring-D" class="form-input" value="18" oninput="calcSpring()"></div>
+            <div class="form-group"><label class="form-label">Active Coils n</label><input type="number" id="spring-n" class="form-input" value="10" oninput="calcSpring()"></div>
+            <div class="form-group"><label class="form-label">Material</label><select id="spring-material" class="form-input material-dropdown" onchange="calcSpring()"></select></div>
           </div>
-          <button class="btn btn-solid" onclick="calcSpring()">Calculate</button>
           <div class="spec-block" style="margin-top:12px;"><div class="spec-block-header">Result</div><div id="spring-result"></div></div>
         </div>
       </div>
@@ -256,21 +257,105 @@
       <div class="login-box" style="margin-top:20px;">
         <div class="login-header"><span class="login-header-title">Press Fit / Interference Fit</span><span class="login-doc-ref">WZ-CALC / FIT</span></div>
         <div class="login-body">
-          <p class="cheat-note" style="padding-top:0;">Thick-wall (Lamé) interference fit — assumes shaft and hub are the same material.</p>
+          <div class="eq-display">p = Eδ(b²−R²)(R²−a²) / [2R³(b²−a²)] <span class="eq-sub">thick-wall Lamé fit — same material shaft &amp; hub</span></div>
           <div class="field-row">
-            <div class="form-group"><label class="form-label">Material</label><select id="fit-material" class="form-input material-dropdown"></select></div>
-            <div class="form-group"><label class="form-label">Interface Ø, D (mm)</label><input type="number" id="fit-D" class="form-input" value="30"></div>
-            <div class="form-group"><label class="form-label">Hub Outer Ø, Do (mm)</label><input type="number" id="fit-Do" class="form-input" value="60"></div>
+            <div class="form-group"><label class="form-label">Material</label><select id="fit-material" class="form-input material-dropdown" onchange="calcPressFit()"></select></div>
+            <div class="form-group"><label class="form-label">Interface Ø, D (mm)</label><input type="number" id="fit-D" class="form-input" value="30" oninput="calcPressFit()"></div>
+            <div class="form-group"><label class="form-label">Hub Outer Ø, Do (mm)</label><input type="number" id="fit-Do" class="form-input" value="60" oninput="calcPressFit()"></div>
           </div>
           <div class="field-row">
-            <div class="form-group"><label class="form-label">Shaft Bore Ø, Di (0=solid)</label><input type="number" id="fit-Di" class="form-input" value="0"></div>
-            <div class="form-group"><label class="form-label">Diametral Interference Δ (mm)</label><input type="number" id="fit-delta" class="form-input" value="0.03"></div>
-            <div class="form-group"><label class="form-label">Engagement Length L (mm)</label><input type="number" id="fit-L" class="form-input" value="40"></div>
-            <div class="form-group"><label class="form-label">Friction Coeff. μ</label><input type="number" id="fit-mu" class="form-input" value="0.15"></div>
+            <div class="form-group"><label class="form-label">Shaft Bore Ø, Di (0=solid)</label><input type="number" id="fit-Di" class="form-input" value="0" oninput="calcPressFit()"></div>
+            <div class="form-group"><label class="form-label">Diametral Interference Δ (mm)</label><input type="number" id="fit-delta" class="form-input" value="0.03" oninput="calcPressFit()"></div>
+            <div class="form-group"><label class="form-label">Engagement Length L (mm)</label><input type="number" id="fit-L" class="form-input" value="40" oninput="calcPressFit()"></div>
+            <div class="form-group"><label class="form-label">Friction Coeff. μ</label><input type="number" id="fit-mu" class="form-input" value="0.15" oninput="calcPressFit()"></div>
           </div>
-          <button class="btn btn-solid" onclick="calcPressFit()">Calculate</button>
           <div class="spec-block" style="margin-top:12px;"><div class="spec-block-header">Result</div><div id="fit-result"></div></div>
         </div>
+      </div>
+    </div>
+
+    <!-- TAB: GENERAL MACHINE DESIGN -->
+    <div class="tab-panel" id="tab-machine">
+      <div class="login-box" style="margin-bottom:20px;">
+        <div class="login-header"><span class="login-header-title">Fillet Weld Strength</span><span class="login-doc-ref">WZ-CALC / WLD</span></div>
+        <div class="login-body">
+          <div class="eq-display">τ = P / (0.707 · leg · L) <span class="eq-sub">allowable ≈ 0.3 × UTS of base metal (quick estimate)</span></div>
+          <div class="field-row">
+            <div class="form-group"><label class="form-label">Applied Load P (N)</label><input type="number" id="weld-P" class="form-input" value="8000" oninput="calcWeld()"></div>
+            <div class="form-group"><label class="form-label">Leg Size (mm)</label><input type="number" id="weld-leg" class="form-input" value="6" oninput="calcWeld()"></div>
+            <div class="form-group"><label class="form-label">Weld Length (mm)</label><input type="number" id="weld-L" class="form-input" value="80" oninput="calcWeld()"></div>
+            <div class="form-group"><label class="form-label">Base Material</label><select id="weld-material" class="form-input material-dropdown" onchange="calcWeld()"></select></div>
+          </div>
+          <div class="spec-block" style="margin-top:12px;"><div class="spec-block-header">Result</div><div id="weld-result"></div></div>
+        </div>
+      </div>
+
+      <div class="login-box" style="margin-bottom:20px;">
+        <div class="login-header"><span class="login-header-title">Bolted Joint — Circular Bolt Pattern</span><span class="login-doc-ref">WZ-CALC / BLT</span></div>
+        <div class="login-body">
+          <div class="eq-display">F_max ≈ V/n + M/(nR) <span class="eq-sub">equally-spaced bolts on radius R — conservative simplified sum</span></div>
+          <div class="field-row">
+            <div class="form-group"><label class="form-label"># Bolts n</label><input type="number" id="bolt-n" class="form-input" value="6" oninput="calcBoltPattern()"></div>
+            <div class="form-group"><label class="form-label">Bolt Circle R (mm)</label><input type="number" id="bolt-R" class="form-input" value="50" oninput="calcBoltPattern()"></div>
+            <div class="form-group"><label class="form-label">Bolt Ø d (mm)</label><input type="number" id="bolt-d" class="form-input" value="8" oninput="calcBoltPattern()"></div>
+          </div>
+          <div class="field-row">
+            <div class="form-group"><label class="form-label">Direct Shear V (N)</label><input type="number" id="bolt-V" class="form-input" value="3000" oninput="calcBoltPattern()"></div>
+            <div class="form-group"><label class="form-label">Moment M (N·mm)</label><input type="number" id="bolt-M" class="form-input" value="150000" oninput="calcBoltPattern()"></div>
+            <div class="form-group"><label class="form-label">Bolt Material</label><select id="bolt-material" class="form-input material-dropdown" onchange="calcBoltPattern()"></select></div>
+          </div>
+          <div class="spec-block" style="margin-top:12px;"><div class="spec-block-header">Result</div><div id="bolt-result"></div></div>
+        </div>
+      </div>
+
+      <div class="login-box" style="margin-bottom:20px;">
+        <div class="login-header"><span class="login-header-title">Key / Keyway — Shear &amp; Bearing</span><span class="login-doc-ref">WZ-CALC / KEY</span></div>
+        <div class="login-body">
+          <div class="eq-display">τ = 2T / (dwL) <span class="eq-sub">σ_bearing = 4T / (dhL) — square/rectangular key</span></div>
+          <div class="field-row">
+            <div class="form-group"><label class="form-label">Torque T (N·mm)</label><input type="number" id="key-T" class="form-input" value="20000" oninput="calcKey()"></div>
+            <div class="form-group"><label class="form-label">Shaft Ø d (mm)</label><input type="number" id="key-d" class="form-input" value="25" oninput="calcKey()"></div>
+          </div>
+          <div class="field-row">
+            <div class="form-group"><label class="form-label">Key Width w (mm)</label><input type="number" id="key-w" class="form-input" value="8" oninput="calcKey()"></div>
+            <div class="form-group"><label class="form-label">Key Height h (mm)</label><input type="number" id="key-h" class="form-input" value="7" oninput="calcKey()"></div>
+            <div class="form-group"><label class="form-label">Key Length L (mm)</label><input type="number" id="key-L" class="form-input" value="30" oninput="calcKey()"></div>
+            <div class="form-group"><label class="form-label">Key Material</label><select id="key-material" class="form-input material-dropdown" onchange="calcKey()"></select></div>
+          </div>
+          <div class="spec-block" style="margin-top:12px;"><div class="spec-block-header">Result</div><div id="key-result"></div></div>
+        </div>
+      </div>
+
+      <div class="login-box">
+        <div class="login-header"><span class="login-header-title">Bearing L10 Life</span><span class="login-doc-ref">WZ-CALC / BRG</span></div>
+        <div class="login-body">
+          <div class="eq-display">L10 = (C/P)^k <span class="eq-sub">k=3 ball bearings, k=10/3 roller bearings</span></div>
+          <div class="field-row">
+            <div class="form-group"><label class="form-label">Dynamic Load Rating C (N)</label><input type="number" id="brg-C" class="form-input" value="12500" oninput="calcBearingLife()"></div>
+            <div class="form-group"><label class="form-label">Equivalent Load P (N)</label><input type="number" id="brg-P" class="form-input" value="2200" oninput="calcBearingLife()"></div>
+            <div class="form-group"><label class="form-label">Type</label>
+              <select id="brg-type" class="form-input" onchange="calcBearingLife()">
+                <option value="3">Ball (k=3)</option>
+                <option value="3.333">Roller (k=10/3)</option>
+              </select>
+            </div>
+            <div class="form-group"><label class="form-label">Speed (RPM)</label><input type="number" id="brg-rpm" class="form-input" value="1750" oninput="calcBearingLife()"></div>
+          </div>
+          <div class="spec-block" style="margin-top:12px;"><div class="spec-block-header">Result</div><div id="brg-result"></div></div>
+        </div>
+      </div>
+
+      <div class="cheat-section" style="margin-top:24px;">
+        <p class="cheat-section-title">ISO Preferred Fits — Quick Reference</p>
+        <table class="cheat-table">
+          <tr><td class="eq">H7/g6</td><td>Clearance — sliding fit</td><td class="notes">precision spindles, sliding parts</td></tr>
+          <tr><td class="eq">H7/h6</td><td>Clearance — locational</td><td class="notes">easy assembly/disassembly, located by other means</td></tr>
+          <tr><td class="eq">H7/k6</td><td>Transition — light press</td><td class="notes">accurate location, hand or mallet assembly</td></tr>
+          <tr><td class="eq">H7/n6</td><td>Transition — tight</td><td class="notes">more rigid location, press or heavy mallet</td></tr>
+          <tr><td class="eq">H7/p6</td><td>Interference — light press fit</td><td class="notes">permanent/semi-permanent, press or thermal assembly</td></tr>
+          <tr><td class="eq">H7/s6</td><td>Interference — medium drive fit</td><td class="notes">shrink fits on ferrous parts, arbor press</td></tr>
+        </table>
+        <p class="cheat-note">Values shown are ISO 286 preferred fit classes (hole basis). Exact tolerance bands (µm) depend on nominal size — consult ISO 286 tables for the specific diameter.</p>
       </div>
     </div>
 
@@ -279,31 +364,30 @@
       <div class="login-box">
         <div class="login-header"><span class="login-header-title">Gear / Pulley Train</span><span class="login-doc-ref">WZ-CALC / PWR</span></div>
         <div class="login-body">
+          <div class="eq-display">ω₁N₁ = ω₂N₂ &nbsp;|&nbsp; T₂ = T₁(N₂/N₁)η <span class="eq-sub">gears: N=teeth &nbsp;|&nbsp; pulleys: swap N for Ø, belt speed v=ωr, P=Tω</span></div>
           <div class="field-row">
             <div class="form-group">
               <label class="form-label">Type</label>
-              <select id="pt-mode" class="form-input" onchange="onPTModeChange()">
+              <select id="pt-mode" class="form-input" onchange="onPTModeChange(); calcPowerTransmission();">
                 <option value="gear">Gear Train (tooth count)</option>
                 <option value="pulley">Pulley / Belt (diameter)</option>
               </select>
             </div>
-            <div class="form-group"><label class="form-label">Efficiency (%)</label><input type="number" id="pt-eff" class="form-input" value="95"></div>
+            <div class="form-group"><label class="form-label">Efficiency (%)</label><input type="number" id="pt-eff" class="form-input" value="95" oninput="calcPowerTransmission()"></div>
           </div>
           <div class="field-row" id="pt-gear-fields">
-            <div class="form-group"><label class="form-label">Input Teeth N₁</label><input type="number" id="pt-n-in" class="form-input" value="20"></div>
-            <div class="form-group"><label class="form-label">Output Teeth N₂</label><input type="number" id="pt-n-out" class="form-input" value="60"></div>
+            <div class="form-group"><label class="form-label">Input Teeth N₁</label><input type="number" id="pt-n-in" class="form-input" value="20" oninput="calcPowerTransmission()"></div>
+            <div class="form-group"><label class="form-label">Output Teeth N₂</label><input type="number" id="pt-n-out" class="form-input" value="60" oninput="calcPowerTransmission()"></div>
           </div>
           <div class="field-row" id="pt-pulley-fields" style="display:none;">
-            <div class="form-group"><label class="form-label">Input Pulley Ø (mm)</label><input type="number" id="pt-d-in" class="form-input" value="50"></div>
-            <div class="form-group"><label class="form-label">Output Pulley Ø (mm)</label><input type="number" id="pt-d-out" class="form-input" value="150"></div>
+            <div class="form-group"><label class="form-label">Input Pulley Ø (mm)</label><input type="number" id="pt-d-in" class="form-input" value="50" oninput="calcPowerTransmission()"></div>
+            <div class="form-group"><label class="form-label">Output Pulley Ø (mm)</label><input type="number" id="pt-d-out" class="form-input" value="150" oninput="calcPowerTransmission()"></div>
           </div>
           <div class="field-row">
-            <div class="form-group"><label class="form-label">Input Speed (RPM)</label><input type="number" id="pt-rpm-in" class="form-input" value="1750"></div>
-            <div class="form-group"><label class="form-label">Input Torque (N·m)</label><input type="number" id="pt-torque-in" class="form-input" value="2.5"></div>
+            <div class="form-group"><label class="form-label">Input Speed (RPM)</label><input type="number" id="pt-rpm-in" class="form-input" value="1750" oninput="calcPowerTransmission()"></div>
+            <div class="form-group"><label class="form-label">Input Torque (N·m)</label><input type="number" id="pt-torque-in" class="form-input" value="2.5" oninput="calcPowerTransmission()"></div>
           </div>
-          <button class="btn btn-solid" onclick="calcPowerTransmission()">Calculate</button>
           <div class="spec-block" style="margin-top:12px;"><div class="spec-block-header">Result</div><div id="pt-result"></div></div>
-          <div class="formula-line">Gears: ω₁N₁ = ω₂N₂, T₂ = T₁(N₂/N₁)η &nbsp;|&nbsp; Pulleys: ω₁D₁ = ω₂D₂ (no-slip belt), belt speed v = ωr &nbsp;|&nbsp; P = Tω</div>
         </div>
       </div>
     </div>
@@ -327,30 +411,36 @@
           </div>
 
           <div class="field-row" id="graph-fields-mohr">
-            <div class="form-group"><label class="form-label">σx (MPa)</label><input type="number" id="mohr-sx" class="form-input" value="80"></div>
-            <div class="form-group"><label class="form-label">σy (MPa)</label><input type="number" id="mohr-sy" class="form-input" value="20"></div>
-            <div class="form-group"><label class="form-label">τxy (MPa)</label><input type="number" id="mohr-txy" class="form-input" value="30"></div>
+            <div class="form-group"><label class="form-label">σx (MPa)</label><input type="number" id="mohr-sx" class="form-input" value="80" oninput="drawGraph()"></div>
+            <div class="form-group"><label class="form-label">σy (MPa)</label><input type="number" id="mohr-sy" class="form-input" value="20" oninput="drawGraph()"></div>
+            <div class="form-group"><label class="form-label">τxy (MPa)</label><input type="number" id="mohr-txy" class="form-input" value="30" oninput="drawGraph()"></div>
           </div>
 
           <div class="field-row" id="graph-fields-stress_strain" style="display:none;">
-            <div class="form-group"><label class="form-label">Material</label><select id="ss-material" class="form-input material-dropdown"></select></div>
-            <div class="form-group"><label class="form-label">Strain at UTS (%)</label><input type="number" id="ss-eps-uts" class="form-input" value="12"></div>
-            <div class="form-group"><label class="form-label">Fracture Strain (%)</label><input type="number" id="ss-eps-f" class="form-input" value="20"></div>
+            <div class="form-group">
+              <label class="form-label">Material(s) — ⌘/Ctrl-click to compare up to 4</label>
+              <select id="ss-material" class="form-input material-dropdown" multiple size="4" onchange="drawGraph()"></select>
+            </div>
+            <div class="form-group"><label class="form-label">Strain at UTS (%)</label><input type="number" id="ss-eps-uts" class="form-input" value="12" oninput="drawGraph()"></div>
+            <div class="form-group"><label class="form-label">Fracture Strain (%)</label><input type="number" id="ss-eps-f" class="form-input" value="20" oninput="drawGraph()"></div>
           </div>
 
           <div class="field-row" id="graph-fields-hardening" style="display:none;">
-            <div class="form-group"><label class="form-label">Austenitizing Temp (°C)</label><input type="number" id="hard-aust" class="form-input" value="850"></div>
-            <div class="form-group"><label class="form-label">Quench Temp (°C)</label><input type="number" id="hard-quench" class="form-input" value="25"></div>
-            <div class="form-group"><label class="form-label">Temper Temp (°C)</label><input type="number" id="hard-temper" class="form-input" value="400"></div>
+            <div class="form-group"><label class="form-label">Austenitizing Temp (°C)</label><input type="number" id="hard-aust" class="form-input" value="850" oninput="drawGraph()"></div>
+            <div class="form-group"><label class="form-label">Quench Temp (°C)</label><input type="number" id="hard-quench" class="form-input" value="25" oninput="drawGraph()"></div>
+            <div class="form-group"><label class="form-label">Temper Temp (°C)</label><input type="number" id="hard-temper" class="form-input" value="400" oninput="drawGraph()"></div>
           </div>
 
           <div class="field-row" id="graph-fields-motor" style="display:none;">
-            <div class="form-group"><label class="form-label">Stall Torque (N·m)</label><input type="number" id="motor-tstall" class="form-input" value="5"></div>
-            <div class="form-group"><label class="form-label">No-Load Speed (RPM)</label><input type="number" id="motor-rpm" class="form-input" value="4000"></div>
+            <div class="form-group"><label class="form-label">Stall Torque (N·m)</label><input type="number" id="motor-tstall" class="form-input" value="5" oninput="drawGraph()"></div>
+            <div class="form-group"><label class="form-label">No-Load Speed (RPM)</label><input type="number" id="motor-rpm" class="form-input" value="4000" oninput="drawGraph()"></div>
           </div>
 
           <div class="field-row" id="graph-fields-fatigue" style="display:none;">
-            <div class="form-group"><label class="form-label">Material</label><select id="fatigue-material" class="form-input material-dropdown"></select></div>
+            <div class="form-group">
+              <label class="form-label">Material(s) — ⌘/Ctrl-click to compare up to 4</label>
+              <select id="fatigue-material" class="form-input material-dropdown" multiple size="4" onchange="drawGraph()"></select>
+            </div>
           </div>
 
           <button class="btn btn-solid" onclick="drawGraph()">Draw Graph</button>
@@ -602,7 +692,7 @@
   function switchTab(tab) {
     document.querySelectorAll('.mode-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
     document.querySelectorAll('.tab-panel').forEach(p => p.classList.toggle('active', p.id === 'tab-' + tab));
-    const labels = { materials: 'Materials', beam: 'Beam Simulator', calcs: 'Design Calcs', power: 'Power Transmission', graphs: 'Graphs', diffeq: 'Diff Eq / Laplace', cheat: 'Cheat Sheet' };
+    const labels = { materials: 'Materials', beam: 'Beam Simulator', calcs: 'Design Calcs', machine: 'Machine Design', power: 'Power Transmission', graphs: 'Graphs', diffeq: 'Diff Eq / Laplace', cheat: 'Cheat Sheet' };
     document.getElementById('status-mode').textContent = labels[tab];
   }
   const fy = document.getElementById('footer-year');

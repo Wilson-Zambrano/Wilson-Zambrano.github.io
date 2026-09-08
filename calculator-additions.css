@@ -30,6 +30,35 @@
   letter-spacing: 0.02em;
 }
 
+.eq-display {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--ink);
+  background: var(--paper-dark, rgba(0,0,0,0.03));
+  border: 1px solid var(--line-bold);
+  border-left: 3px solid var(--red);
+  padding: 10px 14px;
+  margin-bottom: 16px;
+  letter-spacing: 0.01em;
+}
+.eq-display .eq-sub { font-size: 0.62rem; color: var(--ink-dim); font-weight: 400; display: block; margin-top: 4px; }
+
+.eq-live {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.72rem;
+  color: var(--ink);
+  padding: 8px 10px;
+  margin-top: 8px;
+  background: var(--paper-dark, rgba(0,0,0,0.03));
+  border-left: 3px solid var(--blue);
+}
+.eq-live strong { color: var(--red); }
+
+.legend-row { display: flex; gap: 16px; flex-wrap: wrap; margin-top: 8px; font-size: 0.62rem; color: var(--ink-dim); }
+.legend-swatch { display: inline-block; width: 10px; height: 10px; margin-right: 5px; vertical-align: middle; }
+select[multiple].form-input { padding: 4px; }
+
 #beam-svg-container { padding: 12px; }
 #beam-svg-container svg { width: 100%; height: auto; }
 
