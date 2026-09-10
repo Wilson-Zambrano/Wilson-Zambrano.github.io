@@ -108,3 +108,18 @@ table.cheat-table td.notes { color: var(--ink-dim); font-size: 0.62rem; opacity:
 @media (max-width: 720px) {
   table.cheat-table td.eq { white-space: normal; }
 }
+
+/* ── GLOBAL SEARCH STATE ── */
+#app-screen.is-searching .tab-panel {
+  display: block !important;
+}
+
+#app-screen.is-searching .input-mode-toggle {
+  opacity: 0.3;
+  pointer-events: none;
+}
+
+#app-screen.is-searching .login-box:not(.search-match),
+#app-screen.is-searching .cheat-section:not(.search-match) {
+  display: none !important;
+}

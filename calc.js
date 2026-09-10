@@ -60,6 +60,39 @@ function populateMaterialDropdowns() {
 }
 
 // ============================================================
+// CALCULATION LOGGING
+// ============================================================
+function addToLog(operationName, inputDetails, result, unit = '', isWarning = false) {
+  const logContainer = document.getElementById('calc-log-list');
+  if (!logContainer) return;
+
+  const now = new Date();
+  const timeString = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+
+  const entry = document.createElement('div');
+  entry.className = `log-entry ${isWarning ? 'red-edge' : ''}`;
+  
+  entry.innerHTML = `
+      <div class="log-time">${timeString}</div>
+      <div class="log-title">${operationName}</div>
+      <div class="log-details">${inputDetails}</div>
+      <div class="log-result" style="color: ${isWarning ? 'var(--red)' : 'var(--blue)'};">${result} <span style="font-size: 0.85em; font-weight: normal; color: var(--ink-dim);">${unit}</span></div>
+  `;
+
+  logContainer.insertBefore(entry, logContainer.firstChild);
+}
+
+function clearLog() {
+  const logContainer = document.getElementById('calc-log-list');
+  if (logContainer) logContainer.innerHTML = '';
+}
+
+function toggleLog() {
+  const sidebar = document.getElementById('calc-log-sidebar');
+  if (sidebar) sidebar.classList.toggle('open');
+}
+
+// ============================================================
 // BEAM MECHANICS ENGINE
 // ============================================================
 function sectionProps(shape, dims) {
@@ -190,6 +223,8 @@ function runBeamSimulation() {
     <div class="formula-line">${bc.formula}</div>
   `;
   setStatusResult(`FoS ${fos.toFixed(2)}`);
+  
+  addToLog(`Beam: ${bc.label}`, `L=${L}mm, P/w=${loadVal}`, sigmaMax.toFixed(2), `MPa (FoS ${fos.toFixed(2)})`, fos < 1.2);
 }
 
 function setStatusResult(text) {
@@ -290,6 +325,7 @@ function calcStress() {
     `<div class="eq-live">σ = F/A = ${F}/${A} = <strong>${sigma.toFixed(2)} MPa</strong></div>
      <div class="spec-row"><span class="spec-key">Factor of Safety</span><span class="spec-val">${fos.toFixed(2)}</span></div>`;
   setStatusResult(`σ ${sigma.toFixed(1)} MPa`);
+  addToLog('Axial Stress', `F=${F}N, A=${A}mm²`, sigma.toFixed(2), `MPa (FoS ${fos.toFixed(2)})`, fos < 1.2);
 }
 
 function calcTorsion() {
@@ -306,6 +342,7 @@ function calcTorsion() {
     `<div class="eq-live">τ = Tr/J = ${T}×${(d/2).toFixed(1)}/${J.toFixed(0)} = <strong>${tau.toFixed(2)} MPa</strong></div>
      <div class="spec-row"><span class="spec-key">Angle of Twist</span><span class="spec-val">${(theta * 180 / Math.PI).toFixed(3)}° over ${Lg} mm</span></div>`;
   setStatusResult(`τ ${tau.toFixed(1)} MPa`);
+  addToLog('Torsion', `T=${T}N·mm, d=${d}mm`, tau.toFixed(2), 'MPa');
 }
 
 function calcBuckling() {
@@ -317,6 +354,7 @@ function calcBuckling() {
   document.getElementById('buckle-result').innerHTML =
     `<div class="eq-live">P_cr = π²EI/(KL)² = <strong>${Pcr.toFixed(1)} N</strong> (${(Pcr/1000).toFixed(2)} kN)</div>`;
   setStatusResult(`P_cr ${(Pcr/1000).toFixed(2)} kN`);
+  addToLog('Euler Buckling', `L=${Lg}mm, I=${I}mm⁴, K=${K}`, (Pcr/1000).toFixed(2), 'kN');
 }
 
 function calcSpring() {
@@ -329,6 +367,7 @@ function calcSpring() {
   document.getElementById('spring-result').innerHTML =
     `<div class="eq-live">k = Gd⁴/8D³n = <strong>${k.toFixed(2)} N/mm</strong></div>`;
   setStatusResult(`k ${k.toFixed(2)} N/mm`);
+  addToLog('Helical Spring', `d=${d}mm, D=${D}mm, n=${n}`, k.toFixed(2), 'N/mm');
 }
 
 // ============================================================
@@ -381,6 +420,7 @@ function calcPowerTransmission() {
     <div class="spec-row"><span class="spec-key">Power In / Out</span><span class="spec-val">${powerIn.toFixed(1)} W / ${powerOut.toFixed(1)} W</span></div>
   `;
   setStatusResult(`${rpmOut.toFixed(0)} RPM out`);
+  addToLog('Power Trans.', `${mode.toUpperCase()}, in=${rpmIn}RPM`, rpmOut.toFixed(1), 'RPM out');
 }
 
 // ============================================================
@@ -419,6 +459,7 @@ function calcPressFit() {
     <div class="formula-line">p = Eδ(b²−R²)(R²−a²) / [2R³(b²−a²)] &nbsp;|&nbsp; T = 2πR²Lpμ &nbsp;|&nbsp; F = 2πRLpμ</div>
   `;
   setStatusResult(`p = ${p.toFixed(1)} MPa`);
+  addToLog('Press Fit', `D=${D}mm, Δ=${deltaD}mm`, p.toFixed(2), `MPa (FoS ${fosHub.toFixed(2)})`, fosHub < 1.2);
 }
 
 // ============================================================
@@ -443,6 +484,7 @@ function calcWeld() {
     <div class="spec-row"><span class="spec-key">Factor of Safety</span><span class="spec-val" style="color:${fosColor};">${fos.toFixed(2)}</span></div>
   `;
   setStatusResult(`τ_weld ${tau.toFixed(1)} MPa`);
+  addToLog('Weld Strength', `P=${P}N, L=${L}mm, leg=${leg}`, tau.toFixed(2), `MPa (FoS ${fos.toFixed(2)})`, fos < 1.2);
 }
 
 function calcBoltPattern() {
@@ -470,6 +512,7 @@ function calcBoltPattern() {
     <div class="spec-row"><span class="spec-key">Factor of Safety (0.577·Sy)</span><span class="spec-val" style="color:${fosColor};">${fos.toFixed(2)}</span></div>
   `;
   setStatusResult(`FoS_bolt ${fos.toFixed(2)}`);
+  addToLog('Bolt Pattern', `n=${n}, V=${V}N, M=${M}N·mm`, Fmax.toFixed(1), `N max load (FoS ${fos.toFixed(2)})`, fos < 1.2);
 }
 
 function calcKey() {
@@ -495,6 +538,7 @@ function calcKey() {
     <div class="spec-row"><span class="spec-key">Governing Factor of Safety</span><span class="spec-val" style="color:${fosColor};">${worstFos.toFixed(2)}</span></div>
   `;
   setStatusResult(`FoS_key ${worstFos.toFixed(2)}`);
+  addToLog('Key Shear/Brg', `T=${T}N·mm, d=${d}mm`, worstFos.toFixed(2), 'Min FoS', worstFos < 1.2);
 }
 
 function calcBearingLife() {
@@ -511,6 +555,7 @@ function calcBearingLife() {
     <div class="spec-row"><span class="spec-key">Life in Hours</span><span class="spec-val">${L10h.toFixed(0)} hrs (${(L10h/8760).toFixed(2)} yrs continuous)</span></div>
   `;
   setStatusResult(`L10 ${L10h.toFixed(0)} hrs`);
+  addToLog('Bearing Life', `C=${C}N, P=${P}N, ${rpm}RPM`, L10h.toFixed(0), 'hrs');
 }
 
 // ============================================================
@@ -877,6 +922,7 @@ function solveLinearODE2() {
     <div class="spec-row"><span class="spec-key">Solution</span><span class="spec-val">${formula}</span></div>
   `;
   setStatusResult(caseDesc.split(' — ')[0]);
+  addToLog(`ODE2: ${caseDesc.split(' — ')[0]}`, `a=${a}, b=${b}, c=${c}`, '', '');
 }
 
 function evalExpr(expr, x, y) {
@@ -929,6 +975,7 @@ function solveODENumeric() {
     <div class="formula-line">4th-order Runge-Kutta — works for any f(x,y), linear or nonlinear.</div>
   `;
   setStatusResult(`y(${xf})=${y.toFixed(3)}`);
+  addToLog('ODE (RK4)', fnStr, y.toFixed(4), `@ x=${xf}`);
 }
 
 // ============================================================
@@ -975,6 +1022,7 @@ function calcCentroidMOI() {
     <div class="spec-row"><span class="spec-key">I about combined centroidal axis</span><span class="spec-val">${Itotal.toFixed(0)} mm⁴</span></div>
   `;
   setStatusResult(`I ${Itotal.toFixed(0)} mm⁴`);
+  addToLog('Centroid & MOI', `Area=${totalA.toFixed(1)}mm²`, Itotal.toFixed(0), 'mm⁴');
 }
 
 // ============================================================
@@ -1000,6 +1048,7 @@ function calcProjectile() {
     <div class="spec-row"><span class="spec-key">vx, vy at launch</span><span class="spec-val">${vx.toFixed(2)}, ${vy.toFixed(2)} m/s</span></div>
   `;
   setStatusResult(`Range ${range.toFixed(1)} m`);
+  addToLog('Projectile', `v0=${v0}m/s, θ=${thetaDeg}°`, range.toFixed(2), 'm range');
 }
 
 // ============================================================
@@ -1061,56 +1110,72 @@ function calcEngEcon() {
     <div class="spec-row"><span class="spec-key">${resultLabel}</span><span class="spec-val">$${result.toLocaleString(undefined, { maximumFractionDigits: 2 })}</span></div>
   `;
   setStatusResult(`${resultLabel.split(' ')[0]} $${result.toFixed(0)}`);
+  addToLog('Eng Econ', `${mode}, i=${i}, n=${n}`, '$'+result.toFixed(2), '');
 }
 
 // ============================================================
-// REFERENCE SEARCH FUNCTIONALITY
+// GLOBAL REFERENCE FLATTENER
 // ============================================================
 function initializeReferenceSearch() {
   const searchInput = document.getElementById('global-ref-search');
-  if (!searchInput) return;
+  const appScreen = document.getElementById('app-screen');
+  
+  if (!searchInput || !appScreen) return;
 
   searchInput.addEventListener('input', function(e) {
     const term = e.target.value.toLowerCase().trim();
-    const tables = document.querySelectorAll('.cheat-table');
-    let hasResults = false;
+    // Select all the major structural blocks across all tabs
+    const searchableBlocks = appScreen.querySelectorAll('.login-box, .cheat-section');
 
-    tables.forEach(table => {
-      // Find all rows except the header
-      const rows = table.querySelectorAll('tbody tr, tr:not(:first-child)');
-      let tableHasVisibleRow = false;
+    if (term.length === 0) {
+      appScreen.classList.remove('is-searching');
+      // Restore cheat table rows
+      document.querySelectorAll('.cheat-table tr').forEach(r => r.style.display = '');
+      searchableBlocks.forEach(b => b.classList.remove('search-match'));
+      return;
+    }
 
-      rows.forEach(row => {
-        // Skip header th rows
-        if(row.querySelector('th')) return;
+    appScreen.classList.add('is-searching');
 
-        const text = row.textContent.toLowerCase();
-        if (text.includes(term)) {
-          row.style.display = '';
-          tableHasVisibleRow = true;
-          hasResults = true;
-        } else {
-          row.style.display = 'none';
+    searchableBlocks.forEach(block => {
+      let blockMatches = false;
+
+      // Handle Reference Tables
+      if (block.classList.contains('cheat-section') || block.querySelector('.cheat-table')) {
+        const rows = block.querySelectorAll('tbody tr, tr:not(:first-child)');
+        const titleMatch = block.querySelector('.cheat-section-title, .login-header-title')?.textContent.toLowerCase().includes(term);
+        
+        rows.forEach(row => {
+          if(row.querySelector('th')) return;
+          const text = row.textContent.toLowerCase();
+          // If title matches, show all rows, else filter rows
+          if (titleMatch || text.includes(term)) {
+            row.style.display = '';
+            blockMatches = true;
+          } else {
+            row.style.display = 'none';
+          }
+        });
+
+        // Catch for purely textual cheat sections with no table
+        if (rows.length === 0 && block.textContent.toLowerCase().includes(term)) {
+          blockMatches = true;
         }
-      });
+      } 
+      // Handle Calculation Modules (login-boxes without tables)
+      else {
+        // Just checking inner text captures titles, labels, equations (.eq-display), and formulas
+        if (block.textContent.toLowerCase().includes(term)) {
+          blockMatches = true;
+        }
+      }
 
-      // Show/hide the wrapping section for neatness
-      const parentSection = table.closest('.cheat-section');
-      if (parentSection) {
-        parentSection.style.display = tableHasVisibleRow ? '' : 'none';
+      if (blockMatches) {
+        block.classList.add('search-match');
+      } else {
+        block.classList.remove('search-match');
       }
     });
-
-    // If searching, auto switch to the FE Reference tab if not already on it or materials
-    if (term.length > 0) {
-      const activeTabBtn = document.querySelector('.mode-btn.active');
-      if (activeTabBtn) {
-        const currentTab = activeTabBtn.dataset.tab;
-        if (currentTab !== 'cheat' && currentTab !== 'materials') {
-          switchTab('cheat');
-        }
-      }
-    }
   });
 }
 
