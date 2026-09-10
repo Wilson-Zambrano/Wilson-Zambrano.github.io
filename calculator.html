@@ -19,10 +19,6 @@
     </div>
 
     <div style="display: flex; align-items: center; gap: 12px; margin-left: auto; padding-right: 16px; border-right: 1px solid var(--line-bold);">
-      <button onclick="toggleLog()" class="btn btn-outline" style="padding: 6px 12px; font-size: 0.5rem; border-color: var(--blue); color: var(--blue);">
-        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:inline;vertical-align:middle;margin-right:4px;"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="9" y1="3" x2="9" y2="21"/></svg>
-        <span>Toggle Log</span>
-      </button>
       <a href="terminal.html" class="btn btn-outline" style="padding: 6px 12px; font-size: 0.5rem; text-decoration: none;">
         <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:inline;vertical-align:middle;margin-right:4px;"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
         <span>Portfolio Terminal</span>
@@ -43,17 +39,6 @@
     </div>
   </nav>
 </header>
-
-<!-- Calculation Log Sidebar -->
-<div id="calc-log-sidebar" class="log-sidebar">
-  <div class="log-header">
-      <span class="log-header-title">Session Log</span>
-      <button onclick="clearLog()" class="btn btn-outline" style="padding: 2px 6px; font-size: 0.5rem;">Clear</button>
-  </div>
-  <div id="calc-log-list" class="log-list">
-      <!-- Dynamically populated via JS -->
-  </div>
-</div>
 
 <main>
   <div id="login-screen">
@@ -92,10 +77,13 @@
       <h1 class="dwg-title">Engineering Calculator</h1>
     </div>
 
+    <div class="ref-search-container" style="margin-bottom: 24px; display: flex; align-items: center;">
+      <input type="text" id="global-ref-search" placeholder="Search materials & FE references..." class="form-input" style="width: 100%; max-width: 480px; font-family: 'IBM Plex Mono', monospace; font-size: 0.85rem;">
+    </div>
+
     <div class="input-mode-toggle" style="margin-bottom: 24px; flex-wrap: wrap;">
       <button class="mode-btn active" data-tab="materials" onclick="switchTab('materials')">Materials</button>
-      <button class="mode-btn" data-tab="statics" onclick="switchTab('statics')">Statics</button>
-      <button class="mode-btn" data-tab="beam" onclick="switchTab('beam')">Beam Simulator</button>
+      <button class="mode-btn" data-tab="beam" onclick="switchTab('beam')">Beam &amp; Statics</button>
       <button class="mode-btn" data-tab="calcs" onclick="switchTab('calcs')">Design Calcs</button>
       <button class="mode-btn" data-tab="machine" onclick="switchTab('machine')">Machine Design</button>
       <button class="mode-btn" data-tab="power" onclick="switchTab('power')">Power Transmission</button>
@@ -109,91 +97,18 @@
     <div class="tab-panel active" id="tab-materials">
       <div class="login-box">
         <div class="login-header">
-          <span class="login-header-title">Material Selector</span>
+          <span class="login-header-title">Material Properties Database</span>
           <span class="login-doc-ref">WZ-CALC / MAT</span>
         </div>
-        <div class="login-body">
-          <div class="form-group">
-            <label class="form-label">Material</label>
-            <select id="material-select" class="form-input material-dropdown" onchange="updateMaterial()"></select>
-          </div>
-          <div class="spec-block">
-            <div class="spec-block-header">Properties</div>
-            <div id="material-specs"></div>
-          </div>
+        <div class="login-body" style="padding: 0;">
+          <table id="materials-table" class="cheat-table">
+            <!-- Dynamically populated via JS -->
+          </table>
         </div>
       </div>
     </div>
 
-    <!-- TAB: STATICS -->
-    <div class="tab-panel" id="tab-statics">
-      <div class="login-box">
-        <div class="login-header"><span class="login-header-title">Centroid &amp; Moment of Inertia — Composite Section</span><span class="login-doc-ref">WZ-CALC / STAT</span></div>
-        <div class="login-body">
-          <div class="eq-display">ȳ = ΣAᵢyᵢ / ΣAᵢ &nbsp;|&nbsp; I = Σ[I_own,ᵢ + Aᵢ(yᵢ−ȳ)²] <span class="eq-sub">parallel axis theorem — 2 shapes, second may add or subtract (hole)</span></div>
-
-          <p class="cheat-note" style="padding-top:0;">Shape A</p>
-          <div class="field-row">
-            <div class="form-group"><label class="form-label">Type</label>
-              <select id="cenA-type" class="form-input" onchange="onCentroidShapeChange('A')">
-                <option value="rect">Rectangle</option>
-                <option value="circle">Circle</option>
-              </select>
-            </div>
-            <div class="form-group" id="cenA-rect">
-              <label class="form-label">Width b, Height h (mm)</label>
-              <div style="display:flex; gap:6px;">
-                <input type="number" id="cenA-b" class="form-input" value="60" oninput="calcCentroidMOI()">
-                <input type="number" id="cenA-h" class="form-input" value="10" oninput="calcCentroidMOI()">
-              </div>
-            </div>
-            <div class="form-group" id="cenA-circle" style="display:none;"><label class="form-label">Diameter (mm)</label><input type="number" id="cenA-d" class="form-input" value="20" oninput="calcCentroidMOI()"></div>
-            <div class="form-group"><label class="form-label">Centroid y (mm)</label><input type="number" id="cenA-y" class="form-input" value="5" oninput="calcCentroidMOI()"></div>
-          </div>
-
-          <p class="cheat-note" style="padding-top:0;">Shape B (set Operation to "None" to ignore)</p>
-          <div class="field-row">
-            <div class="form-group"><label class="form-label">Operation</label>
-              <select id="cenB-op" class="form-input" onchange="calcCentroidMOI()">
-                <option value="none">None</option>
-                <option value="add">Add</option>
-                <option value="subtract">Subtract (hole)</option>
-              </select>
-            </div>
-            <div class="form-group"><label class="form-label">Type</label>
-              <select id="cenB-type" class="form-input" onchange="onCentroidShapeChange('B')">
-                <option value="rect">Rectangle</option>
-                <option value="circle">Circle</option>
-              </select>
-            </div>
-            <div class="form-group" id="cenB-rect">
-              <label class="form-label">Width b, Height h (mm)</label>
-              <div style="display:flex; gap:6px;">
-                <input type="number" id="cenB-b" class="form-input" value="10" oninput="calcCentroidMOI()">
-                <input type="number" id="cenB-h" class="form-input" value="60" oninput="calcCentroidMOI()">
-              </div>
-            </div>
-            <div class="form-group" id="cenB-circle" style="display:none;"><label class="form-label">Diameter (mm)</label><input type="number" id="cenB-d" class="form-input" value="20" oninput="calcCentroidMOI()"></div>
-            <div class="form-group"><label class="form-label">Centroid y (mm)</label><input type="number" id="cenB-y" class="form-input" value="40" oninput="calcCentroidMOI()"></div>
-          </div>
-
-          <div class="spec-block" style="margin-top:12px;"><div class="spec-block-header">Result</div><div id="centroid-result"></div></div>
-        </div>
-      </div>
-
-      <div class="cheat-section" style="margin-top:24px;">
-        <p class="cheat-section-title">Statics — Equilibrium &amp; Friction</p>
-        <table class="cheat-table">
-          <tr><td class="eq">ΣFx = 0, ΣFy = 0, ΣM = 0</td><td>Static equilibrium (2D rigid body)</td><td class="notes"></td></tr>
-          <tr><td class="eq">f ≤ μsN</td><td>Max static friction force</td><td class="notes">μs = coefficient of static friction</td></tr>
-          <tr><td class="eq">f = μkN</td><td>Kinetic friction force</td><td class="notes">μk &lt; μs typically</td></tr>
-          <tr><td class="eq">I = I_c + Ad²</td><td>Parallel axis theorem</td><td class="notes">I_c = centroidal moment of inertia, d = offset distance</td></tr>
-          <tr><td class="eq">x̄ = ΣAᵢxᵢ / ΣAᵢ</td><td>Composite centroid (x)</td><td class="notes">same pattern for ȳ</td></tr>
-        </table>
-      </div>
-    </div>
-
-    <!-- TAB: BEAM SIMULATOR -->
+    <!-- TAB: BEAM SIMULATOR & STATICS -->
     <div class="tab-panel" id="tab-beam">
       <div class="login-box">
         <div class="login-header">
@@ -272,6 +187,71 @@
             <div id="beam-result"></div>
           </div>
         </div>
+      </div>
+
+      <div class="login-box" style="margin-top:20px;">
+        <div class="login-header"><span class="login-header-title">Centroid &amp; Moment of Inertia — Composite Section</span><span class="login-doc-ref">WZ-CALC / STAT</span></div>
+        <div class="login-body">
+          <div class="eq-display">ȳ = ΣAᵢyᵢ / ΣAᵢ &nbsp;|&nbsp; I = Σ[I_own,ᵢ + Aᵢ(yᵢ−ȳ)²] <span class="eq-sub">parallel axis theorem — 2 shapes, second may add or subtract (hole)</span></div>
+
+          <p class="cheat-note" style="padding-top:0;">Shape A</p>
+          <div class="field-row">
+            <div class="form-group"><label class="form-label">Type</label>
+              <select id="cenA-type" class="form-input" onchange="onCentroidShapeChange('A')">
+                <option value="rect">Rectangle</option>
+                <option value="circle">Circle</option>
+              </select>
+            </div>
+            <div class="form-group" id="cenA-rect">
+              <label class="form-label">Width b, Height h (mm)</label>
+              <div style="display:flex; gap:6px;">
+                <input type="number" id="cenA-b" class="form-input" value="60" oninput="calcCentroidMOI()">
+                <input type="number" id="cenA-h" class="form-input" value="10" oninput="calcCentroidMOI()">
+              </div>
+            </div>
+            <div class="form-group" id="cenA-circle" style="display:none;"><label class="form-label">Diameter (mm)</label><input type="number" id="cenA-d" class="form-input" value="20" oninput="calcCentroidMOI()"></div>
+            <div class="form-group"><label class="form-label">Centroid y (mm)</label><input type="number" id="cenA-y" class="form-input" value="5" oninput="calcCentroidMOI()"></div>
+          </div>
+
+          <p class="cheat-note" style="padding-top:0;">Shape B (set Operation to "None" to ignore)</p>
+          <div class="field-row">
+            <div class="form-group"><label class="form-label">Operation</label>
+              <select id="cenB-op" class="form-input" onchange="calcCentroidMOI()">
+                <option value="none">None</option>
+                <option value="add">Add</option>
+                <option value="subtract">Subtract (hole)</option>
+              </select>
+            </div>
+            <div class="form-group"><label class="form-label">Type</label>
+              <select id="cenB-type" class="form-input" onchange="onCentroidShapeChange('B')">
+                <option value="rect">Rectangle</option>
+                <option value="circle">Circle</option>
+              </select>
+            </div>
+            <div class="form-group" id="cenB-rect">
+              <label class="form-label">Width b, Height h (mm)</label>
+              <div style="display:flex; gap:6px;">
+                <input type="number" id="cenB-b" class="form-input" value="10" oninput="calcCentroidMOI()">
+                <input type="number" id="cenB-h" class="form-input" value="60" oninput="calcCentroidMOI()">
+              </div>
+            </div>
+            <div class="form-group" id="cenB-circle" style="display:none;"><label class="form-label">Diameter (mm)</label><input type="number" id="cenB-d" class="form-input" value="20" oninput="calcCentroidMOI()"></div>
+            <div class="form-group"><label class="form-label">Centroid y (mm)</label><input type="number" id="cenB-y" class="form-input" value="40" oninput="calcCentroidMOI()"></div>
+          </div>
+
+          <div class="spec-block" style="margin-top:12px;"><div class="spec-block-header">Result</div><div id="centroid-result"></div></div>
+        </div>
+      </div>
+
+      <div class="cheat-section" style="margin-top:24px;">
+        <p class="cheat-section-title">Statics — Equilibrium &amp; Friction</p>
+        <table class="cheat-table">
+          <tr><td class="eq">ΣFx = 0, ΣFy = 0, ΣM = 0</td><td>Static equilibrium (2D rigid body)</td><td class="notes"></td></tr>
+          <tr><td class="eq">f ≤ μsN</td><td>Max static friction force</td><td class="notes">μs = coefficient of static friction</td></tr>
+          <tr><td class="eq">f = μkN</td><td>Kinetic friction force</td><td class="notes">μk &lt; μs typically</td></tr>
+          <tr><td class="eq">I = I_c + Ad²</td><td>Parallel axis theorem</td><td class="notes">I_c = centroidal moment of inertia, d = offset distance</td></tr>
+          <tr><td class="eq">x̄ = ΣAᵢxᵢ / ΣAᵢ</td><td>Composite centroid (x)</td><td class="notes">same pattern for ȳ</td></tr>
+        </table>
       </div>
     </div>
 
@@ -653,10 +633,6 @@
     <!-- TAB: CHEAT SHEET -->
     <div class="tab-panel" id="tab-cheat">
       
-      <div class="ref-search-container" style="margin-bottom: 24px;">
-        <input type="text" id="global-ref-search" placeholder="Search references (e.g., buckling, titanium, modulus)..." class="form-input" style="width: 100%; max-width: 480px; font-family: 'IBM Plex Mono', monospace; font-size: 0.85rem;">
-      </div>
-
       <div class="cheat-section">
         <p class="cheat-section-title">Stress &amp; Strain</p>
         <table class="cheat-table">
@@ -907,7 +883,7 @@
   function switchTab(tab) {
     document.querySelectorAll('.mode-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
     document.querySelectorAll('.tab-panel').forEach(p => p.classList.toggle('active', p.id === 'tab-' + tab));
-    const labels = { materials: 'Materials', statics: 'Statics', beam: 'Beam Simulator', calcs: 'Design Calcs', machine: 'Machine Design', power: 'Power Transmission', dynecon: 'Dynamics & Econ', graphs: 'Graphs', diffeq: 'Diff Eq / Laplace', cheat: 'FE Reference' };
+    const labels = { materials: 'Materials', beam: 'Beam & Statics', calcs: 'Design Calcs', machine: 'Machine Design', power: 'Power Transmission', dynecon: 'Dynamics & Econ', graphs: 'Graphs', diffeq: 'Diff Eq / Laplace', cheat: 'FE Reference' };
     document.getElementById('status-mode').textContent = labels[tab];
   }
   const fy = document.getElementById('footer-year');

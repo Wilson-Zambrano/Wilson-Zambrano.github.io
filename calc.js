@@ -4,30 +4,51 @@
 const materials = {
   steel_a36: { name: "Structural Steel (A36)", density: 7.85, youngs_modulus: 200, shear_modulus: 79.3, yield_strength: 250, uts: 400, poisson: 0.30 },
   steel_4140: { name: "Alloy Steel (4140, Q&T)", density: 7.85, youngs_modulus: 205, shear_modulus: 80.0, yield_strength: 655, uts: 1020, poisson: 0.29 },
-  al_6061: { name: "Aluminum (6061-T6)", density: 2.70, youngs_modulus: 69, shear_modulus: 26.0, yield_strength: 275, uts: 310, poisson: 0.33 },
+  stainless_304: { name: "Stainless Steel (304)", density: 8.00, youngs_modulus: 193, shear_modulus: 75.0, yield_strength: 215, uts: 505, poisson: 0.29 },
+  al_6061: { name: "Aluminum (6061-T6)", density: 2.70, youngs_modulus: 69.0, shear_modulus: 26.0, yield_strength: 275, uts: 310, poisson: 0.33 },
   al_7075: { name: "Aluminum (7075-T6)", density: 2.81, youngs_modulus: 71.7, shear_modulus: 26.9, yield_strength: 503, uts: 572, poisson: 0.33 },
+  al_2024: { name: "Aluminum (2024-T4)", density: 2.78, youngs_modulus: 73.1, shear_modulus: 28.0, yield_strength: 324, uts: 469, poisson: 0.33 },
   ti_6al: { name: "Titanium (Ti-6Al-4V)", density: 4.43, youngs_modulus: 114, shear_modulus: 44.0, yield_strength: 880, uts: 950, poisson: 0.34 },
-  brass_360: { name: "Brass (C360)", density: 8.50, youngs_modulus: 97, shear_modulus: 37.0, yield_strength: 310, uts: 400, poisson: 0.34 },
+  copper_c110: { name: "Copper (C11000)", density: 8.89, youngs_modulus: 115, shear_modulus: 44.0, yield_strength: 69, uts: 220, poisson: 0.33 },
+  brass_360: { name: "Brass (C360)", density: 8.50, youngs_modulus: 97.0, shear_modulus: 37.0, yield_strength: 310, uts: 400, poisson: 0.34 },
+  invar_36: { name: "Invar 36 (Low CTE)", density: 8.05, youngs_modulus: 141, shear_modulus: 57.0, yield_strength: 240, uts: 490, poisson: 0.29 },
   cast_iron: { name: "Gray Cast Iron", density: 7.15, youngs_modulus: 110, shear_modulus: 44.0, yield_strength: 150, uts: 250, poisson: 0.28 },
   delrin: { name: "Delrin/Acetal", density: 1.42, youngs_modulus: 3.1, shear_modulus: 1.10, yield_strength: 65, uts: 70, poisson: 0.35 },
+  polycarbonate: { name: "Polycarbonate", density: 1.20, youngs_modulus: 2.4, shear_modulus: 0.85, yield_strength: 62, uts: 65, poisson: 0.37 },
+  nylon_66: { name: "Nylon 6/6", density: 1.14, youngs_modulus: 2.7, shear_modulus: 1.00, yield_strength: 55, uts: 82, poisson: 0.39 },
   abs: { name: "ABS Plastic", density: 1.05, youngs_modulus: 2.3, shear_modulus: 0.80, yield_strength: 40, uts: 43, poisson: 0.35 },
   carbon_fiber: { name: "Carbon Fiber (UD, 0°)", density: 1.60, youngs_modulus: 135, shear_modulus: 5.0, yield_strength: 1500, uts: 1700, poisson: 0.30 },
   wood_pine: { name: "Douglas Fir (along grain)", density: 0.53, youngs_modulus: 13.1, shear_modulus: 0.85, yield_strength: 40, uts: 50, poisson: 0.30 }
 };
 
-function updateMaterial() {
-  const key = document.getElementById('material-select').value;
-  const mat = materials[key];
-  if (!mat) return; // options not populated yet
-  document.getElementById('material-specs').innerHTML = `
-    <strong>Young's Modulus (E):</strong> ${mat.youngs_modulus} GPa<br>
-    <strong>Shear Modulus (G):</strong> ${mat.shear_modulus} GPa<br>
-    <strong>Yield Strength:</strong> ${mat.yield_strength} MPa<br>
-    <strong>Ultimate Tensile Strength:</strong> ${mat.uts} MPa<br>
-    <strong>Density:</strong> ${mat.density} g/cm³<br>
-    <strong>Poisson's Ratio:</strong> ${mat.poisson}
-  `;
-  populateMaterialDropdowns();
+function renderMaterialTable() {
+  const tbody = document.getElementById('materials-table');
+  if (!tbody) return;
+  
+  let html = `<thead><tr>
+      <th>Material</th>
+      <th>E (GPa)</th>
+      <th>G (GPa)</th>
+      <th>Yield (MPa)</th>
+      <th>UTS (MPa)</th>
+      <th>ρ (g/cm³)</th>
+      <th>ν</th>
+    </tr></thead><tbody>`;
+    
+  for (const key in materials) {
+    const m = materials[key];
+    html += `<tr>
+      <td class="eq">${m.name}</td>
+      <td>${m.youngs_modulus.toFixed(1)}</td>
+      <td>${m.shear_modulus.toFixed(1)}</td>
+      <td>${m.yield_strength}</td>
+      <td>${m.uts}</td>
+      <td>${m.density.toFixed(2)}</td>
+      <td>${m.poisson.toFixed(2)}</td>
+    </tr>`;
+  }
+  html += '</tbody>';
+  tbody.innerHTML = html;
 }
 
 function populateMaterialDropdowns() {
@@ -36,39 +57,6 @@ function populateMaterialDropdowns() {
     sel.innerHTML = Object.keys(materials).map(k => `<option value="${k}">${materials[k].name}</option>`).join('');
     sel.dataset.filled = "1";
   });
-}
-
-// ============================================================
-// CALCULATION LOGGING
-// ============================================================
-function addToLog(operationName, inputDetails, result, unit = '', isWarning = false) {
-  const logContainer = document.getElementById('calc-log-list');
-  if (!logContainer) return;
-
-  const now = new Date();
-  const timeString = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-
-  const entry = document.createElement('div');
-  entry.className = `log-entry ${isWarning ? 'red-edge' : ''}`;
-  
-  entry.innerHTML = `
-      <div class="log-time">${timeString}</div>
-      <div class="log-title">${operationName}</div>
-      <div class="log-details">${inputDetails}</div>
-      <div class="log-result" style="color: ${isWarning ? 'var(--red)' : 'var(--blue)'};">${result} <span style="font-size: 0.85em; font-weight: normal; color: var(--ink-dim);">${unit}</span></div>
-  `;
-
-  logContainer.insertBefore(entry, logContainer.firstChild);
-}
-
-function clearLog() {
-  const logContainer = document.getElementById('calc-log-list');
-  if (logContainer) logContainer.innerHTML = '';
-}
-
-function toggleLog() {
-  const sidebar = document.getElementById('calc-log-sidebar');
-  if (sidebar) sidebar.classList.toggle('open');
 }
 
 // ============================================================
@@ -202,8 +190,6 @@ function runBeamSimulation() {
     <div class="formula-line">${bc.formula}</div>
   `;
   setStatusResult(`FoS ${fos.toFixed(2)}`);
-  
-  addToLog(`Beam: ${bc.label}`, `L=${L}mm, P/w=${loadVal}`, sigmaMax.toFixed(2), `MPa (FoS ${fos.toFixed(2)})`, fos < 1.2);
 }
 
 function setStatusResult(text) {
@@ -304,7 +290,6 @@ function calcStress() {
     `<div class="eq-live">σ = F/A = ${F}/${A} = <strong>${sigma.toFixed(2)} MPa</strong></div>
      <div class="spec-row"><span class="spec-key">Factor of Safety</span><span class="spec-val">${fos.toFixed(2)}</span></div>`;
   setStatusResult(`σ ${sigma.toFixed(1)} MPa`);
-  addToLog('Axial Stress', `F=${F}N, A=${A}mm²`, sigma.toFixed(2), `MPa (FoS ${fos.toFixed(2)})`, fos < 1.2);
 }
 
 function calcTorsion() {
@@ -321,7 +306,6 @@ function calcTorsion() {
     `<div class="eq-live">τ = Tr/J = ${T}×${(d/2).toFixed(1)}/${J.toFixed(0)} = <strong>${tau.toFixed(2)} MPa</strong></div>
      <div class="spec-row"><span class="spec-key">Angle of Twist</span><span class="spec-val">${(theta * 180 / Math.PI).toFixed(3)}° over ${Lg} mm</span></div>`;
   setStatusResult(`τ ${tau.toFixed(1)} MPa`);
-  addToLog('Torsion', `T=${T}N·mm, d=${d}mm`, tau.toFixed(2), 'MPa');
 }
 
 function calcBuckling() {
@@ -333,7 +317,6 @@ function calcBuckling() {
   document.getElementById('buckle-result').innerHTML =
     `<div class="eq-live">P_cr = π²EI/(KL)² = <strong>${Pcr.toFixed(1)} N</strong> (${(Pcr/1000).toFixed(2)} kN)</div>`;
   setStatusResult(`P_cr ${(Pcr/1000).toFixed(2)} kN`);
-  addToLog('Euler Buckling', `L=${Lg}mm, I=${I}mm⁴, K=${K}`, (Pcr/1000).toFixed(2), 'kN');
 }
 
 function calcSpring() {
@@ -346,7 +329,6 @@ function calcSpring() {
   document.getElementById('spring-result').innerHTML =
     `<div class="eq-live">k = Gd⁴/8D³n = <strong>${k.toFixed(2)} N/mm</strong></div>`;
   setStatusResult(`k ${k.toFixed(2)} N/mm`);
-  addToLog('Helical Spring', `d=${d}mm, D=${D}mm, n=${n}`, k.toFixed(2), 'N/mm');
 }
 
 // ============================================================
@@ -399,7 +381,6 @@ function calcPowerTransmission() {
     <div class="spec-row"><span class="spec-key">Power In / Out</span><span class="spec-val">${powerIn.toFixed(1)} W / ${powerOut.toFixed(1)} W</span></div>
   `;
   setStatusResult(`${rpmOut.toFixed(0)} RPM out`);
-  addToLog('Power Trans.', `${mode.toUpperCase()}, in=${rpmIn}RPM`, rpmOut.toFixed(1), 'RPM out');
 }
 
 // ============================================================
@@ -438,7 +419,6 @@ function calcPressFit() {
     <div class="formula-line">p = Eδ(b²−R²)(R²−a²) / [2R³(b²−a²)] &nbsp;|&nbsp; T = 2πR²Lpμ &nbsp;|&nbsp; F = 2πRLpμ</div>
   `;
   setStatusResult(`p = ${p.toFixed(1)} MPa`);
-  addToLog('Press Fit', `D=${D}mm, Δ=${deltaD}mm`, p.toFixed(2), `MPa (FoS ${fosHub.toFixed(2)})`, fosHub < 1.2);
 }
 
 // ============================================================
@@ -463,7 +443,6 @@ function calcWeld() {
     <div class="spec-row"><span class="spec-key">Factor of Safety</span><span class="spec-val" style="color:${fosColor};">${fos.toFixed(2)}</span></div>
   `;
   setStatusResult(`τ_weld ${tau.toFixed(1)} MPa`);
-  addToLog('Weld Strength', `P=${P}N, L=${L}mm, leg=${leg}`, tau.toFixed(2), `MPa (FoS ${fos.toFixed(2)})`, fos < 1.2);
 }
 
 function calcBoltPattern() {
@@ -491,7 +470,6 @@ function calcBoltPattern() {
     <div class="spec-row"><span class="spec-key">Factor of Safety (0.577·Sy)</span><span class="spec-val" style="color:${fosColor};">${fos.toFixed(2)}</span></div>
   `;
   setStatusResult(`FoS_bolt ${fos.toFixed(2)}`);
-  addToLog('Bolt Pattern', `n=${n}, V=${V}N, M=${M}N·mm`, Fmax.toFixed(1), `N max load (FoS ${fos.toFixed(2)})`, fos < 1.2);
 }
 
 function calcKey() {
@@ -517,7 +495,6 @@ function calcKey() {
     <div class="spec-row"><span class="spec-key">Governing Factor of Safety</span><span class="spec-val" style="color:${fosColor};">${worstFos.toFixed(2)}</span></div>
   `;
   setStatusResult(`FoS_key ${worstFos.toFixed(2)}`);
-  addToLog('Key Shear/Brg', `T=${T}N·mm, d=${d}mm`, worstFos.toFixed(2), 'Min FoS', worstFos < 1.2);
 }
 
 function calcBearingLife() {
@@ -534,7 +511,6 @@ function calcBearingLife() {
     <div class="spec-row"><span class="spec-key">Life in Hours</span><span class="spec-val">${L10h.toFixed(0)} hrs (${(L10h/8760).toFixed(2)} yrs continuous)</span></div>
   `;
   setStatusResult(`L10 ${L10h.toFixed(0)} hrs`);
-  addToLog('Bearing Life', `C=${C}N, P=${P}N, ${rpm}RPM`, L10h.toFixed(0), 'hrs');
 }
 
 // ============================================================
@@ -901,7 +877,6 @@ function solveLinearODE2() {
     <div class="spec-row"><span class="spec-key">Solution</span><span class="spec-val">${formula}</span></div>
   `;
   setStatusResult(caseDesc.split(' — ')[0]);
-  addToLog(`ODE2: ${caseDesc.split(' — ')[0]}`, `a=${a}, b=${b}, c=${c}`, '', '');
 }
 
 function evalExpr(expr, x, y) {
@@ -954,7 +929,6 @@ function solveODENumeric() {
     <div class="formula-line">4th-order Runge-Kutta — works for any f(x,y), linear or nonlinear.</div>
   `;
   setStatusResult(`y(${xf})=${y.toFixed(3)}`);
-  addToLog('ODE (RK4)', fnStr, y.toFixed(4), `@ x=${xf}`);
 }
 
 // ============================================================
@@ -1001,7 +975,6 @@ function calcCentroidMOI() {
     <div class="spec-row"><span class="spec-key">I about combined centroidal axis</span><span class="spec-val">${Itotal.toFixed(0)} mm⁴</span></div>
   `;
   setStatusResult(`I ${Itotal.toFixed(0)} mm⁴`);
-  addToLog('Centroid & MOI', `Area=${totalA.toFixed(1)}mm²`, Itotal.toFixed(0), 'mm⁴');
 }
 
 // ============================================================
@@ -1027,7 +1000,6 @@ function calcProjectile() {
     <div class="spec-row"><span class="spec-key">vx, vy at launch</span><span class="spec-val">${vx.toFixed(2)}, ${vy.toFixed(2)} m/s</span></div>
   `;
   setStatusResult(`Range ${range.toFixed(1)} m`);
-  addToLog('Projectile', `v0=${v0}m/s, θ=${thetaDeg}°`, range.toFixed(2), 'm range');
 }
 
 // ============================================================
@@ -1089,7 +1061,6 @@ function calcEngEcon() {
     <div class="spec-row"><span class="spec-key">${resultLabel}</span><span class="spec-val">$${result.toLocaleString(undefined, { maximumFractionDigits: 2 })}</span></div>
   `;
   setStatusResult(`${resultLabel.split(' ')[0]} $${result.toFixed(0)}`);
-  addToLog('Eng Econ', `${mode}, i=${i}, n=${n}`, '$'+result.toFixed(2), '');
 }
 
 // ============================================================
@@ -1101,30 +1072,45 @@ function initializeReferenceSearch() {
 
   searchInput.addEventListener('input', function(e) {
     const term = e.target.value.toLowerCase().trim();
-    const sections = document.querySelectorAll('#tab-cheat .cheat-section');
+    const tables = document.querySelectorAll('.cheat-table');
+    let hasResults = false;
 
-    sections.forEach(sec => {
-      const rows = sec.querySelectorAll('.cheat-table tr');
-      let hasVisibleRow = false;
+    tables.forEach(table => {
+      // Find all rows except the header
+      const rows = table.querySelectorAll('tbody tr, tr:not(:first-child)');
+      let tableHasVisibleRow = false;
 
       rows.forEach(row => {
+        // Skip header th rows
+        if(row.querySelector('th')) return;
+
         const text = row.textContent.toLowerCase();
         if (text.includes(term)) {
           row.style.display = '';
-          hasVisibleRow = true;
+          tableHasVisibleRow = true;
+          hasResults = true;
         } else {
           row.style.display = 'none';
         }
       });
 
-      // Handle text-only cheat sections (e.g., Ethics rules without tables)
-      if (rows.length === 0) {
-        const text = sec.textContent.toLowerCase();
-        hasVisibleRow = text.includes(term);
+      // Show/hide the wrapping section for neatness
+      const parentSection = table.closest('.cheat-section');
+      if (parentSection) {
+        parentSection.style.display = tableHasVisibleRow ? '' : 'none';
       }
-
-      sec.style.display = hasVisibleRow ? '' : 'none';
     });
+
+    // If searching, auto switch to the FE Reference tab if not already on it or materials
+    if (term.length > 0) {
+      const activeTabBtn = document.querySelector('.mode-btn.active');
+      if (activeTabBtn) {
+        const currentTab = activeTabBtn.dataset.tab;
+        if (currentTab !== 'cheat' && currentTab !== 'materials') {
+          switchTab('cheat');
+        }
+      }
+    }
   });
 }
 
@@ -1132,8 +1118,8 @@ function initializeReferenceSearch() {
 // INIT
 // ============================================================
 document.addEventListener('DOMContentLoaded', () => {
+  renderMaterialTable();
   populateMaterialDropdowns();
-  updateMaterial();
   onBeamTypeChange();
   onSectionChange();
   onPTModeChange();
