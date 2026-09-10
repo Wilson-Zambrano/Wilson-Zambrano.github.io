@@ -100,3 +100,101 @@ table.cheat-table td.notes { color: var(--ink-dim); font-size: 0.62rem; opacity:
 @media (max-width: 720px) {
   table.cheat-table td.eq { white-space: normal; }
 }
+
+/* ── CALCULATION LOG SIDEBAR ── */
+.log-sidebar {
+  position: fixed;
+  top: 52px;
+  right: 0;
+  bottom: 24px; /* leaves room for status bar */
+  width: 280px;
+  background: var(--paper, #fff);
+  border-left: 1px solid var(--line-bold);
+  display: flex;
+  flex-direction: column;
+  z-index: 100;
+  box-shadow: -4px 0 15px rgba(0,0,0,0.03);
+  transform: translateX(100%);
+  transition: transform 0.3s ease;
+}
+
+.log-sidebar.open {
+  transform: translateX(0);
+}
+
+.log-header {
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--paper-dark, rgba(0,0,0,0.03));
+}
+
+.log-header-title {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--ink);
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.log-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.log-entry {
+  border: 1px solid var(--line);
+  padding: 10px;
+  background: var(--paper, #fff);
+  border-left: 3px solid var(--blue);
+  font-size: 0.65rem;
+  color: var(--ink);
+  line-height: 1.4;
+}
+
+.log-entry.red-edge {
+  border-left-color: var(--red);
+}
+
+.log-time {
+  color: var(--ink-dim);
+  font-size: 0.55rem;
+  margin-bottom: 6px;
+  font-family: 'IBM Plex Mono', monospace;
+}
+
+.log-title {
+  font-weight: 600;
+  color: var(--ink);
+  font-family: 'IBM Plex Mono', monospace;
+  margin-bottom: 4px;
+}
+
+.log-details {
+  color: var(--ink-dim);
+  font-family: 'IBM Plex Mono', monospace;
+  margin-bottom: 6px;
+}
+
+.log-result {
+  font-weight: 700;
+  color: var(--blue);
+  font-size: 0.75rem;
+  font-family: 'IBM Plex Mono', monospace;
+}
+
+@media (min-width: 1300px) {
+  .log-sidebar {
+      transform: translateX(0); /* always show on very wide screens */
+  }
+  body {
+      padding-right: 280px;
+  }
+}

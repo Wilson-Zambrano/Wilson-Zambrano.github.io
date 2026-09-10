@@ -39,13 +39,42 @@ function populateMaterialDropdowns() {
 }
 
 // ============================================================
+// CALCULATION LOGGING
+// ============================================================
+function addToLog(operationName, inputDetails, result, unit = '', isWarning = false) {
+  const logContainer = document.getElementById('calc-log-list');
+  if (!logContainer) return;
+
+  const now = new Date();
+  const timeString = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+
+  const entry = document.createElement('div');
+  entry.className = `log-entry ${isWarning ? 'red-edge' : ''}`;
+  
+  entry.innerHTML = `
+      <div class="log-time">${timeString}</div>
+      <div class="log-title">${operationName}</div>
+      <div class="log-details">${inputDetails}</div>
+      <div class="log-result" style="color: ${isWarning ? 'var(--red)' : 'var(--blue)'};">${result} <span style="font-size: 0.85em; font-weight: normal; color: var(--ink-dim);">${unit}</span></div>
+  `;
+
+  logContainer.insertBefore(entry, logContainer.firstChild);
+}
+
+function clearLog() {
+  const logContainer = document.getElementById('calc-log-list');
+  if (logContainer) logContainer.innerHTML = '';
+}
+
+function toggleLog() {
+  const sidebar = document.getElementById('calc-log-sidebar');
+  if (sidebar) sidebar.classList.toggle('open');
+}
+
+// ============================================================
 // BEAM MECHANICS ENGINE
 // ============================================================
-// Units: length mm, force N, E in MPa (converted from GPa), I in mm^4
-// deflection in mm, stress in MPa, moment in N*mm
-
 function sectionProps(shape, dims) {
-  // returns {I, c} in mm^4 / mm
   if (shape === 'rect') {
     const { b, h } = dims;
     return { I: (b * Math.pow(h, 3)) / 12, c: h / 2 };
@@ -60,11 +89,9 @@ function sectionProps(shape, dims) {
   }
 }
 
-// Each beam case returns arrays of x, y (deflection, mm, positive = downward),
-// and a function M(x) for bending moment (N*mm), plus max values & the formula string.
 const beamCases = {
   cantilever_point: {
-    label: "Cantilever — Point Load at Free End",
+    label: "Cantilever Point",
     diagram: "fixed_free",
     formula: "y(x) = Px²(3L − x) / 6EI    |    y_max = PL³ / 3EI    |    M_max = PL (at wall)",
     compute(L, E, I, P) {
@@ -74,7 +101,7 @@ const beamCases = {
     }
   },
   cantilever_udl: {
-    label: "Cantilever — Uniformly Distributed Load",
+    label: "Cantilever UDL",
     diagram: "fixed_free",
     formula: "y(x) = w x²(x² − 4Lx + 6L²) / 24EI    |    y_max = wL⁴ / 8EI    |    M_max = wL²/2 (at wall)",
     compute(L, E, I, w) {
@@ -84,7 +111,7 @@ const beamCases = {
     }
   },
   ss_point_center: {
-    label: "Simply Supported — Point Load at Center",
+    label: "SS Point Center",
     diagram: "pin_pin",
     formula: "y(x) = Px(3L² − 4x²) / 48EI  [0≤x≤L/2]    |    y_max = PL³ / 48EI    |    M_max = PL/4 (center)",
     compute(L, E, I, P) {
@@ -97,7 +124,7 @@ const beamCases = {
     }
   },
   ss_point_offset: {
-    label: "Simply Supported — Point Load at Position a",
+    label: "SS Point Offset",
     diagram: "pin_pin",
     formula: "y(x) = Pbx(L² − b² − x²) / 6LEI  [0≤x≤a]    |    M_max = Pab / L (at load)",
     compute(L, E, I, P, a) {
@@ -112,7 +139,7 @@ const beamCases = {
     }
   },
   ss_udl: {
-    label: "Simply Supported — Uniformly Distributed Load",
+    label: "SS UDL",
     diagram: "pin_pin",
     formula: "y(x) = wx(L³ − 2Lx² + x³) / 24EI    |    y_max = 5wL⁴ / 384EI    |    M_max = wL²/8 (center)",
     compute(L, E, I, w) {
@@ -132,7 +159,7 @@ function runBeamSimulation() {
   const posA = parseFloat(document.getElementById('beam-position')?.value || 0);
 
   const mat = materials[matKey];
-  const E = mat.youngs_modulus * 1000; // GPa -> MPa
+  const E = mat.youngs_modulus * 1000;
 
   let dims = {};
   if (shape === 'rect') {
@@ -159,7 +186,7 @@ function runBeamSimulation() {
   }
   const yMax = result.yMax !== null ? result.yMax : Math.max(...ys.map(Math.abs));
   const Mmax = result.Mmax;
-  const sigmaMax = (Mmax * c) / I; // MPa
+  const sigmaMax = (Mmax * c) / I;
   const fos = mat.yield_strength / sigmaMax;
 
   drawBeamSVG(bc.diagram, xs, ys, L, yMax, beamType, posA);
@@ -175,6 +202,8 @@ function runBeamSimulation() {
     <div class="formula-line">${bc.formula}</div>
   `;
   setStatusResult(`FoS ${fos.toFixed(2)}`);
+  
+  addToLog(`Beam: ${bc.label}`, `L=${L}mm, P/w=${loadVal}`, sigmaMax.toFixed(2), `MPa (FoS ${fos.toFixed(2)})`, fos < 1.2);
 }
 
 function setStatusResult(text) {
@@ -188,7 +217,7 @@ function drawBeamSVG(diagramType, xs, ys, L, yMaxAbs, beamType, posA) {
   const scaleX = x => xMargin + (x / L) * spanPx;
 
   const maxDisplay = Math.max(yMaxAbs, 1e-9);
-  const exaggeration = 60 / maxDisplay; // px per mm at max
+  const exaggeration = 60 / maxDisplay; 
   const scaleY = y => baseY + y * exaggeration;
 
   let pathPts = xs.map((x, i) => `${scaleX(x).toFixed(1)},${scaleY(ys[i]).toFixed(1)}`).join(' ');
@@ -275,22 +304,24 @@ function calcStress() {
     `<div class="eq-live">σ = F/A = ${F}/${A} = <strong>${sigma.toFixed(2)} MPa</strong></div>
      <div class="spec-row"><span class="spec-key">Factor of Safety</span><span class="spec-val">${fos.toFixed(2)}</span></div>`;
   setStatusResult(`σ ${sigma.toFixed(1)} MPa`);
+  addToLog('Axial Stress', `F=${F}N, A=${A}mm²`, sigma.toFixed(2), `MPa (FoS ${fos.toFixed(2)})`, fos < 1.2);
 }
 
 function calcTorsion() {
-  const T = parseFloat(document.getElementById('torsion-T').value); // N*mm
-  const d = parseFloat(document.getElementById('torsion-d').value); // mm
-  const Lg = parseFloat(document.getElementById('torsion-L').value); // mm
+  const T = parseFloat(document.getElementById('torsion-T').value); 
+  const d = parseFloat(document.getElementById('torsion-d').value); 
+  const Lg = parseFloat(document.getElementById('torsion-L').value); 
   const matKey = document.getElementById('torsion-material').value;
   const mat = materials[matKey];
-  const G = mat.shear_modulus * 1000; // MPa
+  const G = mat.shear_modulus * 1000; 
   const J = (Math.PI * Math.pow(d, 4)) / 32;
   const tau = (T * (d / 2)) / J;
-  const theta = (T * Lg) / (G * J); // radians
+  const theta = (T * Lg) / (G * J); 
   document.getElementById('torsion-result').innerHTML =
     `<div class="eq-live">τ = Tr/J = ${T}×${(d/2).toFixed(1)}/${J.toFixed(0)} = <strong>${tau.toFixed(2)} MPa</strong></div>
      <div class="spec-row"><span class="spec-key">Angle of Twist</span><span class="spec-val">${(theta * 180 / Math.PI).toFixed(3)}° over ${Lg} mm</span></div>`;
   setStatusResult(`τ ${tau.toFixed(1)} MPa`);
+  addToLog('Torsion', `T=${T}N·mm, d=${d}mm`, tau.toFixed(2), 'MPa');
 }
 
 function calcBuckling() {
@@ -302,11 +333,12 @@ function calcBuckling() {
   document.getElementById('buckle-result').innerHTML =
     `<div class="eq-live">P_cr = π²EI/(KL)² = <strong>${Pcr.toFixed(1)} N</strong> (${(Pcr/1000).toFixed(2)} kN)</div>`;
   setStatusResult(`P_cr ${(Pcr/1000).toFixed(2)} kN`);
+  addToLog('Euler Buckling', `L=${Lg}mm, I=${I}mm⁴, K=${K}`, (Pcr/1000).toFixed(2), 'kN');
 }
 
 function calcSpring() {
   const matKey = document.getElementById('spring-material').value;
-  const G = materials[matKey].shear_modulus * 1000; // MPa
+  const G = materials[matKey].shear_modulus * 1000; 
   const d = parseFloat(document.getElementById('spring-d').value);
   const D = parseFloat(document.getElementById('spring-D').value);
   const n = parseFloat(document.getElementById('spring-n').value);
@@ -314,6 +346,7 @@ function calcSpring() {
   document.getElementById('spring-result').innerHTML =
     `<div class="eq-live">k = Gd⁴/8D³n = <strong>${k.toFixed(2)} N/mm</strong></div>`;
   setStatusResult(`k ${k.toFixed(2)} N/mm`);
+  addToLog('Helical Spring', `d=${d}mm, D=${D}mm, n=${n}`, k.toFixed(2), 'N/mm');
 }
 
 // ============================================================
@@ -328,7 +361,7 @@ function onPTModeChange() {
 function calcPowerTransmission() {
   const mode = document.getElementById('pt-mode').value;
   const rpmIn = parseFloat(document.getElementById('pt-rpm-in').value);
-  const torqueIn = parseFloat(document.getElementById('pt-torque-in').value); // N*m
+  const torqueIn = parseFloat(document.getElementById('pt-torque-in').value); 
   const eff = parseFloat(document.getElementById('pt-eff').value) / 100;
 
   let ratio, driverDesc;
@@ -348,13 +381,13 @@ function calcPowerTransmission() {
   const torqueOut = torqueIn * ratio * eff;
   const omegaIn = (rpmIn * 2 * Math.PI) / 60;
   const omegaOut = (rpmOut * 2 * Math.PI) / 60;
-  const powerIn = torqueIn * omegaIn; // W
-  const powerOut = torqueOut * omegaOut; // W
+  const powerIn = torqueIn * omegaIn; 
+  const powerOut = torqueOut * omegaOut; 
 
   let belt = '';
   if (mode === 'pulley') {
     const Din = parseFloat(document.getElementById('pt-d-in').value);
-    const beltSpeed = omegaIn * (Din / 2 / 1000); // m/s
+    const beltSpeed = omegaIn * (Din / 2 / 1000); 
     belt = `<div class="spec-row"><span class="spec-key">Belt Speed</span><span class="spec-val">${beltSpeed.toFixed(2)} m/s</span></div>`;
   }
 
@@ -366,15 +399,16 @@ function calcPowerTransmission() {
     <div class="spec-row"><span class="spec-key">Power In / Out</span><span class="spec-val">${powerIn.toFixed(1)} W / ${powerOut.toFixed(1)} W</span></div>
   `;
   setStatusResult(`${rpmOut.toFixed(0)} RPM out`);
+  addToLog('Power Trans.', `${mode.toUpperCase()}, in=${rpmIn}RPM`, rpmOut.toFixed(1), 'RPM out');
 }
 
 // ============================================================
-// PRESS FIT / INTERFERENCE FIT (thick-wall Lamé, same material)
+// PRESS FIT / INTERFERENCE FIT 
 // ============================================================
 function calcPressFit() {
   const matKey = document.getElementById('fit-material').value;
   const mat = materials[matKey];
-  const E = mat.youngs_modulus * 1000; // MPa
+  const E = mat.youngs_modulus * 1000; 
 
   const D = parseFloat(document.getElementById('fit-D').value);
   const Do = parseFloat(document.getElementById('fit-Do').value);
@@ -384,14 +418,14 @@ function calcPressFit() {
   const mu = parseFloat(document.getElementById('fit-mu').value);
 
   const R = D / 2, b = Do / 2, a = Di / 2;
-  const delta = deltaD / 2; // radial interference
+  const delta = deltaD / 2; 
 
   const p = ((E * delta) / (2 * R)) * ((b * b - R * R) * (R * R - a * a)) / (R * R * (b * b - a * a));
   const sigmaHubInner = (p * (b * b + R * R)) / (b * b - R * R);
   const sigmaShaftOuter = a === 0 ? -p : -(p * (R * R + a * a)) / (R * R - a * a);
   const fosHub = mat.yield_strength / sigmaHubInner;
-  const Tmax = (2 * Math.PI * R * R * L * p * mu) / 1000; // N*m
-  const Faxial = 2 * Math.PI * R * L * p * mu; // N
+  const Tmax = (2 * Math.PI * R * R * L * p * mu) / 1000; 
+  const Faxial = 2 * Math.PI * R * L * p * mu; 
 
   const fosColor = fosHub < 1.2 ? 'var(--red)' : (fosHub < 2 ? 'var(--gold)' : 'var(--green)');
   document.getElementById('fit-result').innerHTML = `
@@ -404,10 +438,11 @@ function calcPressFit() {
     <div class="formula-line">p = Eδ(b²−R²)(R²−a²) / [2R³(b²−a²)] &nbsp;|&nbsp; T = 2πR²Lpμ &nbsp;|&nbsp; F = 2πRLpμ</div>
   `;
   setStatusResult(`p = ${p.toFixed(1)} MPa`);
+  addToLog('Press Fit', `D=${D}mm, Δ=${deltaD}mm`, p.toFixed(2), `MPa (FoS ${fosHub.toFixed(2)})`, fosHub < 1.2);
 }
 
 // ============================================================
-// GENERAL MACHINE DESIGN — WELDS, BOLTS, KEYS, BEARINGS
+// GENERAL MACHINE DESIGN
 // ============================================================
 function calcWeld() {
   const P = parseFloat(document.getElementById('weld-P').value);
@@ -428,6 +463,7 @@ function calcWeld() {
     <div class="spec-row"><span class="spec-key">Factor of Safety</span><span class="spec-val" style="color:${fosColor};">${fos.toFixed(2)}</span></div>
   `;
   setStatusResult(`τ_weld ${tau.toFixed(1)} MPa`);
+  addToLog('Weld Strength', `P=${P}N, L=${L}mm, leg=${leg}`, tau.toFixed(2), `MPa (FoS ${fos.toFixed(2)})`, fos < 1.2);
 }
 
 function calcBoltPattern() {
@@ -443,7 +479,7 @@ function calcBoltPattern() {
   const Fmax = Fdirect + Fmoment;
   const area = (Math.PI * d * d) / 4;
   const tau = Fmax / area;
-  const allowShear = 0.577 * mat.yield_strength; // von Mises shear yield
+  const allowShear = 0.577 * mat.yield_strength; 
   const fos = allowShear / tau;
   const fosColor = fos < 1.2 ? 'var(--red)' : (fos < 2 ? 'var(--gold)' : 'var(--green)');
 
@@ -455,6 +491,7 @@ function calcBoltPattern() {
     <div class="spec-row"><span class="spec-key">Factor of Safety (0.577·Sy)</span><span class="spec-val" style="color:${fosColor};">${fos.toFixed(2)}</span></div>
   `;
   setStatusResult(`FoS_bolt ${fos.toFixed(2)}`);
+  addToLog('Bolt Pattern', `n=${n}, V=${V}N, M=${M}N·mm`, Fmax.toFixed(1), `N max load (FoS ${fos.toFixed(2)})`, fos < 1.2);
 }
 
 function calcKey() {
@@ -480,6 +517,7 @@ function calcKey() {
     <div class="spec-row"><span class="spec-key">Governing Factor of Safety</span><span class="spec-val" style="color:${fosColor};">${worstFos.toFixed(2)}</span></div>
   `;
   setStatusResult(`FoS_key ${worstFos.toFixed(2)}`);
+  addToLog('Key Shear/Brg', `T=${T}N·mm, d=${d}mm`, worstFos.toFixed(2), 'Min FoS', worstFos < 1.2);
 }
 
 function calcBearingLife() {
@@ -488,7 +526,7 @@ function calcBearingLife() {
   const k = parseFloat(document.getElementById('brg-type').value);
   const rpm = parseFloat(document.getElementById('brg-rpm').value);
 
-  const L10 = Math.pow(C / P, k); // millions of revolutions
+  const L10 = Math.pow(C / P, k); 
   const L10h = (L10 * 1e6) / (60 * rpm);
 
   document.getElementById('brg-result').innerHTML = `
@@ -496,10 +534,11 @@ function calcBearingLife() {
     <div class="spec-row"><span class="spec-key">Life in Hours</span><span class="spec-val">${L10h.toFixed(0)} hrs (${(L10h/8760).toFixed(2)} yrs continuous)</span></div>
   `;
   setStatusResult(`L10 ${L10h.toFixed(0)} hrs`);
+  addToLog('Bearing Life', `C=${C}N, P=${P}N, ${rpm}RPM`, L10h.toFixed(0), 'hrs');
 }
 
 // ============================================================
-// PLOTTING HELPER (shared by all graphs)
+// PLOTTING HELPER
 // ============================================================
 function makePlot(xDomain, yDomain, opts = {}) {
   const W = opts.width || 680, H = opts.height || 320;
@@ -862,6 +901,7 @@ function solveLinearODE2() {
     <div class="spec-row"><span class="spec-key">Solution</span><span class="spec-val">${formula}</span></div>
   `;
   setStatusResult(caseDesc.split(' — ')[0]);
+  addToLog(`ODE2: ${caseDesc.split(' — ')[0]}`, `a=${a}, b=${b}, c=${c}`, '', '');
 }
 
 function evalExpr(expr, x, y) {
@@ -914,10 +954,11 @@ function solveODENumeric() {
     <div class="formula-line">4th-order Runge-Kutta — works for any f(x,y), linear or nonlinear.</div>
   `;
   setStatusResult(`y(${xf})=${y.toFixed(3)}`);
+  addToLog('ODE (RK4)', fnStr, y.toFixed(4), `@ x=${xf}`);
 }
 
 // ============================================================
-// STATICS — CENTROID & MOMENT OF INERTIA (composite sections)
+// STATICS — CENTROID & MOMENT OF INERTIA
 // ============================================================
 function onCentroidShapeChange(which) {
   const type = document.getElementById(`cen${which}-type`).value;
@@ -960,6 +1001,7 @@ function calcCentroidMOI() {
     <div class="spec-row"><span class="spec-key">I about combined centroidal axis</span><span class="spec-val">${Itotal.toFixed(0)} mm⁴</span></div>
   `;
   setStatusResult(`I ${Itotal.toFixed(0)} mm⁴`);
+  addToLog('Centroid & MOI', `Area=${totalA.toFixed(1)}mm²`, Itotal.toFixed(0), 'mm⁴');
 }
 
 // ============================================================
@@ -985,6 +1027,7 @@ function calcProjectile() {
     <div class="spec-row"><span class="spec-key">vx, vy at launch</span><span class="spec-val">${vx.toFixed(2)}, ${vy.toFixed(2)} m/s</span></div>
   `;
   setStatusResult(`Range ${range.toFixed(1)} m`);
+  addToLog('Projectile', `v0=${v0}m/s, θ=${thetaDeg}°`, range.toFixed(2), 'm range');
 }
 
 // ============================================================
@@ -1046,6 +1089,43 @@ function calcEngEcon() {
     <div class="spec-row"><span class="spec-key">${resultLabel}</span><span class="spec-val">$${result.toLocaleString(undefined, { maximumFractionDigits: 2 })}</span></div>
   `;
   setStatusResult(`${resultLabel.split(' ')[0]} $${result.toFixed(0)}`);
+  addToLog('Eng Econ', `${mode}, i=${i}, n=${n}`, '$'+result.toFixed(2), '');
+}
+
+// ============================================================
+// REFERENCE SEARCH FUNCTIONALITY
+// ============================================================
+function initializeReferenceSearch() {
+  const searchInput = document.getElementById('global-ref-search');
+  if (!searchInput) return;
+
+  searchInput.addEventListener('input', function(e) {
+    const term = e.target.value.toLowerCase().trim();
+    const sections = document.querySelectorAll('#tab-cheat .cheat-section');
+
+    sections.forEach(sec => {
+      const rows = sec.querySelectorAll('.cheat-table tr');
+      let hasVisibleRow = false;
+
+      rows.forEach(row => {
+        const text = row.textContent.toLowerCase();
+        if (text.includes(term)) {
+          row.style.display = '';
+          hasVisibleRow = true;
+        } else {
+          row.style.display = 'none';
+        }
+      });
+
+      // Handle text-only cheat sections (e.g., Ethics rules without tables)
+      if (rows.length === 0) {
+        const text = sec.textContent.toLowerCase();
+        hasVisibleRow = text.includes(term);
+      }
+
+      sec.style.display = hasVisibleRow ? '' : 'none';
+    });
+  });
 }
 
 // ============================================================
@@ -1062,4 +1142,5 @@ document.addEventListener('DOMContentLoaded', () => {
   onCentroidShapeChange('B');
   onEconModeChange();
   calcProjectile();
+  initializeReferenceSearch();
 });
