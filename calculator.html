@@ -77,15 +77,17 @@
       <h1 class="dwg-title">Engineering Calculator</h1>
     </div>
 
-    <div class="input-mode-toggle" style="margin-bottom: 24px;">
+    <div class="input-mode-toggle" style="margin-bottom: 24px; flex-wrap: wrap;">
       <button class="mode-btn active" data-tab="materials" onclick="switchTab('materials')">Materials</button>
+      <button class="mode-btn" data-tab="statics" onclick="switchTab('statics')">Statics</button>
       <button class="mode-btn" data-tab="beam" onclick="switchTab('beam')">Beam Simulator</button>
       <button class="mode-btn" data-tab="calcs" onclick="switchTab('calcs')">Design Calcs</button>
       <button class="mode-btn" data-tab="machine" onclick="switchTab('machine')">Machine Design</button>
       <button class="mode-btn" data-tab="power" onclick="switchTab('power')">Power Transmission</button>
+      <button class="mode-btn" data-tab="dynecon" onclick="switchTab('dynecon')">Dynamics &amp; Econ</button>
       <button class="mode-btn" data-tab="graphs" onclick="switchTab('graphs')">Graphs</button>
       <button class="mode-btn" data-tab="diffeq" onclick="switchTab('diffeq')">Diff Eq / Laplace</button>
-      <button class="mode-btn" data-tab="cheat" onclick="switchTab('cheat')">Cheat Sheet</button>
+      <button class="mode-btn" data-tab="cheat" onclick="switchTab('cheat')">FE Reference</button>
     </div>
 
     <!-- TAB: MATERIALS -->
@@ -105,6 +107,74 @@
             <div id="material-specs"></div>
           </div>
         </div>
+      </div>
+    </div>
+
+    <!-- TAB: STATICS -->
+    <div class="tab-panel" id="tab-statics">
+      <div class="login-box">
+        <div class="login-header"><span class="login-header-title">Centroid &amp; Moment of Inertia — Composite Section</span><span class="login-doc-ref">WZ-CALC / STAT</span></div>
+        <div class="login-body">
+          <div class="eq-display">ȳ = ΣAᵢyᵢ / ΣAᵢ &nbsp;|&nbsp; I = Σ[I_own,ᵢ + Aᵢ(yᵢ−ȳ)²] <span class="eq-sub">parallel axis theorem — 2 shapes, second may add or subtract (hole)</span></div>
+
+          <p class="cheat-note" style="padding-top:0;">Shape A</p>
+          <div class="field-row">
+            <div class="form-group"><label class="form-label">Type</label>
+              <select id="cenA-type" class="form-input" onchange="onCentroidShapeChange('A')">
+                <option value="rect">Rectangle</option>
+                <option value="circle">Circle</option>
+              </select>
+            </div>
+            <div class="form-group" id="cenA-rect">
+              <label class="form-label">Width b, Height h (mm)</label>
+              <div style="display:flex; gap:6px;">
+                <input type="number" id="cenA-b" class="form-input" value="60" oninput="calcCentroidMOI()">
+                <input type="number" id="cenA-h" class="form-input" value="10" oninput="calcCentroidMOI()">
+              </div>
+            </div>
+            <div class="form-group" id="cenA-circle" style="display:none;"><label class="form-label">Diameter (mm)</label><input type="number" id="cenA-d" class="form-input" value="20" oninput="calcCentroidMOI()"></div>
+            <div class="form-group"><label class="form-label">Centroid y (mm)</label><input type="number" id="cenA-y" class="form-input" value="5" oninput="calcCentroidMOI()"></div>
+          </div>
+
+          <p class="cheat-note" style="padding-top:0;">Shape B (set Operation to "None" to ignore)</p>
+          <div class="field-row">
+            <div class="form-group"><label class="form-label">Operation</label>
+              <select id="cenB-op" class="form-input" onchange="calcCentroidMOI()">
+                <option value="none">None</option>
+                <option value="add">Add</option>
+                <option value="subtract">Subtract (hole)</option>
+              </select>
+            </div>
+            <div class="form-group"><label class="form-label">Type</label>
+              <select id="cenB-type" class="form-input" onchange="onCentroidShapeChange('B')">
+                <option value="rect">Rectangle</option>
+                <option value="circle">Circle</option>
+              </select>
+            </div>
+            <div class="form-group" id="cenB-rect">
+              <label class="form-label">Width b, Height h (mm)</label>
+              <div style="display:flex; gap:6px;">
+                <input type="number" id="cenB-b" class="form-input" value="10" oninput="calcCentroidMOI()">
+                <input type="number" id="cenB-h" class="form-input" value="60" oninput="calcCentroidMOI()">
+              </div>
+            </div>
+            <div class="form-group" id="cenB-circle" style="display:none;"><label class="form-label">Diameter (mm)</label><input type="number" id="cenB-d" class="form-input" value="20" oninput="calcCentroidMOI()"></div>
+            <div class="form-group"><label class="form-label">Centroid y (mm)</label><input type="number" id="cenB-y" class="form-input" value="40" oninput="calcCentroidMOI()"></div>
+          </div>
+
+          <div class="spec-block" style="margin-top:12px;"><div class="spec-block-header">Result</div><div id="centroid-result"></div></div>
+        </div>
+      </div>
+
+      <div class="cheat-section" style="margin-top:24px;">
+        <p class="cheat-section-title">Statics — Equilibrium &amp; Friction</p>
+        <table class="cheat-table">
+          <tr><td class="eq">ΣFx = 0, ΣFy = 0, ΣM = 0</td><td>Static equilibrium (2D rigid body)</td><td class="notes"></td></tr>
+          <tr><td class="eq">f ≤ μsN</td><td>Max static friction force</td><td class="notes">μs = coefficient of static friction</td></tr>
+          <tr><td class="eq">f = μkN</td><td>Kinetic friction force</td><td class="notes">μk &lt; μs typically</td></tr>
+          <tr><td class="eq">I = I_c + Ad²</td><td>Parallel axis theorem</td><td class="notes">I_c = centroidal moment of inertia, d = offset distance</td></tr>
+          <tr><td class="eq">x̄ = ΣAᵢxᵢ / ΣAᵢ</td><td>Composite centroid (x)</td><td class="notes">same pattern for ȳ</td></tr>
+        </table>
       </div>
     </div>
 
@@ -392,6 +462,46 @@
       </div>
     </div>
 
+    <!-- TAB: DYNAMICS & ECON -->
+    <div class="tab-panel" id="tab-dynecon">
+      <div class="login-box" style="margin-bottom:20px;">
+        <div class="login-header"><span class="login-header-title">Projectile Motion</span><span class="login-doc-ref">WZ-CALC / KIN</span></div>
+        <div class="login-body">
+          <div class="eq-display">t = [v0sinθ + √((v0sinθ)² + 2gy0)] / g <span class="eq-sub">range = vx·t &nbsp;|&nbsp; h_max = y0 + (v0sinθ)²/2g</span></div>
+          <div class="field-row">
+            <div class="form-group"><label class="form-label">Initial Speed v0 (m/s)</label><input type="number" id="proj-v0" class="form-input" value="50" oninput="calcProjectile()"></div>
+            <div class="form-group"><label class="form-label">Launch Angle θ (°)</label><input type="number" id="proj-theta" class="form-input" value="60" oninput="calcProjectile()"></div>
+            <div class="form-group"><label class="form-label">Initial Height y0 (m)</label><input type="number" id="proj-y0" class="form-input" value="0" oninput="calcProjectile()"></div>
+            <div class="form-group"><label class="form-label">g (m/s²)</label><input type="number" id="proj-g" class="form-input" value="9.81" oninput="calcProjectile()"></div>
+          </div>
+          <div class="spec-block" style="margin-top:12px;"><div class="spec-block-header">Result</div><div id="proj-result"></div></div>
+        </div>
+      </div>
+
+      <div class="login-box">
+        <div class="login-header"><span class="login-header-title">Engineering Economics — Time Value of Money</span><span class="login-doc-ref">WZ-CALC / ECON</span></div>
+        <div class="login-body">
+          <div class="eq-display" id="econ-eq-display">F = P(1+i)ⁿ</div>
+          <div class="field-row">
+            <div class="form-group"><label class="form-label">Find</label>
+              <select id="econ-mode" class="form-input" onchange="onEconModeChange()">
+                <option value="F_from_P">F, given P (single payment)</option>
+                <option value="P_from_F">P, given F (single payment)</option>
+                <option value="F_from_A">F, given A (uniform series)</option>
+                <option value="A_from_F">A, given F (sinking fund)</option>
+                <option value="P_from_A">P, given A (uniform series)</option>
+                <option value="A_from_P">A, given P (capital recovery)</option>
+              </select>
+            </div>
+            <div class="form-group"><label class="form-label" id="econ-known-label">Known Value P</label><input type="number" id="econ-known" class="form-input" value="10000" oninput="calcEngEcon()"></div>
+            <div class="form-group"><label class="form-label">Interest Rate i (%/period)</label><input type="number" id="econ-i" class="form-input" value="6" oninput="calcEngEcon()"></div>
+            <div class="form-group"><label class="form-label">Periods n</label><input type="number" id="econ-n" class="form-input" value="10" oninput="calcEngEcon()"></div>
+          </div>
+          <div class="spec-block" style="margin-top:12px;"><div class="spec-block-header">Result</div><div id="econ-result"></div></div>
+        </div>
+      </div>
+    </div>
+
     <!-- TAB: GRAPHS -->
     <div class="tab-panel" id="tab-graphs">
       <div class="login-box">
@@ -666,6 +776,91 @@
           <tr><td class="eq">°F = °C × 9/5 + 32</td><td>Temperature</td><td class="notes"></td></tr>
         </table>
       </div>
+
+      <p class="cheat-note" style="border-top:1px solid var(--line-bold); padding-top:16px; margin-top:8px;"><strong>FE Exam knowledge areas below</strong> — sections not already covered elsewhere on this page (Mechanics of Materials, Machine Design, Diff Eq are their own tabs).</p>
+
+      <div class="cheat-section">
+        <p class="cheat-section-title">Dynamics, Kinematics &amp; Vibrations</p>
+        <table class="cheat-table">
+          <tr><td class="eq">v = v0 + at</td><td>Velocity, constant acceleration</td><td class="notes"></td></tr>
+          <tr><td class="eq">x = x0 + v0t + ½at²</td><td>Position, constant acceleration</td><td class="notes"></td></tr>
+          <tr><td class="eq">v² = v0² + 2aΔx</td><td>Velocity-displacement (no time)</td><td class="notes"></td></tr>
+          <tr><td class="eq">F = ma</td><td>Newton's 2nd Law</td><td class="notes"></td></tr>
+          <tr><td class="eq">a_c = v²/r = ω²r</td><td>Centripetal acceleration</td><td class="notes"></td></tr>
+          <tr><td class="eq">W = F·d, KE = ½mv², PE = mgh</td><td>Work &amp; energy</td><td class="notes">work-energy theorem: W_net = ΔKE</td></tr>
+          <tr><td class="eq">J = FΔt = Δ(mv)</td><td>Impulse-momentum</td><td class="notes"></td></tr>
+          <tr><td class="eq">ωn = √(k/m)</td><td>Natural frequency, undamped</td><td class="notes"></td></tr>
+          <tr><td class="eq">ζ = c / (2√(mk))</td><td>Damping ratio</td><td class="notes">ζ&lt;1 underdamped, ζ=1 critical, ζ&gt;1 overdamped</td></tr>
+          <tr><td class="eq">ωd = ωn√(1−ζ²)</td><td>Damped natural frequency</td><td class="notes"></td></tr>
+        </table>
+      </div>
+
+      <div class="cheat-section">
+        <p class="cheat-section-title">Thermodynamics</p>
+        <table class="cheat-table">
+          <tr><td class="eq">PV = nRT</td><td>Ideal gas law</td><td class="notes">R = 8.314 J/(mol·K)</td></tr>
+          <tr><td class="eq">ΔU = Q − W</td><td>First Law of Thermodynamics</td><td class="notes">closed system</td></tr>
+          <tr><td class="eq">Q = mcΔT</td><td>Sensible heat</td><td class="notes">c = specific heat</td></tr>
+          <tr><td class="eq">η_Carnot = 1 − Tc/Th</td><td>Carnot (max) efficiency</td><td class="notes">T in absolute units (K)</td></tr>
+          <tr><td class="eq">COP = Q/W</td><td>Coefficient of performance</td><td class="notes">refrigeration/heat pump cycles</td></tr>
+          <tr><td class="eq">ΔS ≥ 0</td><td>Second Law — entropy of isolated system</td><td class="notes">never decreases</td></tr>
+        </table>
+      </div>
+
+      <div class="cheat-section">
+        <p class="cheat-section-title">Fluid Mechanics — Statics &amp; Bernoulli</p>
+        <table class="cheat-table">
+          <tr><td class="eq">P = ρgh</td><td>Hydrostatic pressure</td><td class="notes">h = depth below free surface</td></tr>
+          <tr><td class="eq">F_b = ρ_fluid·g·V_displaced</td><td>Buoyancy (Archimedes)</td><td class="notes"></td></tr>
+          <tr><td class="eq">A1v1 = A2v2</td><td>Continuity (incompressible)</td><td class="notes"></td></tr>
+          <tr><td class="eq">P/ρg + v²/2g + z = const</td><td>Bernoulli's equation</td><td class="notes">along a streamline, no losses</td></tr>
+          <tr><td class="eq">Q = Av</td><td>Volumetric flow rate</td><td class="notes"></td></tr>
+        </table>
+      </div>
+
+      <div class="cheat-section">
+        <p class="cheat-section-title">Heat Transfer</p>
+        <table class="cheat-table">
+          <tr><td class="eq">q = −kA(dT/dx)</td><td>Conduction (Fourier's Law)</td><td class="notes">k = thermal conductivity</td></tr>
+          <tr><td class="eq">q = hAΔT</td><td>Convection (Newton's Law of Cooling)</td><td class="notes">h = convection coefficient</td></tr>
+          <tr><td class="eq">q = εσAT⁴</td><td>Radiation (Stefan-Boltzmann)</td><td class="notes">σ = 5.67×10⁻⁸ W/(m²K⁴)</td></tr>
+          <tr><td class="eq">R_th = L/(kA) or 1/(hA)</td><td>Thermal resistance</td><td class="notes">series resistances add, like electrical R</td></tr>
+        </table>
+      </div>
+
+      <div class="cheat-section">
+        <p class="cheat-section-title">Probability &amp; Statistics</p>
+        <table class="cheat-table">
+          <tr><td class="eq">x̄ = Σxᵢ / n</td><td>Sample mean</td><td class="notes"></td></tr>
+          <tr><td class="eq">s² = Σ(xᵢ−x̄)² / (n−1)</td><td>Sample variance</td><td class="notes">s = standard deviation</td></tr>
+          <tr><td class="eq">z = (x−μ) / σ</td><td>Standard normal variable</td><td class="notes"></td></tr>
+          <tr><td class="eq">E(X) = Σxᵢ·P(xᵢ)</td><td>Expected value</td><td class="notes"></td></tr>
+          <tr><td class="eq">P(A∩B) = P(A)·P(B)</td><td>Independent events</td><td class="notes"></td></tr>
+        </table>
+      </div>
+
+      <div class="cheat-section">
+        <p class="cheat-section-title">Engineering Economics — Factor Notation</p>
+        <table class="cheat-table">
+          <tr><td class="eq">(F/P, i, n) = (1+i)ⁿ</td><td>Single payment compound amount</td><td class="notes">find F given P</td></tr>
+          <tr><td class="eq">(P/F, i, n) = 1/(1+i)ⁿ</td><td>Single payment present worth</td><td class="notes">find P given F</td></tr>
+          <tr><td class="eq">(F/A, i, n) = [(1+i)ⁿ−1]/i</td><td>Uniform series compound amount</td><td class="notes">find F given A</td></tr>
+          <tr><td class="eq">(A/F, i, n) = i/[(1+i)ⁿ−1]</td><td>Sinking fund</td><td class="notes">find A given F</td></tr>
+          <tr><td class="eq">(P/A, i, n) = [(1+i)ⁿ−1]/[i(1+i)ⁿ]</td><td>Uniform series present worth</td><td class="notes">find P given A</td></tr>
+          <tr><td class="eq">(A/P, i, n) = [i(1+i)ⁿ]/[(1+i)ⁿ−1]</td><td>Capital recovery</td><td class="notes">find A given P</td></tr>
+        </table>
+        <p class="cheat-note">Calculator for all six factors is under <strong>Dynamics &amp; Econ</strong>.</p>
+      </div>
+
+      <div class="cheat-section">
+        <p class="cheat-section-title">Ethics &amp; Professional Practice</p>
+        <p class="cheat-note" style="padding-top:0;">No formulas — this is judgment-based. NCEES tests the <strong>Model Law/Model Rules</strong> themes: hold paramount the safety, health, and welfare of the public; perform services only in areas of competence; disclose conflicts of interest; don't misrepresent qualifications; give credit for others' work; report violations of the code when observed. When in doubt on an exam question, pick the answer that most protects public safety.</p>
+      </div>
+
+      <div class="cheat-section">
+        <p class="cheat-section-title">On the Actual FE Exam</p>
+        <p class="cheat-note" style="padding-top:0;">The FE exam gives you the <strong>NCEES FE Reference Handbook</strong> on-screen — every formula above is in it, so raw memorization matters less than knowing where things live and being fast with an <strong>NCEES-approved calculator</strong> (Casio fx-115/fx-991, HP 33s/35s, or TI-30X/36X families only — no graphing/CAS calculators). Practice with your actual exam calculator, not just this page.</p>
+      </div>
     </div>
   </div>
 </main>
@@ -692,7 +887,7 @@
   function switchTab(tab) {
     document.querySelectorAll('.mode-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
     document.querySelectorAll('.tab-panel').forEach(p => p.classList.toggle('active', p.id === 'tab-' + tab));
-    const labels = { materials: 'Materials', beam: 'Beam Simulator', calcs: 'Design Calcs', machine: 'Machine Design', power: 'Power Transmission', graphs: 'Graphs', diffeq: 'Diff Eq / Laplace', cheat: 'Cheat Sheet' };
+    const labels = { materials: 'Materials', statics: 'Statics', beam: 'Beam Simulator', calcs: 'Design Calcs', machine: 'Machine Design', power: 'Power Transmission', dynecon: 'Dynamics & Econ', graphs: 'Graphs', diffeq: 'Diff Eq / Laplace', cheat: 'FE Reference' };
     document.getElementById('status-mode').textContent = labels[tab];
   }
   const fy = document.getElementById('footer-year');

@@ -917,6 +917,138 @@ function solveODENumeric() {
 }
 
 // ============================================================
+// STATICS — CENTROID & MOMENT OF INERTIA (composite sections)
+// ============================================================
+function onCentroidShapeChange(which) {
+  const type = document.getElementById(`cen${which}-type`).value;
+  document.getElementById(`cen${which}-rect`).style.display = type === 'rect' ? 'block' : 'none';
+  document.getElementById(`cen${which}-circle`).style.display = type === 'circle' ? 'block' : 'none';
+  calcCentroidMOI();
+}
+
+function shapeProps(prefix) {
+  const type = document.getElementById(`${prefix}-type`).value;
+  const y = parseFloat(document.getElementById(`${prefix}-y`).value);
+  let A, Iown;
+  if (type === 'rect') {
+    const b = parseFloat(document.getElementById(`${prefix}-b`).value);
+    const h = parseFloat(document.getElementById(`${prefix}-h`).value);
+    A = b * h; Iown = (b * Math.pow(h, 3)) / 12;
+  } else {
+    const d = parseFloat(document.getElementById(`${prefix}-d`).value);
+    const r = d / 2;
+    A = Math.PI * r * r; Iown = (Math.PI * Math.pow(r, 4)) / 4;
+  }
+  return { A, Iown, y };
+}
+
+function calcCentroidMOI() {
+  const a = shapeProps('cenA');
+  const opB = document.getElementById('cenB-op').value;
+  const shapes = [{ ...a, sign: 1 }];
+  if (opB !== 'none') {
+    const b = shapeProps('cenB');
+    shapes.push({ ...b, sign: opB === 'subtract' ? -1 : 1 });
+  }
+  const totalA = shapes.reduce((s, sh) => s + sh.sign * sh.A, 0);
+  const ybar = shapes.reduce((s, sh) => s + sh.sign * sh.A * sh.y, 0) / totalA;
+  const Itotal = shapes.reduce((s, sh) => s + sh.sign * (sh.Iown + sh.A * Math.pow(sh.y - ybar, 2)), 0);
+
+  document.getElementById('centroid-result').innerHTML = `
+    <div class="eq-live">ȳ = ΣAᵢyᵢ/ΣAᵢ = <strong>${ybar.toFixed(3)} mm</strong></div>
+    <div class="spec-row"><span class="spec-key">Total Area</span><span class="spec-val">${totalA.toFixed(1)} mm²</span></div>
+    <div class="spec-row"><span class="spec-key">I about combined centroidal axis</span><span class="spec-val">${Itotal.toFixed(0)} mm⁴</span></div>
+  `;
+  setStatusResult(`I ${Itotal.toFixed(0)} mm⁴`);
+}
+
+// ============================================================
+// DYNAMICS — PROJECTILE MOTION
+// ============================================================
+function calcProjectile() {
+  const v0 = parseFloat(document.getElementById('proj-v0').value);
+  const thetaDeg = parseFloat(document.getElementById('proj-theta').value);
+  const y0 = parseFloat(document.getElementById('proj-y0').value);
+  const g = parseFloat(document.getElementById('proj-g').value);
+  const theta = (thetaDeg * Math.PI) / 180;
+  const vx = v0 * Math.cos(theta), vy = v0 * Math.sin(theta);
+
+  const disc = vy * vy + 2 * g * y0;
+  const t = (vy + Math.sqrt(Math.max(disc, 0))) / g;
+  const range = vx * t;
+  const hmax = y0 + (vy * vy) / (2 * g);
+
+  document.getElementById('proj-result').innerHTML = `
+    <div class="eq-live">t = [v0sinθ + √((v0sinθ)² + 2gy0)]/g = <strong>${t.toFixed(3)} s</strong></div>
+    <div class="spec-row"><span class="spec-key">Range</span><span class="spec-val">${range.toFixed(2)} m</span></div>
+    <div class="spec-row"><span class="spec-key">Max Height</span><span class="spec-val">${hmax.toFixed(2)} m</span></div>
+    <div class="spec-row"><span class="spec-key">vx, vy at launch</span><span class="spec-val">${vx.toFixed(2)}, ${vy.toFixed(2)} m/s</span></div>
+  `;
+  setStatusResult(`Range ${range.toFixed(1)} m`);
+}
+
+// ============================================================
+// ENGINEERING ECONOMICS — TIME VALUE OF MONEY
+// ============================================================
+function onEconModeChange() {
+  const mode = document.getElementById('econ-mode').value;
+  const eqMap = {
+    F_from_P: 'F = P(1+i)ⁿ', P_from_F: 'P = F/(1+i)ⁿ',
+    F_from_A: 'F = A[((1+i)ⁿ−1)/i]', A_from_F: 'A = F[i/((1+i)ⁿ−1)]',
+    P_from_A: 'P = A[((1+i)ⁿ−1)/(i(1+i)ⁿ)]', A_from_P: 'A = P[i(1+i)ⁿ/((1+i)ⁿ−1)]'
+  };
+  const labelMap = {
+    F_from_P: 'Known Value P', P_from_F: 'Known Value F', F_from_A: 'Known Value A',
+    A_from_F: 'Known Value F', P_from_A: 'Known Value A', A_from_P: 'Known Value P'
+  };
+  document.getElementById('econ-eq-display').textContent = eqMap[mode];
+  document.getElementById('econ-known-label').textContent = labelMap[mode];
+  calcEngEcon();
+}
+
+function calcEngEcon() {
+  const mode = document.getElementById('econ-mode').value;
+  const known = parseFloat(document.getElementById('econ-known').value);
+  const i = parseFloat(document.getElementById('econ-i').value) / 100;
+  const n = parseFloat(document.getElementById('econ-n').value);
+  let result, formula, resultLabel;
+  const c = Math.pow(1 + i, n);
+
+  switch (mode) {
+    case 'F_from_P':
+      result = known * c;
+      formula = `F = P(1+i)ⁿ = ${known}×${c.toFixed(4)} = <strong>$${result.toFixed(2)}</strong>`;
+      resultLabel = 'Future Value F'; break;
+    case 'P_from_F':
+      result = known / c;
+      formula = `P = F/(1+i)ⁿ = ${known}/${c.toFixed(4)} = <strong>$${result.toFixed(2)}</strong>`;
+      resultLabel = 'Present Value P'; break;
+    case 'F_from_A':
+      result = known * ((c - 1) / i);
+      formula = `F = A[((1+i)ⁿ−1)/i] = <strong>$${result.toFixed(2)}</strong>`;
+      resultLabel = 'Future Value F'; break;
+    case 'A_from_F':
+      result = known * (i / (c - 1));
+      formula = `A = F[i/((1+i)ⁿ−1)] = <strong>$${result.toFixed(2)}</strong>`;
+      resultLabel = 'Annuity A'; break;
+    case 'P_from_A':
+      result = known * ((c - 1) / (i * c));
+      formula = `P = A[((1+i)ⁿ−1)/(i(1+i)ⁿ)] = <strong>$${result.toFixed(2)}</strong>`;
+      resultLabel = 'Present Value P'; break;
+    case 'A_from_P':
+      result = known * ((i * c) / (c - 1));
+      formula = `A = P[i(1+i)ⁿ/((1+i)ⁿ−1)] = <strong>$${result.toFixed(2)}</strong>`;
+      resultLabel = 'Annuity A'; break;
+  }
+
+  document.getElementById('econ-result').innerHTML = `
+    <div class="eq-live">${formula}</div>
+    <div class="spec-row"><span class="spec-key">${resultLabel}</span><span class="spec-val">$${result.toLocaleString(undefined, { maximumFractionDigits: 2 })}</span></div>
+  `;
+  setStatusResult(`${resultLabel.split(' ')[0]} $${result.toFixed(0)}`);
+}
+
+// ============================================================
 // INIT
 // ============================================================
 document.addEventListener('DOMContentLoaded', () => {
@@ -926,4 +1058,8 @@ document.addEventListener('DOMContentLoaded', () => {
   onSectionChange();
   onPTModeChange();
   onGraphTypeChange();
+  onCentroidShapeChange('A');
+  onCentroidShapeChange('B');
+  onEconModeChange();
+  calcProjectile();
 });
