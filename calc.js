@@ -1114,41 +1114,53 @@ function calcEngEcon() {
 }
 
 // ============================================================
-// GLOBAL REFERENCE FLATTENER
+// GLOBAL REFERENCE SEARCH — cross-tab, with source-tab tagging
 // ============================================================
+const TAB_LABELS = {
+  materials: 'Materials', beam: 'Beam & Statics', calcs: 'Design Calcs',
+  machine: 'Machine Design', power: 'Power Transmission', dynecon: 'Dynamics & Econ',
+  graphs: 'Graphs', diffeq: 'Diff Eq / Laplace', cheat: 'FE Reference'
+};
+
+function sourceTabLabel(block) {
+  const panel = block.closest('.tab-panel');
+  if (!panel) return '';
+  const key = panel.id.replace('tab-', '');
+  return TAB_LABELS[key] || key;
+}
+
 function initializeReferenceSearch() {
   const searchInput = document.getElementById('global-ref-search');
   const appScreen = document.getElementById('app-screen');
-  
+  const countEl = document.getElementById('search-result-count');
+
   if (!searchInput || !appScreen) return;
 
-  searchInput.addEventListener('input', function(e) {
-    const term = e.target.value.toLowerCase().trim();
-    // Select all the major structural blocks across all tabs
+  const runSearch = () => {
+    const term = searchInput.value.toLowerCase().trim();
     const searchableBlocks = appScreen.querySelectorAll('.login-box, .cheat-section');
 
     if (term.length === 0) {
       appScreen.classList.remove('is-searching');
-      // Restore cheat table rows
       document.querySelectorAll('.cheat-table tr').forEach(r => r.style.display = '');
       searchableBlocks.forEach(b => b.classList.remove('search-match'));
+      if (countEl) countEl.textContent = '';
       return;
     }
 
     appScreen.classList.add('is-searching');
+    let matchCount = 0;
 
     searchableBlocks.forEach(block => {
       let blockMatches = false;
 
-      // Handle Reference Tables
       if (block.classList.contains('cheat-section') || block.querySelector('.cheat-table')) {
-        const rows = block.querySelectorAll('tbody tr, tr:not(:first-child)');
+        const rows = block.querySelectorAll('tr'); // all rows — header rows filtered below
         const titleMatch = block.querySelector('.cheat-section-title, .login-header-title')?.textContent.toLowerCase().includes(term);
-        
+
         rows.forEach(row => {
-          if(row.querySelector('th')) return;
+          if (row.querySelector('th')) return; // skip header rows entirely
           const text = row.textContent.toLowerCase();
-          // If title matches, show all rows, else filter rows
           if (titleMatch || text.includes(term)) {
             row.style.display = '';
             blockMatches = true;
@@ -1157,14 +1169,10 @@ function initializeReferenceSearch() {
           }
         });
 
-        // Catch for purely textual cheat sections with no table
         if (rows.length === 0 && block.textContent.toLowerCase().includes(term)) {
           blockMatches = true;
         }
-      } 
-      // Handle Calculation Modules (login-boxes without tables)
-      else {
-        // Just checking inner text captures titles, labels, equations (.eq-display), and formulas
+      } else {
         if (block.textContent.toLowerCase().includes(term)) {
           blockMatches = true;
         }
@@ -1172,10 +1180,26 @@ function initializeReferenceSearch() {
 
       if (blockMatches) {
         block.classList.add('search-match');
+        matchCount++;
+        // tag with source tab for context when panels are stacked
+        let tag = block.querySelector(':scope > .search-source-tag');
+        if (!tag) {
+          tag = document.createElement('div');
+          tag.className = 'search-source-tag';
+          block.prepend(tag);
+        }
+        tag.textContent = sourceTabLabel(block);
       } else {
         block.classList.remove('search-match');
       }
     });
+
+    if (countEl) countEl.textContent = matchCount === 0 ? 'No matches' : `${matchCount} match${matchCount === 1 ? '' : 'es'}`;
+  };
+
+  searchInput.addEventListener('input', runSearch);
+  searchInput.addEventListener('keydown', e => {
+    if (e.key === 'Escape') { searchInput.value = ''; runSearch(); searchInput.blur(); }
   });
 }
 

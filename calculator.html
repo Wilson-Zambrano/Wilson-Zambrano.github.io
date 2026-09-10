@@ -27,6 +27,10 @@
         <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:inline;vertical-align:middle;margin-right:4px;"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
         <span>Drop Zone</span>
       </a>
+      <button onclick="toggleLog()" class="btn btn-outline" style="padding: 6px 12px; font-size: 0.5rem;">
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:inline;vertical-align:middle;margin-right:4px;"><path d="M3 3v18h18"/><path d="M18 9l-5 5-4-4-3 3"/></svg>
+        <span>Log</span>
+      </button>
       <button id="top-logout-btn" onclick="doLogout()" class="btn btn-outline" style="display:none; padding: 6px 12px; font-size: 0.5rem; border-color: var(--red); color: var(--red);">
         <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:inline;vertical-align:middle;margin-right:4px;"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
         Logout
@@ -78,8 +82,9 @@
     </div>
 
     <!-- GLOBAL SEARCH BAR -->
-    <div class="ref-search-container" style="margin-bottom: 24px; display: flex; align-items: center;">
+    <div class="ref-search-container" style="margin-bottom: 24px; display: flex; align-items: center; gap: 12px;">
       <input type="search" id="global-ref-search" placeholder="Search equations across all tabs (e.g., buckling, titanium, 6061, τ)..." class="form-input" style="width: 100%; max-width: 480px; font-family: 'IBM Plex Mono', monospace; font-size: 0.85rem;">
+      <span id="search-result-count" class="search-count"></span>
     </div>
 
     <div class="input-mode-toggle" style="margin-bottom: 24px; flex-wrap: wrap;">
@@ -87,10 +92,13 @@
       <button class="mode-btn" data-tab="beam" onclick="switchTab('beam')">Beam &amp; Statics</button>
       <button class="mode-btn" data-tab="calcs" onclick="switchTab('calcs')">Design Calcs</button>
       <button class="mode-btn" data-tab="machine" onclick="switchTab('machine')">Machine Design</button>
+      <span class="tab-divider"></span>
       <button class="mode-btn" data-tab="power" onclick="switchTab('power')">Power Transmission</button>
       <button class="mode-btn" data-tab="dynecon" onclick="switchTab('dynecon')">Dynamics &amp; Econ</button>
+      <span class="tab-divider"></span>
       <button class="mode-btn" data-tab="graphs" onclick="switchTab('graphs')">Graphs</button>
       <button class="mode-btn" data-tab="diffeq" onclick="switchTab('diffeq')">Diff Eq / Laplace</button>
+      <span class="tab-divider"></span>
       <button class="mode-btn" data-tab="cheat" onclick="switchTab('cheat')">FE Reference</button>
     </div>
 
@@ -193,7 +201,7 @@
       <div class="login-box" style="margin-top:20px;">
         <div class="login-header"><span class="login-header-title">Centroid &amp; Moment of Inertia — Composite Section</span><span class="login-doc-ref">WZ-CALC / STAT</span></div>
         <div class="login-body">
-          <div class="eq-display">ȳ = ΣAᵢyᵢ / ΣAᵢ &nbsp;|&nbsp; I = Σ[I_own,ᵢ + Aᵢ(yᵢ−ȳ)²] <span class="eq-sub">parallel axis theorem — 2 shapes, second may add or subtract (hole)</span></div>
+          <div class="eq-display">ȳ = ΣAᵢyᵢ / ΣAᵢ &nbsp;|&nbsp; I = Σ[I_own,ᵢ + Aᵢ(yᵢ−ȳ)²] <span class="eq-sub">parallel-axis theorem, 2 shapes</span></div>
 
           <p class="cheat-note" style="padding-top:0;">Shape A</p>
           <div class="field-row">
@@ -323,7 +331,7 @@
       <div class="login-box" style="margin-top:20px;">
         <div class="login-header"><span class="login-header-title">Press Fit / Interference Fit</span><span class="login-doc-ref">WZ-CALC / FIT</span></div>
         <div class="login-body">
-          <div class="eq-display">p = Eδ(b²−R²)(R²−a²) / [2R³(b²−a²)] <span class="eq-sub">thick-wall Lamé fit — same material shaft &amp; hub</span></div>
+          <div class="eq-display">p = Eδ(b²−R²)(R²−a²) / [2R³(b²−a²)] <span class="eq-sub">same-material shaft &amp; hub</span></div>
           <div class="field-row">
             <div class="form-group"><label class="form-label">Material</label><select id="fit-material" class="form-input material-dropdown" onchange="calcPressFit()"></select></div>
             <div class="form-group"><label class="form-label">Interface Ø, D (mm)</label><input type="number" id="fit-D" class="form-input" value="30" oninput="calcPressFit()"></div>
@@ -345,7 +353,7 @@
       <div class="login-box" style="margin-bottom:20px;">
         <div class="login-header"><span class="login-header-title">Fillet Weld Strength</span><span class="login-doc-ref">WZ-CALC / WLD</span></div>
         <div class="login-body">
-          <div class="eq-display">τ = P / (0.707 · leg · L) <span class="eq-sub">allowable ≈ 0.3 × UTS of base metal (quick estimate)</span></div>
+          <div class="eq-display">τ = P / (0.707 · leg · L) <span class="eq-sub">allowable ≈ 0.3×UTS</span></div>
           <div class="field-row">
             <div class="form-group"><label class="form-label">Applied Load P (N)</label><input type="number" id="weld-P" class="form-input" value="8000" oninput="calcWeld()"></div>
             <div class="form-group"><label class="form-label">Leg Size (mm)</label><input type="number" id="weld-leg" class="form-input" value="6" oninput="calcWeld()"></div>
@@ -359,7 +367,7 @@
       <div class="login-box" style="margin-bottom:20px;">
         <div class="login-header"><span class="login-header-title">Bolted Joint — Circular Bolt Pattern</span><span class="login-doc-ref">WZ-CALC / BLT</span></div>
         <div class="login-body">
-          <div class="eq-display">F_max ≈ V/n + M/(nR) <span class="eq-sub">equally-spaced bolts on radius R — conservative simplified sum</span></div>
+          <div class="eq-display">F_max ≈ V/n + M/(nR) <span class="eq-sub">equally-spaced bolts, radius R</span></div>
           <div class="field-row">
             <div class="form-group"><label class="form-label"># Bolts n</label><input type="number" id="bolt-n" class="form-input" value="6" oninput="calcBoltPattern()"></div>
             <div class="form-group"><label class="form-label">Bolt Circle R (mm)</label><input type="number" id="bolt-R" class="form-input" value="50" oninput="calcBoltPattern()"></div>
@@ -377,7 +385,7 @@
       <div class="login-box" style="margin-bottom:20px;">
         <div class="login-header"><span class="login-header-title">Key / Keyway — Shear &amp; Bearing</span><span class="login-doc-ref">WZ-CALC / KEY</span></div>
         <div class="login-body">
-          <div class="eq-display">τ = 2T / (dwL) <span class="eq-sub">σ_bearing = 4T / (dhL) — square/rectangular key</span></div>
+          <div class="eq-display">τ = 2T / (dwL) <span class="eq-sub">σ_bearing = 4T/(dhL)</span></div>
           <div class="field-row">
             <div class="form-group"><label class="form-label">Torque T (N·mm)</label><input type="number" id="key-T" class="form-input" value="20000" oninput="calcKey()"></div>
             <div class="form-group"><label class="form-label">Shaft Ø d (mm)</label><input type="number" id="key-d" class="form-input" value="25" oninput="calcKey()"></div>
@@ -430,7 +438,7 @@
       <div class="login-box">
         <div class="login-header"><span class="login-header-title">Gear / Pulley Train</span><span class="login-doc-ref">WZ-CALC / PWR</span></div>
         <div class="login-body">
-          <div class="eq-display">ω₁N₁ = ω₂N₂ &nbsp;|&nbsp; T₂ = T₁(N₂/N₁)η <span class="eq-sub">gears: N=teeth &nbsp;|&nbsp; pulleys: swap N for Ø, belt speed v=ωr, P=Tω</span></div>
+          <div class="eq-display">ω₁N₁ = ω₂N₂ &nbsp;|&nbsp; T₂ = T₁(N₂/N₁)η <span class="eq-sub">gears use teeth N, pulleys use Ø</span></div>
           <div class="field-row">
             <div class="form-group">
               <label class="form-label">Type</label>
@@ -589,7 +597,7 @@
           <tr><td class="eq">lim(t→∞) f(t)</td><td>lim(s→0) sF(s)</td><td class="notes">final value theorem — poles in LHP only</td></tr>
         </table>
       </div>
-      <p class="cheat-note"><strong>Does Laplace solve every ODE?</strong> No. Laplace turns d/dt into multiplication by s, which only works cleanly on linear terms — nonlinear terms (y², y·y′, sin y, …) don't reduce to simple algebra. It's a tool for linear ODEs (constant, and some variable, coefficients), not a universal solver. For nonlinear equations you're generally looking at numerical integration, phase-plane analysis, or perturbation methods. The two solvers below reflect that split.</p>
+      <p class="cheat-note"><strong>Does Laplace solve every ODE?</strong> No — it only linearizes linear terms (d/dt → multiplication by s). Nonlinear terms (y², sin y, …) don't reduce to algebra, so it can't handle general nonlinear ODEs. Use it for linear, constant-coefficient equations; use numerical integration otherwise.</p>
 
       <div class="login-box" style="margin-top:12px;">
         <div class="login-header"><span class="login-header-title">Linear 2nd-Order ODE Solver</span><span class="login-doc-ref">WZ-CALC / ODE-1</span></div>
@@ -774,7 +782,7 @@
         </table>
       </div>
 
-      <p class="cheat-note" style="border-top:1px solid var(--line-bold); padding-top:16px; margin-top:8px;"><strong>FE Exam knowledge areas below</strong> — sections not already covered elsewhere on this page (Mechanics of Materials, Machine Design, Diff Eq are their own tabs).</p>
+      <p class="cheat-note" style="border-top:1px solid var(--line-bold); padding-top:16px; margin-top:8px;">Remaining FE knowledge areas — Mechanics of Materials, Machine Design, and Diff Eq have their own tabs.</p>
 
       <div class="cheat-section">
         <p class="cheat-section-title">Dynamics, Kinematics &amp; Vibrations</p>
@@ -851,16 +859,29 @@
 
       <div class="cheat-section">
         <p class="cheat-section-title">Ethics &amp; Professional Practice</p>
-        <p class="cheat-note" style="padding-top:0;">No formulas — this is judgment-based. NCEES tests the <strong>Model Law/Model Rules</strong> themes: hold paramount the safety, health, and welfare of the public; perform services only in areas of competence; disclose conflicts of interest; don't misrepresent qualifications; give credit for others' work; report violations of the code when observed. When in doubt on an exam question, pick the answer that most protects public safety.</p>
+        <p class="cheat-note" style="padding-top:0;">Judgment-based, not formula-based. Core theme: hold paramount the safety, health, and welfare of the public; work only within your competence; disclose conflicts of interest; don't misrepresent qualifications. When unsure, pick the answer that most protects public safety.</p>
       </div>
 
       <div class="cheat-section">
         <p class="cheat-section-title">On the Actual FE Exam</p>
-        <p class="cheat-note" style="padding-top:0;">The FE exam gives you the <strong>NCEES FE Reference Handbook</strong> on-screen — every formula above is in it, so raw memorization matters less than knowing where things live and being fast with an <strong>NCEES-approved calculator</strong> (Casio fx-115/fx-991, HP 33s/35s, or TI-30X/36X families only — no graphing/CAS calculators). Practice with your actual exam calculator, not just this page.</p>
+        <p class="cheat-note" style="padding-top:0;">The exam gives you the full <strong>NCEES FE Reference Handbook</strong> on-screen — every formula above is in it. Memorization matters less than speed with your <strong>approved calculator</strong> (Casio fx-115/991, HP 33s/35s, or TI-30X/36X only). Practice with your actual exam calculator.</p>
       </div>
     </div>
   </div>
 </main>
+
+<!-- CALCULATION LOG — persistent across tabs -->
+<div id="calc-log-sidebar">
+  <div class="log-header">
+    <span>Calculation Log</span>
+    <div class="log-header-actions">
+      <button onclick="clearLog()" title="Clear log">Clear</button>
+      <button onclick="toggleLog()" title="Close">✕</button>
+    </div>
+  </div>
+  <div id="calc-log-list"></div>
+</div>
+<button id="calc-log-tab" onclick="toggleLog()" title="Open calculation log">Log</button>
 
 <footer>
   <div class="title-block">

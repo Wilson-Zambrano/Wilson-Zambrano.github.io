@@ -15,7 +15,7 @@
 
 #beam-result, #stress-result, #torsion-result, #buckle-result, #spring-result {
   padding: 10px 12px;
-  font-size: 0.65rem;
+  font-size: 0.78rem;
   line-height: 1.9;
   color: var(--ink);
 }
@@ -24,14 +24,14 @@
   margin-top: 4px;
   padding-top: 10px;
   border-top: 1px solid var(--line);
-  font-size: 0.6rem;
+  font-size: 0.7rem;
   color: var(--ink-dim);
-  letter-spacing: 0.02em;
+  letter-spacing: 0.01em;
 }
 
 .eq-display {
   font-family: 'IBM Plex Mono', monospace;
-  font-size: 0.95rem;
+  font-size: 1rem;
   font-weight: 600;
   color: var(--ink);
   background: var(--paper-dark, rgba(0,0,0,0.03));
@@ -41,11 +41,11 @@
   margin-bottom: 16px;
   letter-spacing: 0.01em;
 }
-.eq-display .eq-sub { font-size: 0.62rem; color: var(--ink-dim); font-weight: 400; display: block; margin-top: 4px; }
+.eq-display .eq-sub { font-size: 0.7rem; color: var(--ink-dim); font-weight: 400; display: block; margin-top: 4px; }
 
 .eq-live {
   font-family: 'IBM Plex Mono', monospace;
-  font-size: 0.72rem;
+  font-size: 0.8rem;
   color: var(--ink);
   padding: 8px 10px;
   margin-top: 8px;
@@ -54,7 +54,7 @@
 }
 .eq-live strong { color: var(--red); }
 
-.legend-row { display: flex; gap: 16px; flex-wrap: wrap; margin-top: 8px; font-size: 0.62rem; color: var(--ink-dim); }
+.legend-row { display: flex; gap: 16px; flex-wrap: wrap; margin-top: 8px; font-size: 0.7rem; color: var(--ink-dim); }
 .legend-swatch { display: inline-block; width: 10px; height: 10px; margin-right: 5px; vertical-align: middle; }
 select[multiple].form-input { padding: 4px; }
 
@@ -64,9 +64,9 @@ select[multiple].form-input { padding: 4px; }
 /* ── CHEAT SHEET & TABLES ── */
 .cheat-section { margin-bottom: 28px; }
 .cheat-section-title {
-  font-size: 0.55rem;
+  font-size: 0.65rem;
   text-transform: uppercase;
-  letter-spacing: 0.25em;
+  letter-spacing: 0.16em;
   color: var(--red);
   margin-bottom: 10px;
   padding-bottom: 6px;
@@ -80,7 +80,7 @@ select[multiple].form-input { padding: 4px; }
 table.cheat-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 0.68rem;
+  font-size: 0.8rem;
 }
 table.cheat-table tr { border-bottom: 1px solid var(--line); }
 table.cheat-table tr:last-child { border-bottom: none; }
@@ -89,18 +89,18 @@ table.cheat-table th {
   padding: 8px 10px;
   border-bottom: 1px solid var(--line-bold);
   color: var(--ink);
-  font-size: 0.62rem;
+  font-size: 0.68rem;
   text-transform: uppercase;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.08em;
 }
-table.cheat-table td { padding: 7px 10px; text-align: left; vertical-align: top; color: var(--ink-dim); }
-table.cheat-table td.eq { color: var(--ink); font-weight: 600; white-space: nowrap; letter-spacing: 0.02em; }
-table.cheat-table td.notes { color: var(--ink-dim); font-size: 0.62rem; opacity: 0.85; }
+table.cheat-table td { padding: 8px 10px; text-align: left; vertical-align: top; color: var(--ink-dim); line-height: 1.5; }
+table.cheat-table td.eq { color: var(--ink); font-weight: 600; white-space: nowrap; letter-spacing: 0.01em; }
+table.cheat-table td.notes { color: var(--ink-dim); font-size: 0.72rem; }
 
 .cheat-note {
-  font-size: 0.62rem;
+  font-size: 0.72rem;
   color: var(--ink-dim);
-  line-height: 1.7;
+  line-height: 1.75;
   padding: 10px 0 4px;
 }
 .cheat-note strong { color: var(--ink); }
@@ -108,6 +108,33 @@ table.cheat-table td.notes { color: var(--ink-dim); font-size: 0.62rem; opacity:
 @media (max-width: 720px) {
   table.cheat-table td.eq { white-space: normal; }
 }
+
+/* ── TAB BAR GROUPING ── */
+.tab-divider {
+  width: 1px;
+  align-self: stretch;
+  background: var(--line-bold);
+  margin: 4px 6px;
+  opacity: 0.6;
+}
+
+/* ── GLOBAL SEARCH ── */
+.search-count {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.68rem;
+  color: var(--ink-dim);
+  white-space: nowrap;
+}
+.search-source-tag {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.58rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--blue);
+  margin-bottom: 8px;
+  display: none;
+}
+#app-screen.is-searching .search-source-tag { display: block; }
 
 /* ── GLOBAL SEARCH STATE ── */
 #app-screen.is-searching .tab-panel {
@@ -122,4 +149,85 @@ table.cheat-table td.notes { color: var(--ink-dim); font-size: 0.62rem; opacity:
 #app-screen.is-searching .login-box:not(.search-match),
 #app-screen.is-searching .cheat-section:not(.search-match) {
   display: none !important;
+}
+
+/* ── CALCULATION LOG SIDEBAR ── */
+#calc-log-sidebar {
+  position: fixed;
+  top: 0;
+  right: -320px;
+  width: 300px;
+  height: 100vh;
+  background: var(--paper, #fff);
+  border-left: 2px solid var(--ink);
+  box-shadow: -4px 0 16px rgba(0,0,0,0.12);
+  z-index: 200;
+  display: flex;
+  flex-direction: column;
+  transition: right 0.25s ease;
+}
+#calc-log-sidebar.open { right: 0; }
+
+.log-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  border-bottom: 2px solid var(--ink);
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+.log-header-actions button {
+  background: none;
+  border: 1px solid var(--line-bold);
+  color: var(--ink-dim);
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.62rem;
+  padding: 4px 8px;
+  margin-left: 6px;
+  cursor: pointer;
+}
+.log-header-actions button:hover { color: var(--ink); border-color: var(--ink); }
+
+#calc-log-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px 12px;
+}
+
+.log-entry {
+  border-bottom: 1px solid var(--line);
+  padding: 10px 4px;
+  font-family: 'IBM Plex Mono', monospace;
+}
+.log-entry.red-edge { border-left: 3px solid var(--red); padding-left: 8px; }
+.log-time { font-size: 0.6rem; color: var(--ink-faint); }
+.log-title { font-size: 0.72rem; font-weight: 600; color: var(--ink); margin-top: 2px; }
+.log-details { font-size: 0.65rem; color: var(--ink-dim); margin-top: 2px; }
+.log-result { font-size: 0.8rem; font-weight: 700; margin-top: 4px; }
+
+#calc-log-tab {
+  position: fixed;
+  top: 50%;
+  right: 0;
+  transform: translateY(-50%) rotate(-90deg) translateX(50%);
+  transform-origin: right center;
+  background: var(--ink);
+  color: var(--paper, #fff);
+  border: none;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.68rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  padding: 8px 16px;
+  cursor: pointer;
+  z-index: 199;
+}
+#calc-log-sidebar.open ~ #calc-log-tab { display: none; }
+
+@media (max-width: 640px) {
+  #calc-log-sidebar { width: 85vw; right: -85vw; }
 }
